@@ -1,0 +1,28 @@
+name: Dependency audit
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # weekly Monday 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install (lockfile)
+        run: npm ci
+
+      - name: npm audit (non-blocking report)
+        run: |
+          npm audit --json || true
+

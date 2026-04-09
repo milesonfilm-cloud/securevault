@@ -1,0 +1,285 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --primary: 258 84% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 222 47% 11%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 258 84% 67%;
+    --radius: 0.75rem;
+    --sidebar-bg: 222 47% 8%;
+    --sidebar-text: 220 14% 70%;
+    --sidebar-active: 258 84% 67%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Auth Screen ── */
+  .auth-bg {
+    background: radial-gradient(ellipse at 20% 20%, #1e1040 0%, #0a0a1a 50%, #060612 100%);
+  }
+  .auth-card {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    padding: 2.5rem;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+      0 40px 80px rgba(0, 0, 0, 0.6),
+      0 8px 32px rgba(99, 60, 255, 0.15);
+  }
+  .auth-input {
+    @apply w-full px-4 py-3 rounded-2xl text-sm text-white placeholder-white/25 transition-all duration-200 outline-none;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .auth-input:focus {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(139, 92, 246, 0.6);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+  }
+  .auth-btn {
+    @apply flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-semibold text-white transition-all duration-200 active:scale-95;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #3b82f6 100%);
+    box-shadow:
+      0 4px 24px rgba(99, 60, 255, 0.4),
+      0 1px 0 rgba(255, 255, 255, 0.15) inset;
+  }
+  .auth-btn:hover {
+    box-shadow:
+      0 6px 32px rgba(99, 60, 255, 0.55),
+      0 1px 0 rgba(255, 255, 255, 0.15) inset;
+    transform: translateY(-1px);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer;
+  }
+  .sidebar-item-active {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.2);
+  }
+  .sidebar-item-inactive {
+    @apply text-slate-400 hover:text-slate-200;
+  }
+  .sidebar-item-inactive:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* ── Cards ── */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply active:scale-95 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-150 flex items-center gap-2 text-sm;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    box-shadow: 0 2px 12px rgba(99, 60, 255, 0.35);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 4px 20px rgba(99, 60, 255, 0.5);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    @apply bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-semibold px-4 py-2.5 rounded-xl transition-all duration-150 flex items-center gap-2 text-sm;
+  }
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-150 flex items-center gap-2 text-sm;
+  }
+  .input-field {
+    @apply w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all duration-150;
+  }
+  .label-text {
+    @apply block text-xs font-600 text-slate-600 mb-1.5 tracking-wide;
+  }
+
+  /* Neon vault — folder-tab category tiles */
+  .neon-folder-tile {
+    position: relative;
+    border-radius: 1.5rem;
+    isolation: isolate;
+  }
+  .neon-folder-tile::before {
+    content: '';
+    position: absolute;
+    top: -11px;
+    right: 1rem;
+    width: 2.75rem;
+    height: 0.875rem;
+    border-radius: 0.75rem 0.75rem 0 0;
+    background: inherit;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .neon-folder-tile-inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Animations ── */
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.25s ease-out;
+  }
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  .animate-auth-in {
+    animation: authIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .animate-shake {
+    animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes authIn {
+  from {
+    opacity: 0;
+    transform: translateY(32px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-8px);
+  }
+  30% {
+    transform: translateX(8px);
+  }
+  45% {
+    transform: translateX(-6px);
+  }
+  60% {
+    transform: translateX(6px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+  90% {
+    transform: translateX(3px);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+[data-theme='neon'] ::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+}
+[data-theme='neon'] ::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+
+[data-theme='pastel'] ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+[data-theme='pastel'] ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* PWA safe area */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
