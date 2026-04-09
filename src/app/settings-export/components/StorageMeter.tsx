@@ -23,15 +23,13 @@ export default function StorageMeter() {
   const barColor = isDanger ? '#EF4444' : isWarning ? '#F59E0B' : '#10B981';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div
-          className={`w-10 h-10 rounded-xl flex items-center justify-center ${isDanger ? 'bg-red-50' : isWarning ? 'bg-amber-50' : 'bg-emerald-50'}`}
-        >
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-black/5">
           {isDanger || isWarning ? (
-            <AlertTriangle size={20} className={isDanger ? 'text-red-500' : 'text-amber-500'} />
+            <AlertTriangle size={20} className={isDanger ? 'text-red-600' : 'text-amber-600'} />
           ) : (
-            <HardDrive size={20} className="text-emerald-500" />
+            <HardDrive size={20} className="text-slate-700" />
           )}
         </div>
         <div>
@@ -48,7 +46,7 @@ export default function StorageMeter() {
           <span>{formatBytes(storageInfo.used)} used</span>
           <span>{formatBytes(storageInfo.total)} available</span>
         </div>
-        <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+        <div className="h-3 bg-black/5 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{ width: `${storageInfo.percent}%`, backgroundColor: barColor }}
@@ -58,17 +56,17 @@ export default function StorageMeter() {
       </div>
 
       {isDanger && (
-        <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2 text-xs text-red-600 font-500">
+        <div className="bg-red-50 border border-red-200/70 rounded-xl px-3 py-2 text-xs text-red-700 font-600">
           Storage nearly full — export and clear old data to free space
         </div>
       )}
       {isWarning && !isDanger && (
-        <div className="bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 text-xs text-amber-600 font-500">
+        <div className="bg-amber-50 border border-amber-200/70 rounded-xl px-3 py-2 text-xs text-amber-800 font-600">
           Storage above 70% — consider exporting a backup soon
         </div>
       )}
       {!isWarning && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 text-xs text-emerald-600 font-500">
+        <div className="bg-emerald-50 border border-emerald-200/70 rounded-xl px-3 py-2 text-xs text-emerald-800 font-600">
           Storage healthy — all documents saved in IndexedDB
         </div>
       )}

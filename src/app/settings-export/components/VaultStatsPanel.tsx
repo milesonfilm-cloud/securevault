@@ -47,10 +47,10 @@ export default function VaultStatsPanel() {
   }, []);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-          <TrendingUp size={20} className="text-indigo-500" />
+        <div className="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center">
+          <TrendingUp size={20} className="text-slate-700" />
         </div>
         <div>
           <h3 className="text-base font-700 text-slate-900">Vault Overview</h3>
@@ -60,12 +60,12 @@ export default function VaultStatsPanel() {
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-indigo-50 rounded-xl p-3 text-center">
-          <p className="text-2xl font-800 text-indigo-600 tabular-nums">{totalDocs}</p>
+        <div className="bg-black/5 rounded-xl p-3 text-center border border-black/5">
+          <p className="text-2xl font-800 text-slate-900 tabular-nums">{totalDocs}</p>
           <p className="text-xs text-slate-500 font-500 mt-0.5">Total Documents</p>
         </div>
-        <div className="bg-emerald-50 rounded-xl p-3 text-center">
-          <p className="text-2xl font-800 text-emerald-600 tabular-nums">{totalMembers}</p>
+        <div className="bg-black/5 rounded-xl p-3 text-center border border-black/5">
+          <p className="text-2xl font-800 text-slate-900 tabular-nums">{totalMembers}</p>
           <p className="text-xs text-slate-500 font-500 mt-0.5">Family Members</p>
         </div>
       </div>

@@ -39,75 +39,46 @@ interface SidebarProps {
 
 function handleLockVault() {
   sessionStorage.removeItem('sv_session_unlocked');
+  try {
+    localStorage.removeItem('sv_session_unlocked_persist');
+  } catch {
+    // ignore
+  }
   window.location.reload();
 }
 
-function navItemClasses(
-  theme: 'light' | 'neon' | 'pastel',
-  isActive: boolean,
-  collapsed: boolean
-): string {
+function navItemClasses(theme: 'pastel', isActive: boolean, collapsed: boolean): string {
   const base = `sidebar-item ${collapsed ? 'justify-center px-0' : ''}`;
-  if (theme === 'neon') {
-    return `${base} ${isActive ? 'sidebar-item-active' : 'sidebar-item-inactive'}`;
-  }
-  if (theme === 'pastel') {
-    if (isActive) {
-      return `${base} bg-black/[0.06] text-slate-900 font-600 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]`;
-    }
-    return `${base} text-slate-500 hover:text-slate-900 hover:bg-slate-100`;
-  }
-  /* light */
   if (isActive) {
-    return `${base} bg-violet-100/90 text-violet-800 font-600 shadow-[inset_0_0_0_1px_rgba(139,92,246,0.2)]`;
+    return `${base} bg-black/[0.06] text-slate-900 font-600 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]`;
   }
-  return `${base} text-slate-600 hover:text-slate-900 hover:bg-slate-100/90`;
+  return `${base} text-slate-500 hover:text-slate-900 hover:bg-slate-100`;
 }
 
-function navIconClass(theme: 'light' | 'neon' | 'pastel', isActive: boolean): string {
-  if (theme === 'neon') {
-    return isActive ? 'text-violet-400' : 'text-slate-500';
-  }
-  if (theme === 'pastel') {
-    return isActive ? 'text-slate-900' : 'text-slate-400';
-  }
-  return isActive ? 'text-violet-600' : 'text-slate-500';
+function navIconClass(theme: 'pastel', isActive: boolean): string {
+  return isActive ? 'text-slate-900' : 'text-slate-400';
 }
 
 export default function Sidebar({ collapsed, onToggleCollapse, activePath }: SidebarProps) {
   const { theme } = useTheme();
 
   const shell =
-    theme === 'neon'
+    theme === 'pastel'
       ? {
-          background: '#000000',
-          borderColor: 'rgba(255,255,255,0.08)',
-          divider: 'rgba(255,255,255,0.08)',
+          background: '#ffffff',
+          borderColor: 'rgba(15,23,42,0.08)',
+          divider: 'rgba(15,23,42,0.08)',
         }
-      : theme === 'pastel'
-        ? {
-            background: '#ffffff',
-            borderColor: 'rgba(15,23,42,0.08)',
-            divider: 'rgba(15,23,42,0.08)',
-          }
-        : {
-            background: 'linear-gradient(180deg, #faf8ff 0%, #f3f0ff 55%, #f5f3ff 100%)',
-            borderColor: 'rgba(15,23,42,0.08)',
-            divider: 'rgba(15,23,42,0.08)',
-          };
+      : {
+          background: '#ffffff',
+          borderColor: 'rgba(15,23,42,0.08)',
+          divider: 'rgba(15,23,42,0.08)',
+        };
 
-  const titleClass =
-    theme === 'neon' ? 'text-white' : theme === 'pastel' ? 'text-slate-900' : 'text-slate-900';
-  const subtitleClass =
-    theme === 'neon'
-      ? 'text-violet-400/60'
-      : theme === 'pastel'
-        ? 'text-slate-400'
-        : 'text-violet-600/80';
-  const navLabelClass =
-    theme === 'neon' ? 'text-zinc-500' : theme === 'pastel' ? 'text-slate-400' : 'text-slate-500';
-
-  const chevronClass = theme === 'neon' ? 'text-zinc-500' : 'text-slate-500';
+  const titleClass = 'text-slate-900';
+  const subtitleClass = 'text-slate-400';
+  const navLabelClass = 'text-slate-400';
+  const chevronClass = 'text-slate-500';
 
   return (
     <div
@@ -134,7 +105,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               >
                 SecureVault
               </span>
-              <span className={`text-[10px] font-medium tracking-widest uppercase ${subtitleClass}`}>
+              <span
+                className={`text-[10px] font-medium tracking-widest uppercase ${subtitleClass}`}
+              >
                 Private
               </span>
             </div>
@@ -145,7 +118,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
       {/* Nav */}
       <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
         {!collapsed && (
-          <p className={`px-3 mb-3 text-[10px] font-700 uppercase tracking-widest ${navLabelClass}`}>
+          <p
+            className={`px-3 mb-3 text-[10px] font-700 uppercase tracking-widest ${navLabelClass}`}
+          >
             Navigation
           </p>
         )}
@@ -163,13 +138,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               </span>
               {!collapsed && <span className="truncate">{item.label}</span>}
               {!collapsed && item.badge && item.badge > 0 ? (
-                <span
-                  className={
-                    theme === 'neon'
-                      ? 'ml-auto bg-violet-500/20 text-violet-400 text-xs font-600 px-1.5 py-0.5 rounded-full tabular-nums'
-                      : 'ml-auto bg-violet-100 text-violet-700 text-xs font-600 px-1.5 py-0.5 rounded-full tabular-nums'
-                  }
-                >
+                <span className="ml-auto bg-black/5 text-slate-700 text-xs font-600 px-1.5 py-0.5 rounded-full tabular-nums">
                   {item.badge}
                 </span>
               ) : null}
@@ -183,42 +152,23 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
         {!collapsed && (
           <div
             className="px-3 py-2.5 rounded-xl mb-2"
-            style={
-              theme === 'neon'
-                ? {
-                    background: 'rgba(52,211,153,0.08)',
-                    border: '1px solid rgba(52,211,153,0.18)',
-                  }
-                : {
-                    background: 'rgba(52,211,153,0.1)',
-                    border: '1px solid rgba(52,211,153,0.2)',
-                  }
-            }
+            style={{
+              background: 'rgba(52,211,153,0.1)',
+              border: '1px solid rgba(52,211,153,0.2)',
+            }}
           >
             <div className="flex items-center gap-2">
-              <Lock size={11} className={theme === 'neon' ? 'text-emerald-400' : 'text-emerald-600'} />
-              <span
-                className={`text-xs font-600 ${theme === 'neon' ? 'text-emerald-400' : 'text-emerald-700'}`}
-              >
-                100% Offline
-              </span>
+              <Lock size={11} className="text-emerald-600" />
+              <span className="text-xs font-600 text-emerald-700">100% Offline</span>
             </div>
-            <p
-              className={`text-[11px] mt-0.5 ${theme === 'neon' ? 'text-zinc-500' : 'text-slate-600'}`}
-            >
-              Data never leaves this device
-            </p>
+            <p className="text-[11px] mt-0.5 text-slate-600">Data never leaves this device</p>
           </div>
         )}
 
         {/* Lock vault button */}
         <button
           onClick={handleLockVault}
-          className={`sidebar-item w-full ${
-            theme === 'neon'
-              ? 'sidebar-item-inactive text-red-400/70 hover:text-red-400'
-              : 'text-red-600/80 hover:text-red-600 hover:bg-red-50'
-          } ${collapsed ? 'justify-center px-0' : ''}`}
+          className={`sidebar-item w-full text-red-600/80 hover:text-red-600 hover:bg-red-50 ${collapsed ? 'justify-center px-0' : ''}`}
           title="Lock vault"
         >
           <LogOut size={15} className="flex-shrink-0" />
@@ -233,11 +183,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
           <span className={`flex-shrink-0 ${chevronClass}`}>
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </span>
-          {!collapsed && (
-            <span className={`text-xs ${theme === 'neon' ? 'text-zinc-500' : 'text-slate-500'}`}>
-              Collapse
-            </span>
-          )}
+          {!collapsed && <span className="text-xs text-slate-500">Collapse</span>}
         </button>
       </div>
     </div>

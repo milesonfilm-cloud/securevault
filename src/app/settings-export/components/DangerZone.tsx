@@ -51,7 +51,7 @@ export default function DangerZone() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-6">
+    <div className="bg-white rounded-[1.35rem] border border-red-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
       <div className="flex items-center gap-3 mb-5">
         <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
           <AlertTriangle size={20} className="text-red-500" />
@@ -63,7 +63,7 @@ export default function DangerZone() {
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-100">
+        <div className="flex items-center justify-between p-4 bg-red-50/60 rounded-xl border border-red-200/60">
           <div>
             <p className="text-sm font-600 text-slate-800">Clear All Documents</p>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -73,14 +73,14 @@ export default function DangerZone() {
           <button
             onClick={() => setShowClearDocs(true)}
             disabled={isClearing}
-            className="btn-danger flex-shrink-0 ml-4"
+            className="flex-shrink-0 ml-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-700 transition-all active:scale-[0.98]"
           >
             <Trash2 size={14} />
             Clear Docs
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-100">
+        <div className="flex items-center justify-between p-4 bg-red-50/60 rounded-xl border border-red-200/60">
           <div>
             <p className="text-sm font-600 text-slate-800">Wipe Entire Vault</p>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -90,7 +90,7 @@ export default function DangerZone() {
           <button
             onClick={() => setShowClearAll(true)}
             disabled={isClearing}
-            className="btn-danger flex-shrink-0 ml-4"
+            className="flex-shrink-0 ml-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-700 transition-all active:scale-[0.98]"
           >
             <Trash2 size={14} />
             Wipe All

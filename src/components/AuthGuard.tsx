@@ -23,6 +23,24 @@ import { computePinVerifier, deriveAesKeyFromPin, newKdfParams } from '@/lib/cry
 import { resetVaultLocalOnly } from '@/lib/storage';
 
 const SESSION_KEY = SESSION_UNLOCKED_KEY;
+const PERSIST_KEY = `${SESSION_UNLOCKED_KEY}_persist`;
+const PERSIST_TTL_MS = 1000 * 60 * 60 * 12; // 12h
+
+function safeSessionGet(key: string): string | null {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSessionSet(key: string, value: string) {
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // ignore
+  }
+}
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -45,7 +63,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     const storedVerifier = getStoredVerifier();
-    const session = sessionStorage.getItem(SESSION_KEY);
+    const session = safeSessionGet(SESSION_KEY);
 
     const init = async () => {
       const supported = isBiometricSupported();
@@ -55,9 +73,33 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         setBiometricRegistered(hasBiometricCredential());
       }
 
+      // If the tab session is missing but we have a recent persisted unlock,
+      // treat as unlocked and try to restore the tab session.
+      let unlockedByPersist = false;
+      if (session !== 'true') {
+        try {
+          const raw = localStorage.getItem(PERSIST_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw) as { unlockedAt: number } | null;
+            const unlockedAt = parsed?.unlockedAt ?? 0;
+            if (Date.now() - unlockedAt < PERSIST_TTL_MS) {
+              unlockedByPersist = true;
+              safeSessionSet(SESSION_KEY, 'true');
+            } else {
+              localStorage.removeItem(PERSIST_KEY);
+            }
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const effectiveSession = safeSessionGet(SESSION_KEY);
+      const isUnlocked = effectiveSession === 'true' || unlockedByPersist;
+
       if (!storedVerifier) {
         setPhase('setup');
-      } else if (session === 'true') {
+      } else if (isUnlocked) {
         setPhase('unlocked');
       } else {
         setPhase('login');
@@ -79,9 +121,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   };
 
   const unlockVault = useCallback(() => {
-    sessionStorage.setItem(SESSION_KEY, 'true');
+    try {
+      localStorage.setItem(PERSIST_KEY, JSON.stringify({ unlockedAt: Date.now() }));
+    } catch {
+      /* ignore */
+    }
+    safeSessionSet(SESSION_KEY, 'true');
     setSuccess(true);
-    setTimeout(() => setPhase('unlocked'), 700);
+    setPhase('unlocked');
   }, []);
 
   const handleSetup = (e: React.FormEvent) => {
@@ -212,48 +259,42 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   if (biometricSetupOffer) {
     return (
       <div className="min-h-screen auth-bg flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-violet-600/20 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
-
         <div className="relative w-full max-w-sm auth-card animate-auth-in">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-4">
-              <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-emerald-500/40">
-                <Fingerprint size={36} className="text-white" />
+              <div className="w-20 h-20 rounded-[28px] bg-black/5 border border-black/10 flex items-center justify-center">
+                <Fingerprint size={36} className="text-slate-700" />
               </div>
-              <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 blur-xl opacity-40 -z-10" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Enable Biometrics</h1>
-            <p className="text-sm text-white/50 mt-1 text-center">
+            <h1 className="text-2xl font-800 text-slate-900 tracking-tight">Enable Biometrics</h1>
+            <p className="text-sm text-slate-500 mt-1 text-center">
               Use fingerprint or Face ID for quick, secure access
             </p>
           </div>
 
           {/* Biometric type indicators */}
           <div className="flex gap-3 mb-6">
-            <div className="flex-1 flex flex-col items-center gap-2 bg-white/5 border border-white/10 rounded-2xl p-4">
-              <Fingerprint size={24} className="text-emerald-400" />
-              <span className="text-xs text-white/60 text-center">Fingerprint</span>
+            <div className="flex-1 flex flex-col items-center gap-2 bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4">
+              <Fingerprint size={24} className="text-slate-700" />
+              <span className="text-xs text-slate-600 text-center">Fingerprint</span>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-2 bg-white/5 border border-white/10 rounded-2xl p-4">
-              <ScanFace size={24} className="text-cyan-400" />
-              <span className="text-xs text-white/60 text-center">Face ID</span>
+            <div className="flex-1 flex flex-col items-center gap-2 bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4">
+              <ScanFace size={24} className="text-slate-700" />
+              <span className="text-xs text-slate-600 text-center">Face ID</span>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 mb-4 animate-fade-in">
-              <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-              <p className="text-sm text-red-300">{error}</p>
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200/70 rounded-xl px-3 py-2.5 mb-4 animate-fade-in">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
           <button
             onClick={handleRegisterBiometric}
             disabled={biometricLoading}
-            className="auth-btn w-full mb-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
+            className="auth-btn w-full mb-3"
           >
             {biometricLoading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -265,16 +306,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
           <button
             onClick={skipBiometricSetup}
-            className="w-full py-3 text-sm text-white/40 hover:text-white/70 transition-colors"
+            className="w-full py-3 text-sm text-slate-500 hover:text-slate-900 transition-colors"
           >
             Skip for now
           </button>
 
           <div className="mt-4 flex items-center justify-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <p className="text-xs text-white/30">100% offline · stored on this device only</p>
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <p className="text-xs text-slate-400">100% offline · stored on this device only</p>
           </div>
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
         </div>
       </div>
     );
@@ -282,40 +322,30 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   return (
     <div className="min-h-screen auth-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Ambient orbs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-violet-600/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-blue-500/20 blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] rounded-full bg-indigo-400/10 blur-[80px] pointer-events-none" />
-
       {/* Card */}
       <div
         className={`relative w-full max-w-sm auth-card animate-auth-in ${shake ? 'animate-shake' : ''}`}
       >
-        {/* Top glow line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-
         {/* Icon */}
         <div className="flex flex-col items-center mb-8">
           <div
             className={`relative mb-4 transition-all duration-500 ${success ? 'scale-110' : ''}`}
           >
-            <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-violet-500 via-indigo-500 to-blue-500 flex items-center justify-center shadow-2xl shadow-indigo-500/40">
+            <div className="w-20 h-20 rounded-[28px] bg-black/5 border border-black/10 flex items-center justify-center">
               {success ? (
-                <CheckCircle2 size={36} className="text-white animate-scale-in" />
+                <CheckCircle2 size={36} className="text-emerald-600 animate-scale-in" />
               ) : phase === 'setup' ? (
-                <Shield size={36} className="text-white" />
+                <Shield size={36} className="text-slate-700" />
               ) : (
-                <Lock size={36} className="text-white" />
+                <Lock size={36} className="text-slate-700" />
               )}
             </div>
-            {/* Glow ring */}
-            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br from-violet-500 via-indigo-500 to-blue-500 blur-xl opacity-40 -z-10" />
           </div>
 
-          <h1 className="text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-2xl font-800 text-slate-900 tracking-tight">
             {success ? 'Welcome!' : phase === 'setup' ? 'Create Password' : 'SecureVault'}
           </h1>
-          <p className="text-sm text-white/50 mt-1 text-center">
+          <p className="text-sm text-slate-500 mt-1 text-center">
             {success
               ? 'Unlocking your vault…'
               : phase === 'setup'
@@ -329,29 +359,22 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <button
             onClick={handleBiometricLogin}
             disabled={biometricLoading}
-            className="w-full mb-5 flex flex-col items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-violet-500/40 rounded-2xl py-4 px-4 transition-all duration-200 group"
+            className="w-full mb-5 flex flex-col items-center gap-2 bg-slate-50/70 hover:bg-slate-50 border border-slate-200/80 rounded-2xl py-4 px-4 transition-all duration-200 group"
           >
             <div className="relative">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500/20 to-indigo-500/20 border border-violet-500/30 flex items-center justify-center group-hover:border-violet-400/60 transition-all duration-200">
+              <div className="w-14 h-14 rounded-2xl bg-black/5 border border-black/10 flex items-center justify-center transition-all duration-200">
                 {biometricLoading ? (
-                  <div className="w-6 h-6 border-2 border-violet-400/30 border-t-violet-400 rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" />
                 ) : (
-                  <Fingerprint
-                    size={28}
-                    className="text-violet-400 group-hover:text-violet-300 transition-colors"
-                  />
+                  <Fingerprint size={28} className="text-slate-700 transition-colors" />
                 )}
               </div>
-              {/* Pulse ring when not loading */}
-              {!biometricLoading && (
-                <div className="absolute inset-0 rounded-2xl border border-violet-500/20 animate-ping opacity-30" />
-              )}
             </div>
             <div className="text-center">
-              <p className="text-sm font-semibold text-white/80 group-hover:text-white transition-colors">
+              <p className="text-sm font-700 text-slate-900 transition-colors">
                 {biometricLoading ? 'Authenticating…' : 'Use Biometrics'}
               </p>
-              <p className="text-xs text-white/30 mt-0.5">Fingerprint or Face ID</p>
+              <p className="text-xs text-slate-500 mt-0.5">Fingerprint or Face ID</p>
             </div>
           </button>
         )}
@@ -359,9 +382,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         {/* Divider */}
         {!success && phase === 'login' && biometricAvailable && biometricRegistered && (
           <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-white/30 font-medium">or use password</span>
-            <div className="flex-1 h-px bg-white/10" />
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 font-600">or use password</span>
+            <div className="flex-1 h-px bg-slate-200" />
           </div>
         )}
 
@@ -370,7 +393,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <form onSubmit={phase === 'setup' ? handleSetup : handleLogin} className="space-y-4">
             {/* Password field */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-white/50 uppercase tracking-widest">
+              <label className="text-xs font-700 text-slate-500 uppercase tracking-widest">
                 {phase === 'setup' ? 'New Password' : 'Password'}
               </label>
               <div className="relative">
@@ -389,7 +412,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                 <button
                   type="button"
                   onClick={() => setShowPin((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
                 >
                   {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -399,7 +422,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             {/* Confirm field (setup only) */}
             {phase === 'setup' && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-white/50 uppercase tracking-widest">
+                <label className="text-xs font-700 text-slate-500 uppercase tracking-widest">
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -417,7 +440,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                   <button
                     type="button"
                     onClick={() => setShowConfirm((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
                   >
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -427,9 +450,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
             {/* Error */}
             {error && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5 animate-fade-in">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                <p className="text-sm text-red-300">{error}</p>
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200/70 rounded-xl px-3 py-2.5 animate-fade-in">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
 
@@ -442,14 +465,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         )}
 
         {!success && (phase === 'setup' || phase === 'login') && (
-          <BackupReminderBanner variant="dark" className="mt-5" />
+          <BackupReminderBanner variant="light" className="mt-5" />
         )}
 
         {!success && phase === 'login' && (
           <button
             type="button"
             onClick={handleForgotPin}
-            className="mt-4 w-full text-center text-xs text-white/35 hover:text-white/60 transition-colors"
+            className="mt-4 w-full text-center text-xs text-slate-500 hover:text-slate-900 transition-colors"
           >
             Forgot password? Reset vault (data will be lost without backup)
           </button>
@@ -457,7 +480,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
         {/* Biometric setup hint (login phase, available but not registered) */}
         {!success && phase === 'login' && biometricAvailable && !biometricRegistered && (
-          <p className="mt-4 text-center text-xs text-white/25">
+          <p className="mt-4 text-center text-xs text-slate-400">
             Tip: Enable biometric login after unlocking via Settings
           </p>
         )}
@@ -465,11 +488,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         {/* Footer */}
         <div className="mt-6 flex items-center justify-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <p className="text-xs text-white/30">100% offline · stored on this device only</p>
+          <p className="text-xs text-slate-400">100% offline · stored on this device only</p>
         </div>
-
-        {/* Bottom glow line */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       </div>
     </div>
   );

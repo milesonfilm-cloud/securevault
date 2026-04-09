@@ -2,7 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export type AppTheme = 'light' | 'neon' | 'pastel';
+export type AppTheme = 'pastel';
 
 const STORAGE_KEY = 'sv_ui_theme';
 
@@ -16,22 +16,19 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<AppTheme>('light');
+  const [theme, setThemeState] = useState<AppTheme>('pastel');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Single-theme mode: force pastel and keep dataset consistent
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw === 'neon' || raw === 'light' || raw === 'pastel') {
-        setThemeState(raw);
-        document.documentElement.dataset.theme = raw;
-      } else {
-        document.documentElement.dataset.theme = 'light';
-      }
+      localStorage.setItem(STORAGE_KEY, 'pastel');
     } catch {
-      document.documentElement.dataset.theme = 'light';
+      /* ignore */
     }
+    setThemeState('pastel');
+    document.documentElement.dataset.theme = 'pastel';
   }, []);
 
   const setTheme = useCallback((t: AppTheme) => {
@@ -49,21 +46,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dataset.theme = theme;
   }, [theme, mounted]);
 
-  /** Cycles light → neon (black) → pastel (ledger) → light */
-  const toggleTheme = useCallback(() => {
-    setThemeState((prev) => {
-      const order: AppTheme[] = ['light', 'neon', 'pastel'];
-      const idx = order.indexOf(prev);
-      const next = order[(idx + 1) % order.length];
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        /* ignore */
-      }
-      document.documentElement.dataset.theme = next;
-      return next;
-    });
-  }, []);
+  /** Single-theme mode: keep pastel */
+  const toggleTheme = useCallback(() => setTheme('pastel'), [setTheme]);
 
   const value: ThemeContextValue = {
     theme,

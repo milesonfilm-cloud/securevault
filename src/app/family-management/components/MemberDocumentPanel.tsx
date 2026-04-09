@@ -49,9 +49,9 @@ export default function MemberDocumentPanel({
     .toUpperCase();
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-lg h-full flex flex-col animate-slide-up">
+    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_12px_36px_rgba(15,23,42,0.12)] h-full flex flex-col animate-slide-up">
       {/* Panel header */}
-      <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
+      <div className="flex items-center justify-between p-5 border-b border-black/[0.06] flex-shrink-0">
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-700 text-sm"
@@ -68,7 +68,7 @@ export default function MemberDocumentPanel({
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+          className="p-1.5 rounded-lg hover:bg-black/5 text-slate-400 hover:text-slate-700 transition-colors"
         >
           <X size={16} />
         </button>
@@ -92,15 +92,12 @@ export default function MemberDocumentPanel({
               <div className="flex items-center gap-2 mb-2.5">
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
+                  style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: '#0f172a' }}
                 >
                   {ICON_MAP[cat.icon]}
                 </div>
-                <span className="text-sm font-700 text-slate-700">{cat.label}</span>
-                <span
-                  className="text-xs font-600 px-1.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
-                >
+                <span className="text-sm font-800 text-slate-900">{cat.label}</span>
+                <span className="text-xs font-700 px-1.5 py-0.5 rounded-full bg-black/5 text-slate-700">
                   {docs.length}
                 </span>
               </div>
@@ -109,7 +106,7 @@ export default function MemberDocumentPanel({
                 {docs.map((doc) => (
                   <div
                     key={`panel-doc-${member.id}-${doc.id}`}
-                    className="bg-slate-50 rounded-xl p-3 border border-slate-100"
+                    className="bg-white/75 rounded-xl p-3 border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
                   >
                     <p className="text-sm font-600 text-slate-800 mb-2">{doc.title}</p>
                     <div className="grid grid-cols-1 gap-1.5">

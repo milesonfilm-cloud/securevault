@@ -108,10 +108,10 @@ export default function ImportPanel() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center">
-          <Upload size={20} className="text-sky-500" />
+        <div className="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center">
+          <Upload size={20} className="text-slate-700" />
         </div>
         <div>
           <h3 className="text-base font-700 text-slate-900">Import Backup</h3>
@@ -130,13 +130,13 @@ export default function ImportPanel() {
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
             importState === 'dragging'
-              ? 'border-sky-400 bg-sky-50'
-              : 'border-slate-200 hover:border-sky-300 hover:bg-sky-50/30'
+              ? 'border-black/25 bg-black/5'
+              : 'border-slate-200 hover:border-slate-300 hover:bg-black/[0.02]'
           }`}
         >
           <FileJson
             size={32}
-            className={`mx-auto mb-3 ${importState === 'dragging' ? 'text-sky-500' : 'text-slate-300'}`}
+            className={`mx-auto mb-3 ${importState === 'dragging' ? 'text-slate-700' : 'text-slate-300'}`}
           />
           <p className="text-sm font-600 text-slate-600 mb-1">
             {importState === 'dragging' ? 'Drop to import' : 'Drop JSON backup here'}
@@ -152,7 +152,7 @@ export default function ImportPanel() {
         </div>
       ) : importState === 'parsing' ? (
         <div className="flex items-center justify-center py-10 gap-3">
-          <svg className="animate-spin h-5 w-5 text-sky-500" viewBox="0 0 24 24" fill="none">
+          <svg className="animate-spin h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none">
             <circle
               className="opacity-25"
               cx="12"
@@ -180,7 +180,7 @@ export default function ImportPanel() {
         </div>
       ) : importState === 'preview' && parsedData ? (
         <div className="space-y-4">
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+          <div className="bg-emerald-50 border border-emerald-200/70 rounded-xl p-4">
             <div className="flex items-start gap-3">
               <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 flex-shrink-0" />
               <div>
@@ -226,8 +226,8 @@ export default function ImportPanel() {
                     mergeMode === mode.id
                       ? mode.id === 'replace'
                         ? 'border-red-400 bg-red-50/50'
-                        : 'border-indigo-400 bg-indigo-50/50'
-                      : 'border-slate-100 hover:border-slate-200 bg-slate-50'
+                        : 'border-black/15 bg-black/5'
+                      : 'border-slate-200/80 hover:border-slate-300/80 bg-slate-50/70'
                   }`}
                 >
                   <div className="text-sm font-600 text-slate-800">{mode.label}</div>

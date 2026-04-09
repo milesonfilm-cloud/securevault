@@ -16,24 +16,29 @@ export default function SettingsExportContent() {
   return (
     <div className="p-4 lg:p-6 max-w-screen-2xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
-        <Settings size={20} className="text-indigo-500" />
+      <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-700 text-slate-900">Settings & Export</h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 font-500">Settings</p>
+          <h1 className="text-4xl sm:text-[2.75rem] font-800 text-slate-900 tracking-tight leading-tight mt-0.5">
+            Backup & App
+          </h1>
+          <p className="text-sm text-slate-500 mt-2">
             Manage your vault data, backups, and app settings
           </p>
         </div>
+        <div className="w-10 h-10 rounded-full bg-black/5 text-slate-700 flex items-center justify-center flex-shrink-0">
+          <Settings size={18} />
+        </div>
       </div>
       {/* Privacy notice */}
-      <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 rounded-2xl px-5 py-4 mb-6 flex items-start gap-3">
-        <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+      <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] px-5 py-4 mb-6 flex items-start gap-3">
+        <div className="w-9 h-9 bg-black/5 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
           <svg
             width="16"
             height="16"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#6366F1"
+            stroke="#0f172a"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -42,8 +47,8 @@ export default function SettingsExportContent() {
           </svg>
         </div>
         <div>
-          <p className="text-sm font-700 text-indigo-800">100% Private — Zero Cloud Storage</p>
-          <p className="text-xs text-indigo-600 mt-0.5">
+          <p className="text-sm font-800 text-slate-900">100% Private — Zero Cloud Storage</p>
+          <p className="text-xs text-slate-600 mt-0.5">
             All your data is stored exclusively in your browser&apos;s localStorage on this device.
             SecureVault never transmits, syncs, or backs up any data to any server. Exports download
             directly to your device.

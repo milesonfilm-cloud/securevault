@@ -113,21 +113,21 @@ export default function ExportPanel() {
         id: 'json',
         label: 'JSON Backup',
         desc: 'Full backup — importable back into SecureVault',
-        icon: <FileJson size={18} className="text-indigo-500" />,
+        icon: <FileJson size={18} className="text-slate-700" />,
       },
       {
         id: 'csv',
         label: 'CSV Spreadsheet',
         desc: 'Open in Excel or Google Sheets',
-        icon: <Sheet size={18} className="text-emerald-500" />,
+        icon: <Sheet size={18} className="text-slate-700" />,
       },
     ];
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-          <Download size={20} className="text-indigo-500" />
+        <div className="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center">
+          <Download size={20} className="text-slate-700" />
         </div>
         <div>
           <h3 className="text-base font-700 text-slate-900">Export Documents</h3>
@@ -147,15 +147,15 @@ export default function ExportPanel() {
               onClick={() => setFormat(opt.id)}
               className={`flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-all duration-150 ${
                 format === opt.id
-                  ? 'border-indigo-400 bg-indigo-50/50'
-                  : 'border-slate-100 hover:border-slate-200 bg-slate-50'
+                  ? 'border-black/15 bg-black/5'
+                  : 'border-slate-200/80 hover:border-slate-300/80 bg-slate-50/70'
               }`}
             >
               <div className="mt-0.5">{opt.icon}</div>
               <div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-600 text-slate-800">{opt.label}</span>
-                  {format === opt.id && <CheckCircle2 size={14} className="text-indigo-500" />}
+                  {format === opt.id && <CheckCircle2 size={14} className="text-slate-700" />}
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">{opt.desc}</p>
               </div>
@@ -199,7 +199,7 @@ export default function ExportPanel() {
       </div>
 
       {/* Export count preview */}
-      <div className="bg-slate-50 rounded-xl px-4 py-3 mb-4 flex items-center justify-between">
+      <div className="bg-slate-50/70 rounded-xl px-4 py-3 mb-4 flex items-center justify-between border border-slate-200/80">
         <span className="text-sm text-slate-600">Documents to export</span>
         <span className="text-sm font-700 text-slate-900 tabular-nums">
           {
@@ -215,7 +215,7 @@ export default function ExportPanel() {
       <button
         onClick={handleExport}
         disabled={isExporting}
-        className="btn-primary w-full justify-center"
+        className="w-full justify-center flex items-center gap-2 rounded-2xl py-3.5 text-sm font-700 text-white transition-all duration-200 active:scale-95 bg-slate-900 hover:bg-slate-800 shadow-[0_10px_28px_rgba(15,23,42,0.16)]"
       >
         {isExporting ? (
           <span className="flex items-center gap-2">

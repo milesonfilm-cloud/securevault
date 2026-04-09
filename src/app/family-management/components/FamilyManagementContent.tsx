@@ -106,11 +106,11 @@ export default function FamilyManagementContent() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Users size={20} className="text-indigo-500" />
-            <h1 className="text-2xl font-700 text-slate-900">Family Members</h1>
-          </div>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 font-500">Family</p>
+          <h1 className="text-4xl sm:text-[2.75rem] font-800 text-slate-900 tracking-tight leading-tight mt-0.5">
+            Members
+          </h1>
+          <p className="text-sm text-slate-500 mt-2">
             {vaultData.members.length} member{vaultData.members.length !== 1 ? 's' : ''} ·{' '}
             {vaultData.documents.length} total documents stored
           </p>
@@ -120,26 +120,30 @@ export default function FamilyManagementContent() {
             setEditMember(null);
             setShowAddModal(true);
           }}
-          className="btn-primary flex-shrink-0"
+          className="flex-shrink-0 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-700 bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md shadow-slate-900/15"
         >
-          <Plus size={16} />
-          Add Member
+          <Plus size={18} strokeWidth={2.5} />
+          Add
         </button>
       </div>
 
       {vaultData.members.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5">
-            <Users size={36} className="text-indigo-400" />
+          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-5">
+            <Users size={36} className="text-slate-400" />
           </div>
           <h3 className="text-lg font-700 text-slate-700 mb-2">No family members yet</h3>
           <p className="text-sm text-slate-400 max-w-sm mb-6">
             Add family member profiles to organize documents by person — IDs, accounts, and records
             stay neatly separated.
           </p>
-          <button onClick={() => setShowAddModal(true)} className="btn-primary">
-            <Plus size={16} />
-            Add First Member
+          <button
+            type="button"
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-700 bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md shadow-slate-900/15"
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            Add
           </button>
         </div>
       ) : (

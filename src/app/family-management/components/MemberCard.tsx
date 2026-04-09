@@ -65,15 +65,15 @@ export default function MemberCard({
 
   return (
     <div
-      className={`bg-white rounded-2xl border-2 shadow-sm cursor-pointer transition-all duration-200 card-hover overflow-hidden ${
+      className={`bg-white rounded-[1.35rem] border cursor-pointer transition-all duration-200 overflow-hidden ${
         isSelected
-          ? 'border-indigo-400 shadow-indigo-100'
-          : 'border-transparent hover:border-slate-200'
+          ? 'border-black/15 shadow-[0_12px_36px_rgba(15,23,42,0.12)]'
+          : 'border-slate-200/80 hover:border-slate-300/80 shadow-[0_2px_12px_rgba(0,0,0,0.05)]'
       }`}
       onClick={onSelect}
     >
       {/* Color accent bar */}
-      <div className="h-1.5 w-full" style={{ backgroundColor: member.avatarColor }} />
+      <div className="h-1 w-full" style={{ backgroundColor: member.avatarColor }} />
 
       <div className="p-5">
         {/* Avatar + actions row */}
@@ -103,7 +103,7 @@ export default function MemberCard({
           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={onEdit}
-              className="p-1.5 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-black/5 text-slate-400 hover:text-slate-900 transition-colors"
               title="Edit member"
             >
               <Pencil size={14} />
@@ -135,8 +135,12 @@ export default function MemberCard({
             {categoryBreakdown.map(({ cat, count }) => (
               <span
                 key={`member-cat-${member.id}-${cat.id}`}
-                className="inline-flex items-center gap-1 text-xs font-500 px-2 py-0.5 rounded-full"
-                style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
+                className="inline-flex items-center gap-1 text-xs font-600 px-2 py-0.5 rounded-full border"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.75)',
+                  borderColor: 'rgba(15,23,42,0.08)',
+                  color: '#334155',
+                }}
               >
                 {count} {cat.shortLabel}
               </span>
