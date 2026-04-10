@@ -9,6 +9,8 @@ import {
   PIN_VERIFIER_KEY,
   SESSION_UNLOCKED_KEY,
 } from './vaultSession';
+import { clearPersistedVaultKey } from './vaultKeyPersist';
+import { MEMBER_AVATAR_COLORS } from './memberAvatarColors';
 
 export type CategoryId =
   | 'government-ids'
@@ -156,6 +158,7 @@ export async function resetVaultLocalOnly(): Promise<void> {
   } catch {
     // ignore
   }
+  clearPersistedVaultKey();
   clearVaultKey();
 }
 
@@ -177,7 +180,7 @@ function getDefaultData(): VaultData {
       name: 'Arjun Sharma',
       relationship: 'Self',
       dob: '1988-03-15',
-      avatarColor: '#6366F1',
+      avatarColor: MEMBER_AVATAR_COLORS[0],
       createdAt: now,
       updatedAt: now,
     },
@@ -186,7 +189,7 @@ function getDefaultData(): VaultData {
       name: 'Priya Sharma',
       relationship: 'Spouse',
       dob: '1991-07-22',
-      avatarColor: '#EC4899',
+      avatarColor: MEMBER_AVATAR_COLORS[1],
       createdAt: now,
       updatedAt: now,
     },
@@ -195,7 +198,7 @@ function getDefaultData(): VaultData {
       name: 'Rohan Sharma',
       relationship: 'Son',
       dob: '2015-11-08',
-      avatarColor: '#10B981',
+      avatarColor: MEMBER_AVATAR_COLORS[2],
       createdAt: now,
       updatedAt: now,
     },

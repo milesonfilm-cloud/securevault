@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadVaultDataAsync, saveVaultDataAsync, FamilyMember, VaultData } from '@/lib/storage';
+import { getPastelLedgerTile } from '@/lib/pastelLedgerPalette';
 import MemberCard from './MemberCard';
 import MemberFormModal from './MemberFormModal';
 import MemberDocumentPanel from './MemberDocumentPanel';
@@ -88,12 +89,12 @@ export default function FamilyManagementContent() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-screen-2xl mx-auto">
+      <div className="p-6 max-w-screen-2xl mx-auto bg-vault-bg min-h-full">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-200 rounded-lg w-48" />
+          <div className="h-8 bg-vault-elevated rounded-[10px] w-48" />
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={`skel-member-${i}`} className="h-48 bg-slate-200 rounded-2xl" />
+              <div key={`skel-member-${i}`} className="h-48 bg-vault-panel rounded-2xl" />
             ))}
           </div>
         </div>
@@ -102,15 +103,15 @@ export default function FamilyManagementContent() {
   }
 
   return (
-    <div className="p-4 lg:p-6 max-w-screen-2xl mx-auto">
+    <div className="p-4 lg:p-6 max-w-screen-2xl mx-auto bg-vault-bg min-h-full">
       {/* Header */}
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
-          <p className="text-sm text-slate-500 font-500">Family</p>
-          <h1 className="text-4xl sm:text-[2.75rem] font-800 text-slate-900 tracking-tight leading-tight mt-0.5">
+          <p className="text-xs text-vault-faint font-medium">Family</p>
+          <h1 className="text-[32px] font-bold text-white tracking-tight leading-tight mt-0.5">
             Members
           </h1>
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-[13px] text-vault-muted mt-2">
             {vaultData.members.length} member{vaultData.members.length !== 1 ? 's' : ''} ·{' '}
             {vaultData.documents.length} total documents stored
           </p>
@@ -120,27 +121,27 @@ export default function FamilyManagementContent() {
             setEditMember(null);
             setShowAddModal(true);
           }}
-          className="flex-shrink-0 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-700 bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md shadow-slate-900/15"
+          className="flex-shrink-0 flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold bg-vault-warm text-vault-ink transition-all active:scale-[0.98] shadow-vault"
         >
-          <Plus size={18} strokeWidth={2.5} />
+          <Plus size={18} strokeWidth={2.5} className="text-vault-ink" />
           Add
         </button>
       </div>
 
       {vaultData.members.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mb-5">
-            <Users size={36} className="text-slate-400" />
+          <div className="w-20 h-20 bg-vault-elevated rounded-2xl flex items-center justify-center mb-5 border border-[rgba(255,255,255,0.07)]">
+            <Users size={36} className="text-vault-warm" />
           </div>
-          <h3 className="text-lg font-700 text-slate-700 mb-2">No family members yet</h3>
-          <p className="text-sm text-slate-400 max-w-sm mb-6">
+          <h3 className="text-lg font-bold text-white mb-2">No family members yet</h3>
+          <p className="text-sm text-vault-muted max-w-sm mb-6">
             Add family member profiles to organize documents by person — IDs, accounts, and records
             stay neatly separated.
           </p>
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-700 bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md shadow-slate-900/15"
+            className="flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold bg-vault-warm text-vault-ink transition-all active:scale-[0.98] shadow-vault"
           >
             <Plus size={18} strokeWidth={2.5} />
             Add
@@ -151,12 +152,13 @@ export default function FamilyManagementContent() {
           {/* Members grid */}
           <div className="flex-1 min-w-0">
             <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4">
-              {vaultData.members.map((member) => (
+              {vaultData.members.map((member, index) => (
                 <MemberCard
                   key={`member-card-${member.id}`}
                   member={member}
                   documents={vaultData.documents.filter((d) => d.memberId === member.id)}
                   isSelected={selectedMemberId === member.id}
+                  tile={getPastelLedgerTile(index)}
                   onSelect={() => setSelectedMemberId(member.id)}
                   onEdit={() => {
                     setEditMember(member);
@@ -170,8 +172,8 @@ export default function FamilyManagementContent() {
             {/* Stats row */}
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'Total Members', value: vaultData.members.length, color: '#6366F1' },
-                { label: 'Total Documents', value: vaultData.documents.length, color: '#0EA5E9' },
+                { label: 'Total Members', value: vaultData.members.length },
+                { label: 'Total Documents', value: vaultData.documents.length },
                 {
                   label: 'Most Documents',
                   value: vaultData.members.reduce(
@@ -183,26 +185,26 @@ export default function FamilyManagementContent() {
                     },
                     { name: '—', count: 0 }
                   ).name,
-                  color: '#10B981',
                 },
                 {
                   label: 'Categories Used',
                   value: new Set(vaultData.documents.map((d) => d.categoryId)).size,
-                  color: '#F59E0B',
                 },
-              ].map((stat, i) => (
-                <div
-                  key={`family-stat-${i}`}
-                  className="bg-white rounded-xl border border-slate-100 shadow-sm p-4"
-                >
-                  <p className="text-xs font-600 text-slate-400 uppercase tracking-wide mb-1">
-                    {stat.label}
-                  </p>
-                  <p className="text-xl font-800 tabular-nums" style={{ color: stat.color }}>
-                    {stat.value}
-                  </p>
-                </div>
-              ))}
+              ].map((stat, i) => {
+                const tile = getPastelLedgerTile(i);
+                return (
+                  <div
+                    key={`family-stat-${i}`}
+                    className="rounded-2xl p-4 border border-[rgba(255,255,255,0.07)] shadow-vault"
+                    style={{ background: tile.bg }}
+                  >
+                    <p className="text-[11px] font-700 uppercase tracking-widest mb-1 text-white/88">
+                      {stat.label}
+                    </p>
+                    <p className="text-xl font-800 tabular-nums text-white">{stat.value}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

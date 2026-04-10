@@ -12,40 +12,30 @@ const MOBILE_NAV = [
 ];
 
 export default function MobileNav({ activePath }: { activePath: string }) {
-  useTheme(); // single-theme mode (pastel)
-
-  const barStyle = {
-    background: 'rgba(255, 255, 255, 0.94)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    borderTop: '1px solid rgba(15,23,42,0.08)',
-  } as const;
+  useTheme();
 
   return (
-    <nav className="pb-safe" style={barStyle}>
+    <nav className="pb-safe bg-vault-panel border-t border-[rgba(255,255,255,0.07)] shadow-vault">
       <div className="flex">
         {MOBILE_NAV.map((item) => {
           const isActive = activePath === item.href;
-          const activeClass = 'text-slate-900';
-          const inactiveClass = 'text-slate-500 hover:text-slate-800';
-          const glowClass = 'bg-black/5';
           return (
             <Link
               key={`mobile-nav-${item.href}`}
               href={item.href}
               className={`flex-1 flex flex-col items-center gap-1 py-3 transition-all duration-150 ${
-                isActive ? activeClass : inactiveClass
+                isActive ? 'text-vault-warm' : 'text-vault-faint hover:text-vault-muted'
               }`}
             >
               <div
                 className={`relative transition-all duration-200 ${isActive ? 'scale-110' : ''}`}
               >
                 {isActive && (
-                  <div className={`absolute inset-0 rounded-lg blur-sm scale-150 ${glowClass}`} />
+                  <div className="absolute inset-0 rounded-lg blur-sm scale-150 bg-vault-warm/15" />
                 )}
                 <span className="relative [&_svg]:stroke-[1.5]">{item.icon}</span>
               </div>
-              <span className={`text-xs font-600 ${isActive ? activeClass : ''}`}>
+              <span className={`text-xs font-semibold ${isActive ? 'text-white' : ''}`}>
                 {item.label}
               </span>
             </Link>

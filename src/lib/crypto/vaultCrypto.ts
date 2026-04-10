@@ -41,7 +41,7 @@ export async function deriveAesKeyFromPin(pin: string, params: KdfParamsV1): Pro
     { name: 'PBKDF2', salt: saltBuf, iterations: params.iterations, hash: 'SHA-256' },
     keyMaterial,
     { name: 'AES-GCM', length: 256 },
-    false,
+    true,
     ['encrypt', 'decrypt']
   );
 }

@@ -1,48 +1,25 @@
 'use client';
 
 import React, { memo, useMemo } from 'react';
-import AppIcon from './AppIcon';
-import AppImage from './AppImage';
+import VaultBrandIcon from './VaultBrandIcon';
 
 interface AppLogoProps {
-  src?: string; // Image source (optional)
-  iconName?: string; // Icon name when no image
-  size?: number; // Size for icon/image
-  className?: string; // Additional classes
-  onClick?: () => void; // Click handler
+  size?: number;
+  className?: string;
+  onClick?: () => void;
 }
 
-const AppLogo = memo(function AppLogo({
-  src = '/assets/images/app_logo.png',
-  iconName = 'SparklesIcon',
-  size = 64,
-  className = '',
-  onClick,
-}: AppLogoProps) {
-  // Memoize className calculation
+const AppLogo = memo(function AppLogo({ size = 64, className = '', onClick }: AppLogoProps) {
   const containerClassName = useMemo(() => {
-    const classes = ['flex items-center'];
-    if (onClick) classes.push('cursor-pointer hover:opacity-80 transition-opacity');
+    const classes = ['flex items-center shrink-0'];
+    if (onClick) classes.push('cursor-pointer hover:opacity-90 transition-opacity');
     if (className) classes.push(className);
     return classes.join(' ');
   }, [onClick, className]);
 
   return (
     <div className={containerClassName} onClick={onClick}>
-      {/* Show image if src provided, otherwise show icon */}
-      {src ? (
-        <AppImage
-          src={src}
-          alt="Logo"
-          width={size}
-          height={size}
-          className="flex-shrink-0"
-          priority={true}
-          unoptimized={src.endsWith('.svg')}
-        />
-      ) : (
-        <AppIcon name={iconName} size={size} className="flex-shrink-0" />
-      )}
+      <VaultBrandIcon size={size} aria-label="SecureVault" />
     </div>
   );
 });

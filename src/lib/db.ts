@@ -87,24 +87,20 @@ export async function idbGetVaultData<T>(fallback: T): Promise<T> {
 }
 
 export async function idbSaveVaultData<T>(data: T): Promise<void> {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_VAULT, 'readwrite');
-      (async () => {
-        const key = getVaultKey();
-        const payload = await encryptJson(key, data);
-        const record: EncryptedVaultRecordV1 = { v: 1, payload };
-        tx.objectStore(STORE_VAULT).put(record, 'data');
-      })()
-        .then(() => {})
-        .catch(() => {});
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  } catch (err) {
-    console.error('SecureVault: IndexedDB write failed', err);
-  }
+  // Encrypt *before* opening the IDB transaction. IndexedDB auto-commits when the
+  // synchronous turn ends; async work inside the tx often runs after commit, so the
+  // put never persisted (members/documents appeared to "revert" after navigation).
+  const key = getVaultKey();
+  const payload = await encryptJson(key, data);
+  const record: EncryptedVaultRecordV1 = { v: 1, payload };
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_VAULT, 'readwrite');
+    tx.objectStore(STORE_VAULT).put(record, 'data');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB vault write failed'));
+    tx.onabort = () => reject(new Error('IndexedDB vault transaction aborted'));
+  });
 }
 
 export async function idbGetStorageEstimate(): Promise<{
@@ -171,29 +167,26 @@ export async function idbGetPhotosForDoc(docId: string): Promise<PhotoEntry[]> {
 }
 
 export async function idbAddPhoto(entry: PhotoEntry): Promise<void> {
+  const key = getVaultKey();
+  const bytes = new Uint8Array(await entry.blob.arrayBuffer());
+  const blobEnc = await encryptBytes(key, bytes);
+  const encEntry: EncryptedPhotoEntryV1 = {
+    v: 1,
+    id: entry.id,
+    docId: entry.docId,
+    name: entry.name,
+    type: entry.type,
+    size: entry.size,
+    blobEnc,
+    addedAt: entry.addedAt,
+  };
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_PHOTOS, 'readwrite');
-    (async () => {
-      const key = getVaultKey();
-      const bytes = new Uint8Array(await entry.blob.arrayBuffer());
-      const blobEnc = await encryptBytes(key, bytes);
-      const encEntry: EncryptedPhotoEntryV1 = {
-        v: 1,
-        id: entry.id,
-        docId: entry.docId,
-        name: entry.name,
-        type: entry.type,
-        size: entry.size,
-        blobEnc,
-        addedAt: entry.addedAt,
-      };
-      tx.objectStore(STORE_PHOTOS).put(encEntry);
-    })()
-      .then(() => {})
-      .catch(() => {});
+    tx.objectStore(STORE_PHOTOS).put(encEntry);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB photo write failed'));
+    tx.onabort = () => reject(new Error('IndexedDB photo transaction aborted'));
   });
 }
 

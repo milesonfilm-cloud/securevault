@@ -108,14 +108,14 @@ export default function ImportPanel() {
   };
 
   return (
-    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
+    <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center">
-          <Upload size={20} className="text-slate-700" />
+        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-[rgba(255,255,255,0.07)]">
+          <Upload size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-slate-900">Import Backup</h3>
-          <p className="text-xs text-slate-400">Restore from a SecureVault JSON backup file</p>
+          <h3 className="text-base font-700 text-white">Import Backup</h3>
+          <p className="text-xs text-vault-faint">Restore from a SecureVault JSON backup file</p>
         </div>
       </div>
 
@@ -128,20 +128,20 @@ export default function ImportPanel() {
           onDragLeave={() => setImportState('idle')}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+          className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
             importState === 'dragging'
-              ? 'border-black/25 bg-black/5'
-              : 'border-slate-200 hover:border-slate-300 hover:bg-black/[0.02]'
+              ? 'border-vault-warm/50 bg-vault-elevated'
+              : 'border-[rgba(255,255,255,0.07)] hover:border-vault-warm/25 hover:bg-vault-elevated/50'
           }`}
         >
           <FileJson
             size={32}
-            className={`mx-auto mb-3 ${importState === 'dragging' ? 'text-slate-700' : 'text-slate-300'}`}
+            className={`mx-auto mb-3 ${importState === 'dragging' ? 'text-vault-warm' : 'text-vault-faint'}`}
           />
-          <p className="text-sm font-600 text-slate-600 mb-1">
+          <p className="text-sm font-600 text-vault-muted mb-1">
             {importState === 'dragging' ? 'Drop to import' : 'Drop JSON backup here'}
           </p>
-          <p className="text-xs text-slate-400">or click to browse files</p>
+          <p className="text-xs text-vault-faint">or click to browse files</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -152,7 +152,7 @@ export default function ImportPanel() {
         </div>
       ) : importState === 'parsing' ? (
         <div className="flex items-center justify-center py-10 gap-3">
-          <svg className="animate-spin h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="none">
+          <svg className="animate-spin h-5 w-5 text-vault-warm" viewBox="0 0 24 24" fill="none">
             <circle
               className="opacity-25"
               cx="12"
@@ -163,38 +163,38 @@ export default function ImportPanel() {
             />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
-          <span className="text-sm text-slate-500">Parsing backup file...</span>
+          <span className="text-sm text-vault-muted">Parsing backup file...</span>
         </div>
       ) : importState === 'error' ? (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+        <div className="bg-red-500/10 border border-red-500/25 rounded-2xl p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle size={18} className="text-red-500 mt-0.5 flex-shrink-0" />
+            <AlertCircle size={18} className="text-red-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-600 text-red-700 mb-1">Import failed</p>
-              <p className="text-xs text-red-500">{errorMsg}</p>
+              <p className="text-sm font-600 text-red-300 mb-1">Import failed</p>
+              <p className="text-xs text-red-400/90">{errorMsg}</p>
             </div>
-            <button onClick={reset} className="text-red-400 hover:text-red-600">
+            <button onClick={reset} className="text-red-400 hover:text-red-300">
               <X size={16} />
             </button>
           </div>
         </div>
       ) : importState === 'preview' && parsedData ? (
         <div className="space-y-4">
-          <div className="bg-emerald-50 border border-emerald-200/70 rounded-xl p-4">
+          <div className="bg-vault-elevated border border-vault-warm/30 rounded-2xl p-4">
             <div className="flex items-start gap-3">
-              <CheckCircle2 size={18} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle2 size={18} className="text-vault-warm mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-700 text-emerald-700 mb-1">
+                <p className="text-sm font-700 text-white mb-1">
                   Valid SecureVault backup detected
                 </p>
                 <div className="flex flex-wrap gap-3 mt-2">
-                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-600">
+                  <span className="text-xs bg-vault-warm/20 text-vault-warm px-2 py-1 rounded-full font-600">
                     {parsedData.members} members
                   </span>
-                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-600">
+                  <span className="text-xs bg-vault-warm/20 text-vault-warm px-2 py-1 rounded-full font-600">
                     {parsedData.documents} documents
                   </span>
-                  <span className="text-xs text-emerald-600">
+                  <span className="text-xs text-vault-muted">
                     Exported{' '}
                     {new Date(parsedData.exportedAt).toLocaleDateString('en-IN', {
                       day: '2-digit',
@@ -225,13 +225,13 @@ export default function ImportPanel() {
                   className={`p-3 rounded-xl border-2 text-left transition-all duration-150 ${
                     mergeMode === mode.id
                       ? mode.id === 'replace'
-                        ? 'border-red-400 bg-red-50/50'
-                        : 'border-black/15 bg-black/5'
-                      : 'border-slate-200/80 hover:border-slate-300/80 bg-slate-50/70'
+                        ? 'border-red-400/80 bg-red-500/10'
+                        : 'border-vault-warm/50 bg-vault-elevated'
+                      : 'border-[rgba(255,255,255,0.07)] hover:border-vault-warm/25 bg-vault-elevated/50'
                   }`}
                 >
-                  <div className="text-sm font-600 text-slate-800">{mode.label}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{mode.desc}</div>
+                  <div className="text-sm font-600 text-white">{mode.label}</div>
+                  <div className="text-xs text-vault-faint mt-0.5">{mode.desc}</div>
                 </button>
               ))}
             </div>

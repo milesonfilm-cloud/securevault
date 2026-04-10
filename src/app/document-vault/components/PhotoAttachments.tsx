@@ -93,8 +93,8 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
       {/* Section header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <Camera size={13} className="text-violet-400" />
-          <span className="text-xs font-600 text-slate-500">
+          <Camera size={13} className="text-vault-warm" />
+          <span className="text-xs font-600 text-vault-faint">
             Photos {photos.length > 0 && `(${photos.length}/${MAX_PHOTOS})`}
           </span>
         </div>
@@ -102,7 +102,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="flex items-center gap-1 text-xs text-violet-500 hover:text-violet-700 font-500 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1 text-xs text-vault-faint hover:text-vault-warm font-500 transition-colors disabled:opacity-50"
           >
             {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} />}
             {uploading ? 'Adding…' : 'Add Photo'}
@@ -121,14 +121,14 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
 
       {loading ? (
         <div className="flex items-center gap-2 py-2">
-          <Loader2 size={12} className="animate-spin text-slate-300" />
-          <span className="text-xs text-slate-300">Loading photos…</span>
+          <Loader2 size={12} className="animate-spin text-vault-faint" />
+          <span className="text-xs text-vault-muted">Loading photos…</span>
         </div>
       ) : photos.length === 0 ? (
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-violet-200 text-xs text-violet-400 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50/40 transition-all duration-150 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-[rgba(255,255,255,0.12)] bg-vault-elevated text-xs text-vault-muted hover:bg-vault-panel transition-all duration-150 disabled:opacity-50"
         >
           <ImagePlus size={14} />
           Attach photos (optional)
@@ -147,7 +147,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="aspect-square rounded-xl border-2 border-dashed border-violet-200 flex items-center justify-center text-violet-300 hover:border-violet-400 hover:text-violet-500 hover:bg-violet-50/40 transition-all duration-150 disabled:opacity-50"
+              className="aspect-square rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-vault-elevated flex items-center justify-center text-vault-faint hover:bg-vault-panel transition-all duration-150 disabled:opacity-50"
             >
               {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
             </button>
@@ -202,13 +202,13 @@ function PhotoThumb({ photo, onDelete, onOpen }: PhotoThumbProps) {
   if (!url) return null;
 
   return (
-    <div className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200/60 shadow-sm">
+    <div className="relative group aspect-square rounded-2xl overflow-hidden border border-[rgba(255,255,255,0.07)] bg-vault-elevated shadow-vault">
       <Image src={url} alt={photo.name} fill unoptimized sizes="96px" className="object-cover" />
       {/* Hover overlay */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-150 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
         <button
           onClick={() => onOpen(photo)}
-          className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center text-slate-700 hover:bg-white transition-colors shadow"
+          className="w-7 h-7 rounded-full bg-vault-warm flex items-center justify-center text-vault-ink hover:opacity-90 transition-colors shadow-vault"
           title="View full size"
         >
           <ZoomIn size={13} />

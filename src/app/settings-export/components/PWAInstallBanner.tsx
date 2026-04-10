@@ -49,23 +49,21 @@ export default function PWAInstallBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
+    <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-black/5 rounded-xl flex items-center justify-center">
-          <Smartphone size={20} className="text-slate-700" />
+        <div className="w-10 h-10 bg-vault-elevated border border-[rgba(255,255,255,0.07)] rounded-2xl flex items-center justify-center">
+          <Smartphone size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-slate-900">Install SecureVault</h3>
-          <p className="text-xs text-slate-400">Add to home screen for offline access</p>
+          <h3 className="text-base font-700 text-white">Install SecureVault</h3>
+          <p className="text-xs text-vault-faint">Add to home screen for offline access</p>
         </div>
       </div>
 
       {isInstalled ? (
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
-          <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
-          <p className="text-sm text-emerald-700 font-500">
-            SecureVault is installed on this device
-          </p>
+        <div className="flex items-center gap-2 bg-vault-elevated border border-vault-warm/30 rounded-2xl px-4 py-3">
+          <CheckCircle2 size={16} className="text-vault-warm flex-shrink-0" />
+          <p className="text-sm text-white font-500">SecureVault is installed on this device</p>
         </div>
       ) : (
         <>
@@ -76,8 +74,8 @@ export default function PWAInstallBanner() {
               'All data stays on your device',
             ].map((feature, i) => (
               <div key={`pwa-feature-${i}`} className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full flex-shrink-0" />
-                <span className="text-xs text-slate-600">{feature}</span>
+                <div className="w-1.5 h-1.5 bg-vault-warm/60 rounded-full flex-shrink-0" />
+                <span className="text-xs text-vault-muted">{feature}</span>
               </div>
             ))}
           </div>
@@ -86,7 +84,7 @@ export default function PWAInstallBanner() {
             <button
               onClick={handleInstall}
               disabled={installing}
-              className="w-full justify-center flex items-center gap-2 rounded-2xl py-3.5 text-sm font-700 text-white transition-all duration-200 active:scale-95 bg-slate-900 hover:bg-slate-800 shadow-[0_10px_28px_rgba(15,23,42,0.16)]"
+              className="neo-btn neo-btn-primary w-full justify-center flex items-center gap-2 rounded-2xl py-3.5 text-sm font-800 text-white transition-all duration-200 active:scale-95"
             >
               {installing ? (
                 <span className="flex items-center gap-2">
@@ -111,7 +109,7 @@ export default function PWAInstallBanner() {
               )}
             </button>
           ) : (
-            <div className="bg-slate-50/70 border border-slate-200/80 rounded-xl px-4 py-3 text-xs text-slate-600 text-center">
+            <div className="neo-inset rounded-2xl px-4 py-3 text-xs text-vault-muted text-center">
               To install: tap <strong>Share</strong> → <strong>Add to Home Screen</strong> in your
               browser menu
             </div>

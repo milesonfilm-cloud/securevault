@@ -51,46 +51,46 @@ export default function DangerZone() {
   };
 
   return (
-    <div className="bg-white rounded-[1.35rem] border border-red-200/60 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
+    <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
-          <AlertTriangle size={20} className="text-red-500" />
+        <div className="w-10 h-10 bg-red-500/15 border border-red-500/30 rounded-2xl flex items-center justify-center">
+          <AlertTriangle size={20} className="text-red-400" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-slate-900">Danger Zone</h3>
-          <p className="text-xs text-slate-400">Irreversible actions — export a backup first</p>
+          <h3 className="text-base font-700 text-white">Danger Zone</h3>
+          <p className="text-xs text-vault-faint">Irreversible actions — export a backup first</p>
         </div>
       </div>
 
       <div className="space-y-3">
-        <div className="flex items-center justify-between p-4 bg-red-50/60 rounded-xl border border-red-200/60">
+        <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-2xl border border-red-500/25">
           <div>
-            <p className="text-sm font-600 text-slate-800">Clear All Documents</p>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm font-600 text-white">Clear All Documents</p>
+            <p className="text-xs text-vault-muted mt-0.5">
               Remove all documents but keep family member profiles
             </p>
           </div>
           <button
             onClick={() => setShowClearDocs(true)}
             disabled={isClearing}
-            className="flex-shrink-0 ml-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-700 transition-all active:scale-[0.98]"
+            className="neo-btn w-auto flex-shrink-0 ml-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-sm font-800 transition-all active:scale-[0.98]"
           >
             <Trash2 size={14} />
             Clear Docs
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-4 bg-red-50/60 rounded-xl border border-red-200/60">
+        <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-2xl border border-red-500/25">
           <div>
-            <p className="text-sm font-600 text-slate-800">Wipe Entire Vault</p>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm font-600 text-white">Wipe Entire Vault</p>
+            <p className="text-xs text-vault-muted mt-0.5">
               Delete all data including members, documents, and photos
             </p>
           </div>
           <button
             onClick={() => setShowClearAll(true)}
             disabled={isClearing}
-            className="flex-shrink-0 ml-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-700 transition-all active:scale-[0.98]"
+            className="neo-btn w-auto flex-shrink-0 ml-4 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-700 text-white text-sm font-800 transition-all active:scale-[0.98]"
           >
             <Trash2 size={14} />
             Wipe All

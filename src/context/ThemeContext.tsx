@@ -2,7 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export type AppTheme = 'pastel';
+export type AppTheme = 'vault';
 
 const STORAGE_KEY = 'sv_ui_theme';
 
@@ -16,19 +16,18 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<AppTheme>('pastel');
+  const [theme, setThemeState] = useState<AppTheme>('vault');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Single-theme mode: force pastel and keep dataset consistent
     try {
-      localStorage.setItem(STORAGE_KEY, 'pastel');
+      localStorage.setItem(STORAGE_KEY, 'vault');
     } catch {
       /* ignore */
     }
-    setThemeState('pastel');
-    document.documentElement.dataset.theme = 'pastel';
+    setThemeState('vault');
+    document.documentElement.dataset.theme = 'vault';
   }, []);
 
   const setTheme = useCallback((t: AppTheme) => {
@@ -46,8 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dataset.theme = theme;
   }, [theme, mounted]);
 
-  /** Single-theme mode: keep pastel */
-  const toggleTheme = useCallback(() => setTheme('pastel'), [setTheme]);
+  const toggleTheme = useCallback(() => setTheme('vault'), [setTheme]);
 
   const value: ThemeContextValue = {
     theme,

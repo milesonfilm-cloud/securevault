@@ -59,17 +59,17 @@ export default function BiometricSettings() {
 
   if (!supported) {
     return (
-      <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
+      <div className="neo-card rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 bg-black/5 rounded-xl flex items-center justify-center">
-            <Fingerprint size={18} className="text-slate-700" />
+          <div className="w-9 h-9 bg-vault-elevated border border-[rgba(255,255,255,0.07)] rounded-2xl flex items-center justify-center">
+            <Fingerprint size={18} className="text-vault-warm" />
           </div>
           <div>
-            <h3 className="text-sm font-700 text-slate-700">Biometric Login</h3>
-            <p className="text-xs text-slate-400">Fingerprint &amp; Face ID</p>
+            <h3 className="text-sm font-700 text-white">Biometric Login</h3>
+            <p className="text-xs text-vault-faint">Fingerprint &amp; Face ID</p>
           </div>
         </div>
-        <p className="text-xs text-slate-400 bg-slate-50 rounded-xl px-4 py-3">
+        <p className="text-xs text-vault-muted neo-inset rounded-2xl px-4 py-3">
           Biometric authentication is not available on this device or browser.
         </p>
       </div>
@@ -77,20 +77,20 @@ export default function BiometricSettings() {
   }
 
   return (
-    <div className="bg-white rounded-[1.35rem] border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-6">
+    <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-black/5">
-          <Fingerprint size={18} className="text-slate-700" />
+        <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-vault-elevated border border-[rgba(255,255,255,0.07)]">
+          <Fingerprint size={18} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-sm font-700 text-slate-700">Biometric Login</h3>
-          <p className="text-xs text-slate-400">Fingerprint &amp; Face ID</p>
+          <h3 className="text-sm font-700 text-white">Biometric Login</h3>
+          <p className="text-xs text-vault-faint">Fingerprint &amp; Face ID</p>
         </div>
         <div
           className={`ml-auto px-2.5 py-1 rounded-full text-xs font-700 border ${
             registered
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/70'
-              : 'bg-slate-50 text-slate-600 border-slate-200/70'
+              ? 'bg-vault-warm/20 text-vault-warm border-vault-warm/35'
+              : 'bg-vault-elevated text-vault-muted border-[rgba(255,255,255,0.08)]'
           }`}
         >
           {registered ? 'Enabled' : 'Disabled'}
@@ -99,17 +99,17 @@ export default function BiometricSettings() {
 
       {/* Biometric types */}
       <div className="flex gap-3 mb-4">
-        <div className="flex-1 flex items-center gap-2 bg-slate-50/70 border border-slate-200/70 rounded-xl px-3 py-2.5">
-          <Fingerprint size={16} className="text-slate-700 flex-shrink-0" />
-          <span className="text-xs text-slate-500">Fingerprint</span>
+        <div className="flex-1 flex items-center gap-2 neo-inset rounded-2xl px-3 py-2.5">
+          <Fingerprint size={16} className="text-vault-warm flex-shrink-0" />
+          <span className="text-xs text-vault-muted">Fingerprint</span>
         </div>
-        <div className="flex-1 flex items-center gap-2 bg-slate-50/70 border border-slate-200/70 rounded-xl px-3 py-2.5">
-          <ScanFace size={16} className="text-slate-700 flex-shrink-0" />
-          <span className="text-xs text-slate-500">Face ID</span>
+        <div className="flex-1 flex items-center gap-2 neo-inset rounded-2xl px-3 py-2.5">
+          <ScanFace size={16} className="text-vault-warm flex-shrink-0" />
+          <span className="text-xs text-vault-muted">Face ID</span>
         </div>
       </div>
 
-      <p className="text-xs text-slate-400 mb-4">
+      <p className="text-xs text-vault-faint mb-4">
         {registered
           ? 'Your biometric credential is registered. You can use it to unlock the vault quickly.'
           : 'Register your fingerprint or Face ID to unlock the vault without typing your password.'}
@@ -117,10 +117,10 @@ export default function BiometricSettings() {
 
       {message && (
         <div
-          className={`flex items-center gap-2 rounded-xl px-3 py-2.5 mb-4 text-sm ${messageType === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-600 border border-red-100'}`}
+          className={`flex items-center gap-2 rounded-xl px-3 py-2.5 mb-4 text-sm ${messageType === 'success' ? 'bg-vault-warm/15 text-vault-warm border border-vault-warm/25' : 'bg-red-500/10 text-red-300 border border-red-500/25'}`}
         >
           <div
-            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${messageType === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`}
+            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${messageType === 'success' ? 'bg-vault-warm' : 'bg-red-400'}`}
           />
           {message}
         </div>
@@ -129,7 +129,7 @@ export default function BiometricSettings() {
       {registered ? (
         <button
           onClick={handleDisable}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 text-sm font-600 transition-colors"
+          className="neo-btn neo-btn-secondary w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border border-red-400/50 text-red-300 hover:bg-red-500/10 text-sm font-700 transition-colors"
         >
           <ShieldOff size={15} />
           Disable Biometric Login
@@ -138,7 +138,7 @@ export default function BiometricSettings() {
         <button
           onClick={handleEnable}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-700 transition-colors disabled:opacity-60 shadow-[0_10px_28px_rgba(15,23,42,0.16)]"
+          className="neo-btn neo-btn-primary w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl text-sm font-800 transition-colors disabled:opacity-60"
         >
           {loading ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
           {loading ? 'Setting up…' : 'Enable Biometric Login'}

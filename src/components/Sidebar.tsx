@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AppLogo from './ui/AppLogo';
 import { FolderLock, Users, Settings, ChevronLeft, ChevronRight, Lock, LogOut } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { clearPersistedVaultKey } from '@/lib/vaultKeyPersist';
 
 interface NavItem {
   href: string;
@@ -39,60 +40,36 @@ interface SidebarProps {
 
 function handleLockVault() {
   sessionStorage.removeItem('sv_session_unlocked');
-  try {
-    localStorage.removeItem('sv_session_unlocked_persist');
-  } catch {
-    // ignore
-  }
+  clearPersistedVaultKey();
   window.location.reload();
 }
 
-function navItemClasses(theme: 'pastel', isActive: boolean, collapsed: boolean): string {
+function navItemClasses(isActive: boolean, collapsed: boolean): string {
   const base = `sidebar-item ${collapsed ? 'justify-center px-0' : ''}`;
   if (isActive) {
-    return `${base} bg-black/[0.06] text-slate-900 font-600 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.06)]`;
+    return `${base} bg-vault-elevated text-white font-semibold`;
   }
-  return `${base} text-slate-500 hover:text-slate-900 hover:bg-slate-100`;
+  return `${base} text-vault-faint bg-transparent`;
 }
 
-function navIconClass(theme: 'pastel', isActive: boolean): string {
-  return isActive ? 'text-slate-900' : 'text-slate-400';
+function navIconClass(isActive: boolean): string {
+  return isActive ? 'text-vault-warm' : 'text-vault-faint';
 }
 
 export default function Sidebar({ collapsed, onToggleCollapse, activePath }: SidebarProps) {
-  const { theme } = useTheme();
-
-  const shell =
-    theme === 'pastel'
-      ? {
-          background: '#ffffff',
-          borderColor: 'rgba(15,23,42,0.08)',
-          divider: 'rgba(15,23,42,0.08)',
-        }
-      : {
-          background: '#ffffff',
-          borderColor: 'rgba(15,23,42,0.08)',
-          divider: 'rgba(15,23,42,0.08)',
-        };
-
-  const titleClass = 'text-slate-900';
-  const subtitleClass = 'text-slate-400';
-  const navLabelClass = 'text-slate-400';
-  const chevronClass = 'text-slate-500';
+  useTheme();
 
   return (
     <div
-      className="flex flex-col h-full border-r transition-all duration-300 ease-in-out"
+      className="flex flex-col h-full transition-all duration-300 ease-in-out bg-vault-panel"
       style={{
         width: collapsed ? 64 : 240,
-        background: shell.background,
-        borderColor: shell.borderColor,
       }}
     >
       {/* Logo */}
       <div
-        className="flex items-center h-16 px-3 flex-shrink-0"
-        style={{ borderBottom: `1px solid ${shell.divider}` }}
+        className="flex items-center h-16 px-3 flex-shrink-0 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex-shrink-0">
@@ -100,14 +77,10 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
           </div>
           {!collapsed && (
             <div>
-              <span
-                className={`font-bold text-base tracking-tight truncate block leading-tight ${titleClass}`}
-              >
+              <span className="font-bold text-[15px] text-white tracking-tight truncate block leading-tight">
                 SecureVault
               </span>
-              <span
-                className={`text-[10px] font-medium tracking-widest uppercase ${subtitleClass}`}
-              >
+              <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-vault-elevated text-vault-muted text-[9px] font-medium tracking-[2px] uppercase">
                 Private
               </span>
             </div>
@@ -118,9 +91,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
       {/* Nav */}
       <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
         {!collapsed && (
-          <p
-            className={`px-3 mb-3 text-[10px] font-700 uppercase tracking-widest ${navLabelClass}`}
-          >
+          <p className="px-3 mb-3 text-[9px] font-bold uppercase tracking-[3px] text-vault-faint">
             Navigation
           </p>
         )}
@@ -131,14 +102,16 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               key={`nav-${item.href}`}
               href={item.href}
               title={collapsed ? item.label : undefined}
-              className={navItemClasses(theme, isActive, collapsed)}
+              className={`${navItemClasses(isActive, collapsed)} ${
+                !isActive ? 'hover:bg-white/[0.05]' : ''
+              }`}
             >
-              <span className={`flex-shrink-0 transition-colors ${navIconClass(theme, isActive)}`}>
+              <span className={`flex-shrink-0 transition-colors ${navIconClass(isActive)}`}>
                 {item.icon}
               </span>
               {!collapsed && <span className="truncate">{item.label}</span>}
               {!collapsed && item.badge && item.badge > 0 ? (
-                <span className="ml-auto bg-black/5 text-slate-700 text-xs font-600 px-1.5 py-0.5 rounded-full tabular-nums">
+                <span className="ml-auto bg-vault-elevated text-vault-muted text-xs font-600 px-1.5 py-0.5 rounded-full tabular-nums">
                   {item.badge}
                 </span>
               ) : null}
@@ -148,42 +121,42 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
       </nav>
 
       {/* Footer */}
-      <div className="px-2 py-3 space-y-1" style={{ borderTop: `1px solid ${shell.divider}` }}>
+      <div
+        className="px-2 py-3 space-y-1 border-t"
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
+      >
         {!collapsed && (
-          <div
-            className="px-3 py-2.5 rounded-xl mb-2"
-            style={{
-              background: 'rgba(52,211,153,0.1)',
-              border: '1px solid rgba(52,211,153,0.2)',
-            }}
-          >
+          <div className="px-3 py-2.5 rounded-[12px] mb-2 bg-vault-elevated">
             <div className="flex items-center gap-2">
-              <Lock size={11} className="text-emerald-600" />
-              <span className="text-xs font-600 text-emerald-700">100% Offline</span>
+              <Lock size={14} className="text-vault-warm flex-shrink-0" />
+              <span className="text-xs font-bold text-white">100% Offline</span>
             </div>
-            <p className="text-[11px] mt-0.5 text-slate-600">Data never leaves this device</p>
+            <p className="text-[10px] mt-1 text-vault-muted leading-snug">
+              Data never leaves this device
+            </p>
           </div>
         )}
 
-        {/* Lock vault button */}
         <button
           onClick={handleLockVault}
-          className={`sidebar-item w-full text-red-600/80 hover:text-red-600 hover:bg-red-50 ${collapsed ? 'justify-center px-0' : ''}`}
+          className={`sidebar-item w-full border border-vault-coral bg-transparent text-vault-coral hover:bg-white/[0.05] rounded-[10px] ${
+            collapsed ? 'justify-center px-0' : ''
+          }`}
           title="Lock vault"
         >
-          <LogOut size={15} className="flex-shrink-0" />
-          {!collapsed && <span className="text-xs">Lock Vault</span>}
+          <LogOut size={15} className="flex-shrink-0 text-vault-coral" />
+          {!collapsed && <span className="text-xs font-semibold text-vault-coral">Lock Vault</span>}
         </button>
 
         <button
           onClick={onToggleCollapse}
-          className={`sidebar-item w-full ${navItemClasses(theme, false, collapsed)}`}
+          className={`sidebar-item w-full text-vault-faint hover:bg-white/[0.05] ${collapsed ? 'justify-center px-0' : ''}`}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <span className={`flex-shrink-0 ${chevronClass}`}>
+          <span className="flex-shrink-0 text-vault-faint">
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </span>
-          {!collapsed && <span className="text-xs text-slate-500">Collapse</span>}
+          {!collapsed && <span className="text-xs text-vault-faint">Collapse</span>}
         </button>
       </div>
     </div>

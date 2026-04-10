@@ -3,9 +3,9 @@
 import React from 'react';
 import { CreditCard, Landmark, Wallet, Building2, Car, Users, KeyRound } from 'lucide-react';
 import { CATEGORIES } from '@/lib/categories';
-import { PASTEL_LEDGER_TILES } from '@/lib/pastelLedgerPalette';
 import { Document } from '@/lib/storage';
 import { useTheme } from '@/context/ThemeContext';
+import { hexAlpha } from '@/lib/memberAvatarColors';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   CreditCard: <CreditCard size={20} />,
@@ -29,48 +29,49 @@ export default function CategoryCards({
   onSelectCategory,
 }: CategoryCardsProps) {
   const { theme } = useTheme();
-  const isPastel = theme === 'pastel';
+  const isVault = theme === 'vault';
 
-  if (isPastel) {
+  if (isVault) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
         {CATEGORIES.map((cat) => {
           const count = documents.filter((d) => d.categoryId === cat.id).length;
           const isActive = activeCategory === cat.id;
-          const idx = CATEGORIES.findIndex((c) => c.id === cat.id);
-          const tile = PASTEL_LEDGER_TILES[(idx >= 0 ? idx : 0) % PASTEL_LEDGER_TILES.length];
           return (
             <button
               key={`cat-card-${cat.id}`}
               type="button"
               onClick={() => onSelectCategory(isActive ? null : cat.id)}
-              className={`text-left transition-all duration-200 active:scale-[0.98] rounded-[1.35rem] px-4 py-4 border ${
-                isActive ? 'ring-2 ring-black/15 ring-offset-2 ring-offset-white scale-[1.02]' : ''
+              className={`text-left transition-all duration-200 active:scale-[0.98] rounded-[20px] p-[18px] border cursor-pointer shadow-vault ${
+                isActive
+                  ? 'bg-vault-warm border-transparent scale-[1.02]'
+                  : 'bg-vault-panel border-[rgba(255,255,255,0.07)] hover:bg-vault-elevated'
               }`}
-              style={{
-                background: tile.bg,
-                borderColor: isActive ? `${tile.accent}40` : `${tile.accent}18`,
-                boxShadow: isActive ? `0 8px 28px ${tile.accent}14` : '0 2px 12px rgba(0,0,0,0.04)',
-              }}
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
+                className="w-9 h-9 rounded-[10px] flex items-center justify-center mb-0 border border-[rgba(255,255,255,0.06)]"
                 style={{
-                  background: 'rgba(0,0,0,0.07)',
-                  color: tile.accent,
+                  backgroundColor: isActive ? 'rgba(49,44,81,0.2)' : hexAlpha(cat.color, 0.14),
                 }}
               >
-                {ICON_MAP[cat.icon]}
+                <span
+                  className="[&_svg]:stroke-[1.75]"
+                  style={{ color: isActive ? '#312C51' : cat.color }}
+                >
+                  {ICON_MAP[cat.icon]}
+                </span>
               </div>
               <div
-                className="text-2xl sm:text-3xl font-800 tabular-nums tracking-tight leading-none mb-1"
-                style={{ color: '#0a0a0a' }}
+                className={`text-[28px] font-bold tabular-nums tracking-tight leading-none mt-3 ${
+                  isActive ? 'text-vault-ink' : 'text-white'
+                }`}
               >
                 {count}
               </div>
               <div
-                className="text-[11px] font-700 uppercase tracking-wide"
-                style={{ color: tile.accent }}
+                className={`text-[10px] font-bold uppercase tracking-[2px] mt-1 ${
+                  isActive ? 'text-vault-ink' : 'text-white/78'
+                }`}
               >
                 {cat.shortLabel}
               </div>
@@ -81,6 +82,5 @@ export default function CategoryCards({
     );
   }
 
-  // Single-theme mode (pastel)
   return null;
 }

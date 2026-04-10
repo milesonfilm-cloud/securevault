@@ -4,19 +4,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from '@/components/ui/Modal';
 import { FamilyMember } from '@/lib/storage';
-
-const AVATAR_COLORS = [
-  '#6366F1',
-  '#EC4899',
-  '#10B981',
-  '#F59E0B',
-  '#0EA5E9',
-  '#EF4444',
-  '#8B5CF6',
-  '#14B8A6',
-  '#F97316',
-  '#06B6D4',
-];
+import { MEMBER_AVATAR_COLORS } from '@/lib/memberAvatarColors';
 
 const RELATIONSHIPS = [
   'Self',
@@ -64,7 +52,7 @@ export default function MemberFormModal({
       name: '',
       relationship: 'Self',
       dob: '',
-      avatarColor: AVATAR_COLORS[0],
+      avatarColor: MEMBER_AVATAR_COLORS[0],
     },
   });
 
@@ -80,7 +68,7 @@ export default function MemberFormModal({
         avatarColor: editMember.avatarColor,
       });
     } else {
-      reset({ name: '', relationship: 'Self', dob: '', avatarColor: AVATAR_COLORS[0] });
+      reset({ name: '', relationship: 'Self', dob: '', avatarColor: MEMBER_AVATAR_COLORS[0] });
     }
   }, [editMember, isOpen, reset]);
 
@@ -150,16 +138,16 @@ export default function MemberFormModal({
         {/* Avatar color */}
         <div>
           <label className="label-text">Profile Color</label>
-          <p className="text-xs text-slate-400 mb-2">Used for avatar and document badges</p>
+          <p className="text-xs text-vault-faint mb-2">Used for avatar and document badges</p>
           <div className="flex flex-wrap gap-2">
-            {AVATAR_COLORS.map((color) => (
+            {MEMBER_AVATAR_COLORS.map((color) => (
               <button
                 key={`color-${color}`}
                 type="button"
                 onClick={() => setValue('avatarColor', color)}
                 className={`w-8 h-8 rounded-lg transition-all duration-150 ${
                   selectedColor === color
-                    ? 'ring-2 ring-offset-2 ring-slate-400 scale-110'
+                    ? 'ring-2 ring-offset-2 ring-vault-warm ring-offset-[#48426D] scale-110'
                     : 'hover:scale-105'
                 }`}
                 style={{ backgroundColor: color }}
@@ -170,7 +158,7 @@ export default function MemberFormModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+        <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(255,255,255,0.07)]">
           <button type="button" onClick={onClose} className="btn-secondary">
             Cancel
           </button>

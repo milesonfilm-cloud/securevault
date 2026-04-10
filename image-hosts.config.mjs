@@ -1,22 +1,5 @@
 /**
- * Image Hosts Configuration (add your image hosts here)
+ * Remote hosts allowed for next/image.
+ * Empty = no remote images — keeps the app usable fully offline (local / public assets only).
  */
-
-export const imageHosts = [
-    {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-    },
-    {
-        protocol: 'https',
-        hostname: 'images.pexels.com',
-    },
-    {
-        protocol: 'https',
-        hostname: 'images.pixabay.com',
-    },
-    {
-        protocol: 'https',
-        hostname: 'img.rocket.new',
-    },
-];
+export const imageHosts = [];

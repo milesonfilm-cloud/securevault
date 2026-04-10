@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Eye,
   EyeOff,
@@ -20,28 +20,35 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Document, FamilyMember } from '@/lib/storage';
-import { CATEGORIES, getCategoryById } from '@/lib/categories';
-import { getPastelLedgerTile } from '@/lib/pastelLedgerPalette';
+import { getCategoryById } from '@/lib/categories';
+import { DEFAULT_EXPIRY_WARN_DAYS, getDocumentExpiryUrgency } from '@/lib/documentExpiry';
+import { hexAlpha } from '@/lib/memberAvatarColors';
 import PhotoAttachments from './PhotoAttachments';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
-  CreditCard: <CreditCard size={14} />,
-  Landmark: <Landmark size={14} />,
-  Wallet: <Wallet size={14} />,
-  Building2: <Building2 size={14} />,
-  Car: <Car size={14} />,
-  Users: <Users size={14} />,
-  KeyRound: <KeyRound size={14} />,
+  CreditCard: <CreditCard size={16} />,
+  Landmark: <Landmark size={16} />,
+  Wallet: <Wallet size={16} />,
+  Building2: <Building2 size={16} />,
+  Car: <Car size={16} />,
+  Users: <Users size={16} />,
+  KeyRound: <KeyRound size={16} />,
 };
-
-export type DocumentListUiVariant = 'pastel';
 
 interface DocumentListProps {
   documents: Document[];
   members: FamilyMember[];
+  /** When a single member filter is active in the vault, accent rows with their profile color */
+  filterAccentColor?: string | null;
+  /** From notification strip: scroll to row, expand, pulse highlight */
+  navigateTo?: {
+    docId: string;
+    variant: 'critical' | 'warning';
+    nonce: number;
+  } | null;
+  onNavigateToHandled?: () => void;
   onEdit: (doc: Document) => void;
   onDelete: (doc: Document) => void;
-  uiVariant?: DocumentListUiVariant;
 }
 
 function getMemberById(members: FamilyMember[], id: string): FamilyMember | undefined {
@@ -71,28 +78,65 @@ function formatWeekday(iso: string): string {
 export default function DocumentList({
   documents,
   members,
+  filterAccentColor = null,
+  navigateTo = null,
+  onNavigateToHandled,
   onEdit,
   onDelete,
-  uiVariant = 'pastel',
 }: DocumentListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [maskedFields, setMaskedFields] = useState<Set<string>>(new Set());
-  const isPastel = uiVariant === 'pastel';
+  const [flashRow, setFlashRow] = useState<{
+    docId: string;
+    variant: 'critical' | 'warning';
+  } | null>(null);
+
+  useEffect(() => {
+    if (!navigateTo) return;
+    const { docId, variant } = navigateTo;
+    const found = documents.some((d) => d.id === docId);
+    if (!found) {
+      toast.warning('That document isn’t visible — filters may still be updating. Try again.');
+      onNavigateToHandled?.();
+      return;
+    }
+
+    setExpandedId(docId);
+    setFlashRow({ docId, variant });
+
+    let raf0 = 0;
+    let raf1 = 0;
+    raf0 = requestAnimationFrame(() => {
+      raf1 = requestAnimationFrame(() => {
+        document.getElementById(`vault-doc-${docId}`)?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      });
+    });
+
+    const clearFlash = window.setTimeout(() => setFlashRow(null), 2800);
+    const clearNav = window.setTimeout(() => onNavigateToHandled?.(), 600);
+
+    return () => {
+      cancelAnimationFrame(raf0);
+      cancelAnimationFrame(raf1);
+      window.clearTimeout(clearFlash);
+      window.clearTimeout(clearNav);
+    };
+  }, [navigateTo, documents, onNavigateToHandled]);
 
   if (documents.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-5 shadow-lg"
-          style={{
-            background: '#EDE8F5',
-            border: '1px solid rgba(74,63,107,0.2)',
-          }}
-        >
-          <CreditCard size={30} className="text-[#4A3F6B]" />
+      <div
+        id="vault-document-list"
+        className="flex flex-col items-center justify-center py-20 text-center"
+      >
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5 bg-vault-elevated border border-[rgba(255,255,255,0.07)] shadow-vault">
+          <CreditCard size={30} className="text-vault-warm" />
         </div>
-        <h3 className="text-base font-700 mb-1 text-slate-900">No documents yet</h3>
-        <p className="text-sm max-w-xs text-slate-500">
+        <h3 className="text-base font-bold mb-1 text-white">No documents yet</h3>
+        <p className="text-sm max-w-xs text-vault-muted">
           Start adding your documents — IDs, bank accounts, cards, and more — all stored privately
           on this device.
         </p>
@@ -126,26 +170,20 @@ export default function DocumentList({
   };
 
   return (
-    <div className="space-y-2">
+    <div id="vault-document-list" className="space-y-2">
       {documents.map((doc) => {
         const cat = getCategoryById(doc.categoryId);
         const member = getMemberById(members, doc.memberId);
+        const expiryUrgency = getDocumentExpiryUrgency(doc, DEFAULT_EXPIRY_WARN_DAYS);
         const isExpanded = expandedId === doc.id;
         const fieldEntries = Object.entries(doc.fields);
-        const catIdx = CATEGORIES.findIndex((c) => c.id === doc.categoryId);
-        const pl = getPastelLedgerTile(catIdx >= 0 ? catIdx : 0);
-
-        const cardStyle = isPastel
-          ? {
-              background: pl.bg,
-              border: isExpanded ? `1.5px solid ${pl.accent}50` : `1px solid ${pl.accent}22`,
-              boxShadow: isExpanded ? `0 10px 32px ${pl.accent}16` : '0 2px 12px rgba(0,0,0,0.05)',
-            }
-          : {
-              background: pl.bg,
-              border: isExpanded ? `1.5px solid ${pl.accent}50` : `1px solid ${pl.accent}22`,
-              boxShadow: isExpanded ? `0 10px 32px ${pl.accent}16` : '0 2px 12px rgba(0,0,0,0.05)',
-            };
+        const isFlash = flashRow?.docId === doc.id;
+        const flashClass =
+          isFlash && flashRow.variant === 'critical'
+            ? 'ring-2 ring-red-500 shadow-[0_0_28px_rgba(239,68,68,0.5)] border-red-500/60 z-[2]'
+            : isFlash && flashRow.variant === 'warning'
+              ? 'ring-2 ring-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.4)] border-amber-400/50 z-[2]'
+              : '';
 
         const actionButtons = (
           <div
@@ -154,87 +192,102 @@ export default function DocumentList({
           >
             <button
               onClick={() => onEdit(doc)}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-black/5 transition-colors"
+              className="p-1.5 rounded-[10px] text-vault-faint hover:text-vault-warm hover:bg-white/[0.05] transition-colors"
               title="Edit document"
             >
-              <Pencil size={15} />
+              <Pencil size={16} />
             </button>
             <button
               onClick={() => onDelete(doc)}
-              className={
-                'p-1.5 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors'
-              }
+              className="p-1.5 rounded-[10px] text-vault-faint hover:text-red-400 hover:bg-red-500/10 transition-colors"
               title="Delete document — this cannot be undone"
             >
-              <Trash2 size={15} />
+              <Trash2 size={16} />
             </button>
-            <div className="p-1.5 text-slate-400">
-              {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+            <div className="p-1.5 text-vault-faint">
+              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </div>
           </div>
         );
 
         return (
           <div
+            id={`vault-doc-${doc.id}`}
             key={`doc-item-${doc.id}`}
-            className={`${isPastel ? 'rounded-[1.35rem]' : 'rounded-2xl'} overflow-hidden transition-all duration-200`}
-            style={cardStyle}
+            className={`rounded-2xl overflow-hidden transition-all duration-200 relative z-0 bg-vault-panel border border-[rgba(255,255,255,0.07)] shadow-vault ${
+              filterAccentColor ? 'border-l-[3px]' : ''
+            } ${flashClass}`}
+            style={filterAccentColor ? { borderLeftColor: filterAccentColor } : undefined}
           >
-            {/* Row header */}
-            {isPastel ? (
+            <div
+              className="relative z-[1] flex items-start gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-vault-elevated/50"
+              onClick={() => toggleExpand(doc.id)}
+            >
               <div
-                className="flex items-start gap-3 px-4 py-4 cursor-pointer transition-colors hover:bg-black/[0.03]"
-                onClick={() => toggleExpand(doc.id)}
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border border-[rgba(255,255,255,0.08)]"
+                style={{
+                  backgroundColor: cat ? hexAlpha(cat.color, 0.2) : 'rgba(61,54,102,0.9)',
+                  color: cat?.color ?? '#F0C38E',
+                }}
               >
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: 'rgba(0,0,0,0.07)',
-                    color: pl.accent,
-                  }}
-                >
-                  {cat ? ICON_MAP[cat.icon] : <CreditCard size={16} />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  {cat && (
-                    <p
-                      className="text-[11px] font-700 uppercase tracking-wide leading-tight"
-                      style={{ color: pl.accent }}
-                    >
-                      {cat.shortLabel}
-                    </p>
-                  )}
-                  <p className="text-lg font-800 text-[#0a0a0a] leading-snug truncate">
+                {cat ? ICON_MAP[cat.icon] : <CreditCard size={16} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                {cat && (
+                  <p
+                    className="text-[10px] font-bold uppercase tracking-[1.5px] leading-tight"
+                    style={{ color: cat.color }}
+                  >
+                    {cat.shortLabel}
+                  </p>
+                )}
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                  <p className="text-[15px] font-semibold text-white leading-snug truncate">
                     {doc.title}
                   </p>
+                  {expiryUrgency === 'expired' && (
+                    <span className="shrink-0 text-[9px] font-800 uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/25 text-red-200 border border-red-400/30">
+                      Expired
+                    </span>
+                  )}
+                  {expiryUrgency === 'soon' && (
+                    <span className="shrink-0 text-[9px] font-800 uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-100 border border-amber-400/25">
+                      Expiring
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 flex-wrap mt-1.5">
                   {member && (
                     <span
-                      className="inline-flex items-center gap-1 text-[11px] font-600 px-2 py-0.5 rounded-full mt-1.5 text-white"
-                      style={{ backgroundColor: member.avatarColor }}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-[20px] text-white"
+                      style={{
+                        backgroundColor: hexAlpha(member.avatarColor, 0.4),
+                        border: `1px solid ${hexAlpha(member.avatarColor, 0.65)}`,
+                      }}
                     >
                       {member.name.split(' ')[0]}
                     </span>
                   )}
                   {fieldEntries.length > 0 && !isExpanded && (
-                    <p className="text-xs mt-1.5 font-mono truncate text-slate-500">
+                    <p className="text-xs font-mono truncate text-vault-muted">
                       {fieldEntries[0][0]}: {fieldEntries[0][1]}
                     </p>
                   )}
                 </div>
-                <div className="hidden sm:block text-right pt-0.5 flex-shrink-0 min-w-[4.5rem]">
-                  <p className="text-xs font-600 leading-tight" style={{ color: pl.accent }}>
-                    {formatWeekday(doc.updatedAt)}
-                  </p>
-                  <p className="text-[11px] text-slate-500 leading-tight mt-0.5">
-                    {formatDate(doc.updatedAt)}
-                  </p>
-                </div>
-                {actionButtons}
               </div>
-            ) : null}
+              <div className="hidden sm:block text-right pt-0.5 flex-shrink-0 min-w-[4.5rem]">
+                <p className="text-xs font-semibold leading-tight text-vault-muted">
+                  {formatWeekday(doc.updatedAt)}
+                </p>
+                <p className="text-[11px] text-vault-faint leading-tight mt-0.5">
+                  {formatDate(doc.updatedAt)}
+                </p>
+              </div>
+              {actionButtons}
+            </div>
 
             {isExpanded && (
-              <div className={`px-4 pb-4 pt-1 animate-slide-up ${'border-t border-black/[0.06]'}`}>
+              <div className="relative z-[1] px-5 pb-4 pt-1 animate-slide-up border-t border-[rgba(255,255,255,0.07)]">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {fieldEntries.map(([key, value]) => {
                     const catField = cat?.fields.find((f) => f.key === key);
@@ -249,19 +302,15 @@ export default function DocumentList({
                     return (
                       <div
                         key={`field-${doc.id}-${key}`}
-                        className="rounded-xl px-3 py-2"
-                        style={{
-                          background: 'rgba(255,255,255,0.75)',
-                          border: '1px solid rgba(15,23,42,0.08)',
-                        }}
+                        className="neo-inset rounded-xl px-3 py-2"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-500 text-slate-500">{key}</p>
+                          <p className="text-xs font-medium text-vault-muted">{key}</p>
                           <div className="flex items-center gap-2">
                             {canQuickCopy && (
                               <button
                                 onClick={() => copyToClipboard(quickCopyLabel, value)}
-                                className="text-slate-400 hover:text-slate-800 transition-colors"
+                                className="text-vault-faint hover:text-vault-warm transition-colors"
                                 title={`Copy ${quickCopyLabel}`}
                               >
                                 <Copy size={12} />
@@ -270,7 +319,7 @@ export default function DocumentList({
                             {isSensitive && (
                               <button
                                 onClick={() => toggleMask(maskKey)}
-                                className="text-slate-400 hover:text-slate-800 transition-colors"
+                                className="text-vault-faint hover:text-vault-warm transition-colors"
                                 title={isMasked ? 'Reveal value' : 'Hide value'}
                               >
                                 {isMasked ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -278,9 +327,7 @@ export default function DocumentList({
                             )}
                           </div>
                         </div>
-                        <p
-                          className={`text-sm font-600 font-mono mt-0.5 break-all ${'text-slate-900'}`}
-                        >
+                        <p className="text-sm font-bold font-mono mt-0.5 break-all text-white">
                           {isMasked ? maskValue(value) : value}
                         </p>
                       </div>
@@ -289,13 +336,9 @@ export default function DocumentList({
                 </div>
 
                 {doc.notes && (
-                  <div
-                    className={
-                      'mt-2.5 flex items-start gap-2 rounded-xl px-3 py-2 border border-amber-200/80 bg-amber-50/90'
-                    }
-                  >
-                    <StickyNote size={13} className="mt-0.5 flex-shrink-0 text-amber-500" />
-                    <p className="text-xs text-amber-900">{doc.notes}</p>
+                  <div className="mt-2.5 flex items-start gap-2 rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.07)] bg-vault-elevated">
+                    <StickyNote size={13} className="mt-0.5 flex-shrink-0 text-vault-warm" />
+                    <p className="text-xs text-vault-muted">{doc.notes}</p>
                   </div>
                 )}
 
@@ -304,7 +347,7 @@ export default function DocumentList({
                     {doc.tags.map((tag) => (
                       <span
                         key={`tag-${doc.id}-${tag}`}
-                        className="text-xs px-2 py-0.5 rounded-full font-500 border border-slate-200 bg-white text-slate-600"
+                        className="neo-pill text-xs px-2.5 py-1 rounded-full font-bold bg-vault-elevated text-vault-muted border border-[rgba(255,255,255,0.07)]"
                       >
                         #{tag}
                       </span>
@@ -314,7 +357,9 @@ export default function DocumentList({
 
                 <PhotoAttachments docId={doc.id} />
 
-                <p className="text-xs mt-2.5 text-slate-400">Updated {formatDate(doc.updatedAt)}</p>
+                <p className="text-xs mt-2.5 text-vault-faint">
+                  Updated {formatDate(doc.updatedAt)}
+                </p>
               </div>
             )}
           </div>

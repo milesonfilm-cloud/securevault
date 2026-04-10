@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Plus, Search, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadVaultDataAsync, saveVaultDataAsync, Document, VaultData } from '@/lib/storage';
@@ -8,6 +8,7 @@ import { idbDeletePhotosForDoc } from '@/lib/db';
 import CategoryCards from './CategoryCards';
 import DocumentList from './DocumentList';
 import DocumentFormModal from './DocumentFormModal';
+import DocumentVaultNotificationStrip from './DocumentVaultNotificationStrip';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -24,6 +25,12 @@ export default function DocumentVaultContent() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editDoc, setEditDoc] = useState<Document | null>(null);
   const [deleteDoc, setDeleteDoc] = useState<Document | null>(null);
+  /** Notification strip → scroll/highlight document in list */
+  const [vaultListNav, setVaultListNav] = useState<{
+    docId: string;
+    variant: 'critical' | 'warning';
+    nonce: number;
+  } | null>(null);
 
   useEffect(() => {
     loadVaultDataAsync().then((data) => {
@@ -87,7 +94,6 @@ export default function DocumentVaultContent() {
 
   const handleDeleteDocument = async () => {
     if (!deleteDoc) return;
-    // Also remove any attached photos from IndexedDB
     await idbDeletePhotosForDoc(deleteDoc.id);
     const updated: VaultData = {
       ...vaultData,
@@ -101,52 +107,79 @@ export default function DocumentVaultContent() {
 
   const activeFiltersCount = [activeCategory, activeMember, search].filter(Boolean).length;
   const { theme } = useTheme();
-  const isPastel = theme === 'pastel';
+  const isVault = theme === 'vault';
 
-  if (loading) {
-    return (
-      <div className="p-6 max-w-screen-2xl mx-auto space-y-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 rounded-lg w-48 bg-slate-200" />
-          <div className="grid gap-3 grid-cols-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={`skel-cat-${i}`} className="h-28 rounded-2xl bg-slate-200" />
-            ))}
-          </div>
-          <div className="h-12 rounded-full bg-slate-200" />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={`skel-doc-${i}`} className="h-14 rounded-xl bg-slate-200" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const activeMemberProfile = useMemo(
+    () => vaultData.members.find((m) => m.id === activeMember) ?? null,
+    [vaultData.members, activeMember]
+  );
 
   const openAdd = () => {
     setEditDoc(null);
     setShowAddModal(true);
   };
 
+  const handleVaultNotificationGoToDoc = useCallback(
+    (docId: string, variant: 'critical' | 'warning') => {
+      setActiveCategory(null);
+      setActiveMember(null);
+      setSearch('');
+      setVaultListNav({ docId, variant, nonce: Date.now() });
+    },
+    []
+  );
+
+  const scrollToDocumentList = useCallback(() => {
+    document
+      .getElementById('vault-document-list')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-6 max-w-screen-2xl mx-auto space-y-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 rounded-[10px] w-48 bg-vault-elevated" />
+          <div className="grid gap-3 grid-cols-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={`skel-cat-${i}`} className="h-28 rounded-[20px] bg-vault-panel" />
+            ))}
+          </div>
+          <div className="h-12 rounded-[20px] bg-vault-panel" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={`skel-doc-${i}`} className="h-14 rounded-2xl bg-vault-panel" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-screen-2xl mx-auto p-4 lg:p-6">
-      {isPastel ? (
+    <div className="max-w-screen-2xl mx-auto p-4 lg:p-6 bg-vault-bg min-h-full">
+      {isVault ? (
         <>
+          <DocumentVaultNotificationStrip
+            documents={vaultData.documents}
+            onGoToDocument={handleVaultNotificationGoToDoc}
+            onInfoClick={scrollToDocumentList}
+          />
+
           <div className="flex items-start justify-between mb-6 gap-4">
             <div>
-              <p className="text-sm text-slate-500 font-500">Documents</p>
-              <h1 className="text-4xl sm:text-[2.75rem] font-800 text-slate-900 tracking-tight leading-tight mt-0.5">
+              <p className="text-xs text-vault-faint font-medium">Documents</p>
+              <h1 className="text-[32px] font-bold text-white tracking-tight leading-tight mt-0.5">
                 Vault
               </h1>
-              <p className="text-sm text-slate-500 mt-2">
+              <p className="text-[13px] text-vault-muted mt-2">
                 {vaultData.documents.length} documents · {vaultData.members.length} family members
               </p>
             </div>
             <button
               type="button"
               onClick={openAdd}
-              className="flex-shrink-0 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-700 bg-slate-900 text-white hover:bg-slate-800 transition-all active:scale-[0.98] shadow-md shadow-slate-900/15"
+              className="flex-shrink-0 flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold bg-vault-warm text-vault-ink transition-all active:scale-[0.98] shadow-vault"
             >
-              <Plus size={18} strokeWidth={2.5} />
+              <Plus size={18} strokeWidth={2.5} className="text-vault-ink" />
               Add
             </button>
           </div>
@@ -159,25 +192,25 @@ export default function DocumentVaultContent() {
             />
           </div>
 
-          <div className="rounded-[1.35rem] p-4 mb-4 border border-slate-200/90 bg-white shadow-sm shadow-slate-200/40">
-            <div className="flex flex-col gap-3">
+          <div className="rounded-[20px] p-4 sm:p-5 mb-4 bg-vault-panel border border-[rgba(255,255,255,0.07)] shadow-vault relative z-0">
+            <div className="relative z-[1] flex flex-col gap-3">
               <div className="relative w-full">
                 <input
                   id="vault-search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search documents, fields, tags..."
-                  className="w-full rounded-full border border-slate-200 bg-slate-50/80 text-slate-900 text-sm placeholder:text-slate-400 py-3 pl-11 pr-10 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-300 transition-shadow"
+                  className="w-full rounded-xl border-0 bg-vault-elevated text-white text-sm placeholder:text-vault-faint py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-vault-warm/40 transition-shadow"
                 />
                 <Search
                   size={17}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-vault-faint pointer-events-none"
                 />
                 {search ? (
                   <button
                     type="button"
                     onClick={() => setSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm p-1"
                     aria-label="Clear search"
                   >
                     <X size={14} />
@@ -190,29 +223,32 @@ export default function DocumentVaultContent() {
                   <button
                     type="button"
                     onClick={() => setActiveMember(null)}
-                    className={`px-4 py-2 rounded-full text-sm font-600 transition-all duration-150 ${
+                    className={`px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 ${
                       activeMember === null
-                        ? 'bg-slate-900 text-white shadow-md'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-vault-warm text-vault-ink font-semibold'
+                        : 'bg-vault-elevated text-vault-muted border border-[rgba(255,255,255,0.08)] hover:bg-vault-panel'
                     }`}
                   >
                     All
                   </button>
-                  {vaultData.members.map((m) => (
-                    <button
-                      key={`filter-member-${m.id}`}
-                      type="button"
-                      onClick={() => setActiveMember(activeMember === m.id ? null : m.id)}
-                      className={`px-4 py-2 rounded-full text-sm font-600 transition-all duration-150 ${
-                        activeMember === m.id
-                          ? 'text-white shadow-md'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                      style={activeMember === m.id ? { backgroundColor: m.avatarColor } : {}}
-                    >
-                      {m.name.split(' ')[0]}
-                    </button>
-                  ))}
+                  {vaultData.members.map((m) => {
+                    const isMemberActive = activeMember === m.id;
+                    return (
+                      <button
+                        key={`filter-member-${m.id}`}
+                        type="button"
+                        onClick={() => setActiveMember(isMemberActive ? null : m.id)}
+                        className={`px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 border ${
+                          isMemberActive
+                            ? 'text-white border-transparent shadow-vault'
+                            : 'bg-vault-elevated text-vault-muted border-[rgba(255,255,255,0.08)] hover:bg-vault-panel'
+                        }`}
+                        style={isMemberActive ? { backgroundColor: m.avatarColor } : undefined}
+                      >
+                        {m.name.split(' ')[0]}
+                      </button>
+                    );
+                  })}
                 </div>
                 {activeFiltersCount > 0 && (
                   <button
@@ -222,7 +258,7 @@ export default function DocumentVaultContent() {
                       setActiveMember(null);
                       setSearch('');
                     }}
-                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 px-2 transition-colors flex-shrink-0"
+                    className="flex items-center gap-1.5 text-sm text-vault-muted hover:text-vault-warm px-2 transition-colors flex-shrink-0"
                   >
                     <RefreshCw size={13} />
                     Clear
@@ -232,11 +268,9 @@ export default function DocumentVaultContent() {
 
               {activeFiltersCount > 0 && (
                 <div className="flex items-center gap-2 pt-0.5">
-                  <span className="text-xs text-slate-500">Showing</span>
-                  <span className="text-xs font-700 text-slate-900">
-                    {filteredDocuments.length}
-                  </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-vault-muted">Showing</span>
+                  <span className="text-xs font-bold text-white">{filteredDocuments.length}</span>
+                  <span className="text-xs text-vault-muted">
                     of {vaultData.documents.length} documents
                   </span>
                 </div>
@@ -246,11 +280,12 @@ export default function DocumentVaultContent() {
         </>
       ) : null}
 
-      {/* Document list */}
       <DocumentList
         documents={filteredDocuments}
         members={vaultData.members}
-        uiVariant="pastel"
+        filterAccentColor={activeMemberProfile?.avatarColor ?? null}
+        navigateTo={vaultListNav}
+        onNavigateToHandled={() => setVaultListNav(null)}
         onEdit={(doc) => {
           setEditDoc(doc);
           setShowAddModal(true);
@@ -258,7 +293,6 @@ export default function DocumentVaultContent() {
         onDelete={(doc) => setDeleteDoc(doc)}
       />
 
-      {/* Add/Edit modal */}
       <DocumentFormModal
         isOpen={showAddModal}
         onClose={() => {
@@ -270,7 +304,6 @@ export default function DocumentVaultContent() {
         members={vaultData.members}
       />
 
-      {/* Delete confirm */}
       <ConfirmModal
         isOpen={!!deleteDoc}
         onClose={() => setDeleteDoc(null)}

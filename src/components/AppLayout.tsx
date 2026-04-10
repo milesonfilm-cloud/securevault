@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
+import DocumentExpiryAlerts from './DocumentExpiryAlerts';
 import { useTheme } from '@/context/ThemeContext';
 
 interface AppLayoutProps {
@@ -12,11 +13,10 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, activePath }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  useTheme(); // keep provider mounted; single-theme mode (pastel)
-  const shellBg = { background: '#ffffff' };
+  useTheme();
 
   return (
-    <div className="flex h-screen overflow-hidden relative" style={shellBg}>
+    <div className="flex h-screen overflow-hidden relative neo-bg">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar
@@ -28,7 +28,10 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">{children}</main>
+        <main className="flex-1 flex flex-col overflow-y-auto pb-20 lg:pb-0">
+          {activePath !== '/document-vault' && <DocumentExpiryAlerts />}
+          <div className="flex-1 min-h-0">{children}</div>
+        </main>
       </div>
 
       {/* Mobile bottom nav */}

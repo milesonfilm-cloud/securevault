@@ -2,87 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import 'tw-animate-css';
 
-@import "tw-animate-css";
-
-@import "shadcn/tailwind.css";
+@import 'shadcn/tailwind.css';
 
 @layer base {
   :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
+    /* SecureVault dark purple — semantic tokens (HSL components for Tailwind hsl(var(--*))) */
+    --color-bg-primary: #312c51;
+    --color-bg-secondary: #48426d;
+    --color-bg-elevated: #3d3666;
+    --color-accent-warm: #f0c38e;
+    --color-accent-coral: #f1aa9b;
+    --color-text-primary: #ffffff;
+    --color-text-muted: #d4cced;
+    --color-text-faint: #bfb4df;
+    --color-border: rgba(255, 255, 255, 0.07);
+
+    --background: 252 29% 25%;
+    --foreground: 0 0% 100%;
+    --card: 252 22% 34%;
+    --card-foreground: 0 0% 100%;
+    --muted: 252 31% 31%;
+    --muted-foreground: 252 26% 86%;
+    --border: 0 0% 100% / 0.07;
+    --input: 252 31% 31%;
+    --primary: 37 76% 75%;
+    --primary-foreground: 252 29% 25%;
+    --secondary: 252 31% 31%;
+    --secondary-foreground: 252 26% 86%;
+    --accent: 252 31% 31%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --ring: oklch(0.708 0 0);
-    --radius: 0.625rem;
-    --sidebar-bg: 222 47% 8%;
-    --sidebar-text: 220 14% 70%;
-    --sidebar-active: 258 84% 67%;
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --ring: 37 76% 75%;
+    --radius: 0.75rem;
+    --popover: 252 22% 34%;
+    --popover-foreground: 0 0% 100%;
+    --chart-1: 37 76% 75%;
+    --chart-2: 11 78% 78%;
+    --chart-3: 252 26% 86%;
+    --chart-4: 252 22% 34%;
+    --chart-5: 252 31% 31%;
+    --sidebar: 252 22% 34%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 37 76% 75%;
+    --sidebar-primary-foreground: 252 29% 25%;
+    --sidebar-accent: 252 31% 31%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.07;
+    --sidebar-ring: 37 76% 75%;
   }
   .theme {
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);
   }
   .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --background: 252 29% 25%;
+    --foreground: 0 0% 100%;
+    --card: 252 22% 34%;
+    --card-foreground: 0 0% 100%;
+    --popover: 252 22% 34%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 37 76% 75%;
+    --primary-foreground: 252 29% 25%;
+    --secondary: 252 31% 31%;
+    --secondary-foreground: 252 26% 86%;
+    --muted: 252 31% 31%;
+    --muted-foreground: 252 26% 86%;
+    --accent: 252 31% 31%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 45%;
+    --border: 0 0% 100% / 0.07;
+    --input: 252 31% 31%;
+    --ring: 37 76% 75%;
+    --sidebar: 252 22% 34%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 37 76% 75%;
+    --sidebar-primary-foreground: 252 29% 25%;
+    --sidebar-accent: 252 31% 31%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.07;
+    --sidebar-ring: 37 76% 75%;
   }
   * {
     @apply border-border outline-ring/50;
@@ -99,12 +100,15 @@
   * {
     @apply border-border;
   }
+  html,
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--color-bg-primary);
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
   }
   .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: var(--font-mono), ui-monospace, monospace;
   }
 }
 
@@ -113,61 +117,91 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* ── SecureVault dark purple shell ── */
+  .neo-bg {
+    background: var(--color-bg-primary);
+  }
+
+  .neo-surface {
+    background: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .neo-card {
+    position: relative;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .neo-inset {
+    position: relative;
+    z-index: 1;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+  }
+
+  .neo-pill {
+    border-radius: 999px;
+  }
+
+  .neo-btn {
+    @apply active:scale-[0.98] transition-all duration-150 font-700 text-sm inline-flex items-center justify-center gap-2;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+  .neo-btn-primary {
+    background: var(--color-accent-warm);
+    color: var(--color-bg-primary);
+  }
+  .neo-btn-secondary {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-muted);
+  }
+
+  .neo-input {
+    border-radius: 12px;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+  }
+
   /* ── Auth Screen ── */
   .auth-bg {
-    background:
-      radial-gradient(ellipse at 10% 10%, rgba(74, 63, 107, 0.08) 0%, rgba(255, 255, 255, 0) 55%),
-      radial-gradient(ellipse at 90% 30%, rgba(67, 56, 202, 0.06) 0%, rgba(255, 255, 255, 0) 55%),
-      #ffffff;
+    @apply neo-bg;
   }
   .auth-card {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    border-radius: 28px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
     padding: 2.5rem;
-    box-shadow:
-      0 0 0 1px rgba(15, 23, 42, 0.02) inset,
-      0 24px 64px rgba(15, 23, 42, 0.08),
-      0 8px 24px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   }
   .auth-input {
-    @apply w-full px-4 py-3 rounded-2xl text-sm text-slate-900 placeholder-slate-400 transition-all duration-200 outline-none;
-    background: rgba(248, 250, 252, 0.9);
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply w-full px-4 py-3 text-sm transition-all duration-200 outline-none neo-input font-sans;
+    color: var(--color-text-primary);
+  }
+  .auth-input::placeholder {
+    color: var(--color-text-faint);
   }
   .auth-input:focus {
-    background: rgba(255, 255, 255, 1);
-    border-color: rgba(15, 23, 42, 0.18);
-    box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 0 0 2px rgba(240, 195, 142, 0.45);
+    border-color: rgba(240, 195, 142, 0.35);
   }
   .auth-btn {
-    @apply flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-sm font-semibold text-white transition-all duration-200 active:scale-95;
-    background: #0f172a;
-    box-shadow:
-      0 10px 28px rgba(15, 23, 42, 0.16),
-      0 1px 0 rgba(255, 255, 255, 0.18) inset;
+    @apply neo-btn neo-btn-primary w-full py-3.5;
   }
   .auth-btn:hover {
-    box-shadow:
-      0 14px 36px rgba(15, 23, 42, 0.2),
-      0 1px 0 rgba(255, 255, 255, 0.18) inset;
     transform: translateY(-1px);
   }
 
-  /* ── Sidebar ── */
+  /* ── Sidebar (defaults; active state set in Sidebar.tsx) ── */
   .sidebar-item {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer;
-  }
-  .sidebar-item-active {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
-    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.2);
-  }
-  .sidebar-item-inactive {
-    @apply text-slate-400 hover:text-slate-200;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-medium transition-all duration-150 cursor-pointer;
   }
   .sidebar-item-inactive:hover {
     background: rgba(255, 255, 255, 0.05);
@@ -175,36 +209,43 @@
 
   /* ── Cards ── */
   .card-hover {
-    @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+    @apply transition-all duration-200 hover:shadow-vault;
   }
   .glass-card {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   }
 
   /* ── Buttons ── */
   .btn-primary {
-    @apply active:scale-95 text-white font-700 px-5 py-2.5 rounded-full transition-all duration-150 flex items-center gap-2 text-sm;
-    background: #0f172a;
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+    @apply neo-btn neo-btn-primary px-5 py-2.5;
   }
   .btn-primary:hover {
-    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.2);
     transform: translateY(-1px);
   }
   .btn-secondary {
-    @apply bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-700 px-5 py-2.5 rounded-full transition-all duration-150 flex items-center gap-2 text-sm;
+    @apply neo-btn neo-btn-secondary px-5 py-2.5;
   }
   .btn-danger {
     @apply bg-red-600 hover:bg-red-700 active:scale-95 text-white font-semibold px-4 py-2.5 rounded-xl transition-all duration-150 flex items-center gap-2 text-sm;
   }
   .input-field {
-    @apply w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-500/30 focus:border-violet-400 transition-all duration-150;
+    @apply w-full px-3 py-2.5 rounded-xl border text-sm transition-all duration-150;
+    background: var(--color-bg-elevated);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+  }
+  .input-field::placeholder {
+    color: var(--color-text-faint);
+  }
+  .input-field:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(240, 195, 142, 0.35);
   }
   .label-text {
-    @apply block text-xs font-600 text-slate-600 mb-1.5 tracking-wide;
+    @apply block text-xs font-600 mb-1.5 tracking-wide;
+    color: var(--color-text-muted);
   }
 
   /* Neon vault — folder-tab category tiles */
@@ -317,25 +358,25 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: #48426d;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #3d3666;
 }
 
-[data-theme='pastel'] ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+[data-theme='vault'] ::-webkit-scrollbar-thumb {
+  background: #48426d;
 }
-[data-theme='pastel'] ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+[data-theme='vault'] ::-webkit-scrollbar-thumb:hover {
+  background: #3d3666;
 }
 
 /* PWA safe area */

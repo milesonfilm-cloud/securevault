@@ -146,7 +146,7 @@ export default function DocumentFormModal({
 
         <div>
           <label className="label-text">Document Title *</label>
-          <p className="text-xs text-slate-400 mb-1.5">
+          <p className="text-xs text-vault-faint mb-1.5">
             A memorable name — e.g. &quot;Aadhaar Card&quot; or &quot;HDFC Salary Account&quot;
           </p>
           <input
@@ -183,7 +183,7 @@ export default function DocumentFormModal({
                     {field.label}
                     {field.required && <span className="text-red-400 ml-0.5">*</span>}
                     {field.sensitive && (
-                      <span className="ml-1.5 text-xs text-amber-500 font-400">(sensitive)</span>
+                      <span className="ml-1.5 text-xs text-vault-coral font-400">(sensitive)</span>
                     )}
                   </label>
                   {field.type === 'select' && field.options ? (
@@ -224,7 +224,7 @@ export default function DocumentFormModal({
                         <button
                           type="button"
                           onClick={() => setShowPassword((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm transition-colors"
                           title={showPassword ? 'Hide password' : 'Show password'}
                         >
                           {showPassword ? (
@@ -282,7 +282,7 @@ export default function DocumentFormModal({
         {/* Notes */}
         <div>
           <label className="label-text">Notes</label>
-          <p className="text-xs text-slate-400 mb-1.5">
+          <p className="text-xs text-vault-faint mb-1.5">
             Optional — reminders, linked contacts, etc.
           </p>
           <textarea
@@ -296,14 +296,14 @@ export default function DocumentFormModal({
         {/* Tags */}
         <div>
           <label className="label-text">Tags</label>
-          <p className="text-xs text-slate-400 mb-1.5">
+          <p className="text-xs text-vault-faint mb-1.5">
             Comma-separated — e.g. primary, kyc, travel
           </p>
           <input {...register('tags')} placeholder="primary, kyc, travel" className="input-field" />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+        <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(255,255,255,0.07)]">
           <button type="button" onClick={onClose} className="btn-secondary">
             Cancel
           </button>

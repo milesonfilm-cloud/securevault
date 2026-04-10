@@ -9,8 +9,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'Menlo', 'monospace'],
+        display: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
       },
       fontWeight: {
         400: '400',
@@ -20,6 +21,19 @@ module.exports = {
         800: '800',
       },
       colors: {
+        /* SecureVault dark purple system — use with bg-vault-*, text-vault-*, etc. */
+        vault: {
+          bg: '#312C51',
+          panel: '#48426D',
+          elevated: '#3D3666',
+          warm: '#F0C38E',
+          coral: '#F1AA9B',
+          ink: '#312C51',
+          text: '#FFFFFF',
+          /* Secondary / tertiary text — tuned for ~4.5:1+ on panel (#48426D) & elevated */
+          muted: '#D4CCED',
+          faint: '#BFB4DF',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -73,6 +87,9 @@ module.exports = {
           from: { opacity: '0', transform: 'scale(0.95)' },
           to: { opacity: '1', transform: 'scale(1)' },
         },
+      },
+      boxShadow: {
+        vault: '0 4px 20px rgba(0,0,0,0.25)',
       },
     },
   },

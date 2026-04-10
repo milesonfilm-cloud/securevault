@@ -29,12 +29,12 @@ export default function ConfirmModal({
     <Modal isOpen={isOpen} onClose={onClose} title="" size="sm">
       <div className="p-6 text-center">
         <div
-          className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 ${isDanger ? 'bg-red-50' : 'bg-amber-50'}`}
+          className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 border border-[rgba(255,255,255,0.07)] ${isDanger ? 'bg-red-500/15' : 'bg-vault-warm/15'}`}
         >
-          <AlertTriangle size={24} className={isDanger ? 'text-red-500' : 'text-amber-500'} />
+          <AlertTriangle size={24} className={isDanger ? 'text-red-400' : 'text-vault-warm'} />
         </div>
-        <h3 className="text-lg font-700 text-slate-900 mb-2">{title}</h3>
-        <p className="text-sm text-slate-500 mb-6">{description}</p>
+        <h3 className="text-lg font-700 text-white mb-2">{title}</h3>
+        <p className="text-sm text-vault-muted mb-6">{description}</p>
         <div className="flex gap-3 justify-center">
           <button onClick={onClose} className="btn-secondary" disabled={isLoading}>
             Cancel
