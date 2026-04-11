@@ -2,6 +2,9 @@
   "name": "securevault",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "rocketCritical": {
     "dependencies": [
       "next",
