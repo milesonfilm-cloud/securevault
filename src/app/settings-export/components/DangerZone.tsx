@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import { Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { loadVaultDataAsync, saveVaultDataAsync } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
 import { idbDeletePhotosForDoc, idbGetAllPhotos } from '@/lib/db';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export default function DangerZone() {
+  const { vaultData, persistVaultData } = useVaultData();
   const [showClearAll, setShowClearAll] = useState(false);
   const [showClearDocs, setShowClearDocs] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -20,7 +21,7 @@ export default function DangerZone() {
       for (const p of allPhotos) {
         await idbDeletePhotosForDoc(p.docId);
       }
-      await saveVaultDataAsync({ members: [], documents: [], exportHistory: [] });
+      await persistVaultData({ members: [], documents: [], exportHistory: [], documentStacks: [] });
       toast.success('All vault data cleared from this device');
       setShowClearAll(false);
       setTimeout(() => window.location.reload(), 800);
@@ -34,12 +35,10 @@ export default function DangerZone() {
   const handleClearDocuments = async () => {
     setIsClearing(true);
     try {
-      const data = await loadVaultDataAsync();
-      // Delete photos for all documents
-      for (const doc of data.documents) {
+      for (const doc of vaultData.documents) {
         await idbDeletePhotosForDoc(doc.id);
       }
-      await saveVaultDataAsync({ ...data, documents: [] });
+      await persistVaultData({ ...vaultData, documents: [] });
       toast.success('All documents cleared — member profiles retained');
       setShowClearDocs(false);
       setTimeout(() => window.location.reload(), 800);
@@ -57,7 +56,7 @@ export default function DangerZone() {
           <AlertTriangle size={20} className="text-red-400" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-white">Danger Zone</h3>
+          <h3 className="text-base font-700 text-vault-text">Danger Zone</h3>
           <p className="text-xs text-vault-faint">Irreversible actions — export a backup first</p>
         </div>
       </div>
@@ -65,7 +64,7 @@ export default function DangerZone() {
       <div className="space-y-3">
         <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-2xl border border-red-500/25">
           <div>
-            <p className="text-sm font-600 text-white">Clear All Documents</p>
+            <p className="text-sm font-600 text-vault-text">Clear All Documents</p>
             <p className="text-xs text-vault-muted mt-0.5">
               Remove all documents but keep family member profiles
             </p>
@@ -82,7 +81,7 @@ export default function DangerZone() {
 
         <div className="flex items-center justify-between p-4 bg-red-500/10 rounded-2xl border border-red-500/25">
           <div>
-            <p className="text-sm font-600 text-white">Wipe Entire Vault</p>
+            <p className="text-sm font-600 text-vault-text">Wipe Entire Vault</p>
             <p className="text-xs text-vault-muted mt-0.5">
               Delete all data including members, documents, and photos
             </p>

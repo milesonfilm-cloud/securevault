@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Camera, X } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { FamilyMember } from '@/lib/storage';
 import { MEMBER_AVATAR_COLORS } from '@/lib/memberAvatarColors';
+import { resizeImageFileToJpegDataUrl } from '@/lib/memberPhoto';
+import MemberAvatar from '@/components/MemberAvatar';
 
 const RELATIONSHIPS = [
   'Self',
@@ -25,6 +29,8 @@ interface MemberFormData {
   relationship: string;
   dob: string;
   avatarColor: string;
+  /** Empty string when no photo (RHF + hidden input). */
+  photoDataUrl: string;
 }
 
 interface MemberFormModalProps {
@@ -40,6 +46,8 @@ export default function MemberFormModal({
   onSave,
   editMember,
 }: MemberFormModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const {
     register,
     handleSubmit,
@@ -53,11 +61,13 @@ export default function MemberFormModal({
       relationship: 'Self',
       dob: '',
       avatarColor: MEMBER_AVATAR_COLORS[0],
+      photoDataUrl: '',
     },
   });
 
   const selectedColor = watch('avatarColor');
   const watchedName = watch('name');
+  const photoDataUrl = watch('photoDataUrl');
 
   useEffect(() => {
     if (editMember) {
@@ -66,23 +76,40 @@ export default function MemberFormModal({
         relationship: editMember.relationship,
         dob: editMember.dob,
         avatarColor: editMember.avatarColor,
+        photoDataUrl: editMember.photoDataUrl ?? '',
       });
     } else {
-      reset({ name: '', relationship: 'Self', dob: '', avatarColor: MEMBER_AVATAR_COLORS[0] });
+      reset({
+        name: '',
+        relationship: 'Self',
+        dob: '',
+        avatarColor: MEMBER_AVATAR_COLORS[0],
+        photoDataUrl: '',
+      });
     }
   }, [editMember, isOpen, reset]);
 
   const onSubmit = (data: MemberFormData) => {
-    onSave(data);
+    onSave({
+      name: data.name,
+      relationship: data.relationship,
+      dob: data.dob,
+      avatarColor: data.avatarColor,
+      photoDataUrl: data.photoDataUrl.trim() ? data.photoDataUrl : null,
+    });
   };
 
-  const initials =
-    watchedName
-      .split(' ')
-      .slice(0, 2)
-      .map((n) => n[0] || '')
-      .join('')
-      .toUpperCase() || '?';
+  const handlePickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const url = await resizeImageFileToJpegDataUrl(file);
+      setValue('photoDataUrl', url, { shouldDirty: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not add photo');
+    }
+  };
 
   return (
     <Modal
@@ -92,15 +119,46 @@ export default function MemberFormModal({
       subtitle="Member profiles help organize documents by person"
       size="md"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
         {/* Avatar preview */}
-        <div className="flex justify-center">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-700 text-xl shadow-lg transition-colors duration-200"
-            style={{ backgroundColor: selectedColor }}
-          >
-            {initials}
+        <div className="flex flex-col items-center gap-3">
+          <MemberAvatar
+            name={watchedName || '?'}
+            avatarColor={selectedColor}
+            photoDataUrl={photoDataUrl || null}
+            className="h-20 w-20 rounded-2xl text-xl"
+            textClassName="text-xl"
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handlePickPhoto}
+          />
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="btn-secondary inline-flex items-center gap-2 py-2 text-xs"
+            >
+              <Camera size={16} />
+              {photoDataUrl ? 'Change photo' : 'Add photo'}
+            </button>
+            {photoDataUrl ? (
+              <button
+                type="button"
+                onClick={() => setValue('photoDataUrl', '', { shouldDirty: true })}
+                className="inline-flex items-center gap-1 rounded-xl border border-[color:var(--color-border)] px-3 py-2 text-xs font-600 text-vault-muted transition-colors hover:bg-vault-elevated hover:text-vault-text"
+              >
+                <X size={14} />
+                Remove
+              </button>
+            ) : null}
           </div>
+          <p className="max-w-xs text-center text-[11px] text-vault-faint">
+            Photos are stored locally in your vault and resized to save space.
+          </p>
         </div>
 
         {/* Name */}
@@ -111,7 +169,7 @@ export default function MemberFormModal({
             placeholder="e.g. Arjun Sharma"
             className="input-field"
           />
-          {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
+          {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
         </div>
 
         {/* Relationship + DOB */}
@@ -135,19 +193,21 @@ export default function MemberFormModal({
           </div>
         </div>
 
+        <input type="hidden" {...register('photoDataUrl')} />
+
         {/* Avatar color */}
         <div>
           <label className="label-text">Profile Color</label>
-          <p className="text-xs text-vault-faint mb-2">Used for avatar and document badges</p>
+          <p className="mb-2 text-xs text-vault-faint">Used when no photo is set, and for document badges</p>
           <div className="flex flex-wrap gap-2">
             {MEMBER_AVATAR_COLORS.map((color) => (
               <button
                 key={`color-${color}`}
                 type="button"
                 onClick={() => setValue('avatarColor', color)}
-                className={`w-8 h-8 rounded-lg transition-all duration-150 ${
+                className={`h-8 w-8 rounded-lg transition-all duration-150 ${
                   selectedColor === color
-                    ? 'ring-2 ring-offset-2 ring-vault-warm ring-offset-[#48426D] scale-110'
+                    ? 'scale-110 ring-2 ring-vault-warm ring-offset-2 ring-offset-vault-panel'
                     : 'hover:scale-105'
                 }`}
                 style={{ backgroundColor: color }}
@@ -158,7 +218,7 @@ export default function MemberFormModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(255,255,255,0.07)]">
+        <div className="flex justify-end gap-3 border-t border-[color:var(--color-border)] pt-2">
           <button type="button" onClick={onClose} className="btn-secondary">
             Cancel
           </button>
@@ -169,7 +229,7 @@ export default function MemberFormModal({
           >
             {isSubmitting ? (
               <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle
                     className="opacity-25"
                     cx="12"

@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { loadVaultDataAsync } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
 import {
   collectExpiryAlerts,
   DEFAULT_EXPIRY_WARN_DAYS,
@@ -20,7 +20,7 @@ function localDayKey(): string {
 }
 
 export default function DocumentExpiryAlerts() {
-  const [alerts, setAlerts] = useState<DocumentExpiryAlert[]>([]);
+  const { vaultData } = useVaultData();
   const [dismissedToday, setDismissedToday] = useState(false);
 
   useEffect(() => {
@@ -36,39 +36,35 @@ export default function DocumentExpiryAlerts() {
     }
   }, []);
 
+  const names = useMemo(
+    () => new Map(vaultData.members.map((m) => [m.id, m.name])),
+    [vaultData.members]
+  );
+
+  const alerts: DocumentExpiryAlert[] = useMemo(
+    () => collectExpiryAlerts(vaultData.documents, DEFAULT_EXPIRY_WARN_DAYS),
+    [vaultData.documents]
+  );
+
   useEffect(() => {
-    let cancelled = false;
-    loadVaultDataAsync().then((data) => {
-      if (cancelled) return;
-      const next = collectExpiryAlerts(data.documents, DEFAULT_EXPIRY_WARN_DAYS);
-      setAlerts(next);
-      setNames(new Map(data.members.map((m) => [m.id, m.name])));
-
-      if (next.length === 0) return;
-
-      try {
-        if (typeof sessionStorage !== 'undefined' && !sessionStorage.getItem(TOAST_SESSION_KEY)) {
-          sessionStorage.setItem(TOAST_SESSION_KEY, '1');
-          const expired = next.filter((a) => a.daysUntil < 0).length;
-          const soon = next.length - expired;
-          const parts: string[] = [];
-          if (expired) parts.push(`${expired} expired`);
-          if (soon) parts.push(`${soon} expiring within ${DEFAULT_EXPIRY_WARN_DAYS} days`);
-          toast.warning('Document expiry reminder', {
-            description: parts.join(' · ') + '. Open Document Vault to review.',
-            duration: 10_000,
-          });
-        }
-      } catch {
-        /* private mode */
+    if (alerts.length === 0) return;
+    try {
+      if (typeof sessionStorage !== 'undefined' && !sessionStorage.getItem(TOAST_SESSION_KEY)) {
+        sessionStorage.setItem(TOAST_SESSION_KEY, '1');
+        const expired = alerts.filter((a) => a.daysUntil < 0).length;
+        const soon = alerts.length - expired;
+        const parts: string[] = [];
+        if (expired) parts.push(`${expired} expired`);
+        if (soon) parts.push(`${soon} expiring within ${DEFAULT_EXPIRY_WARN_DAYS} days`);
+        toast.warning('Document expiry reminder', {
+          description: parts.join(' · ') + '. Open Document Vault to review.',
+          duration: 10_000,
+        });
       }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const [names, setNames] = useState<Map<string, string>>(new Map());
+    } catch {
+      /* private mode */
+    }
+  }, [alerts]);
 
   const dismiss = () => {
     try {
@@ -86,7 +82,7 @@ export default function DocumentExpiryAlerts() {
 
   return (
     <div
-      className="shrink-0 border-b border-[rgba(255,255,255,0.08)] bg-amber-500/12 px-4 py-3 lg:px-6"
+      className="shrink-0 border-b border-border bg-amber-500/12 px-4 py-3 lg:px-6"
       role="alert"
     >
       <div className="max-w-screen-2xl mx-auto flex gap-3">
@@ -96,18 +92,18 @@ export default function DocumentExpiryAlerts() {
           aria-hidden
         />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-700 text-white">
+          <p className="text-sm font-700 text-vault-text">
             {expiredCount > 0 && upcomingCount > 0
               ? `${expiredCount} expired · ${upcomingCount} expiring soon`
               : expiredCount > 0
                 ? `${expiredCount} document${expiredCount === 1 ? '' : 's'} with expired dates`
                 : `${upcomingCount} document${upcomingCount === 1 ? '' : 's'} expiring within ${DEFAULT_EXPIRY_WARN_DAYS} days`}
           </p>
-          <ul className="mt-2 space-y-1 text-xs text-white/85 max-h-28 overflow-y-auto">
+          <ul className="mt-2 space-y-1 text-xs text-vault-muted max-h-28 overflow-y-auto">
             {alerts.slice(0, 6).map((a) => (
               <li key={`${a.docId}-${a.fieldKey}`} className="truncate">
                 <span className="font-600">{a.title}</span>
-                <span className="text-white/70">
+                <span className="text-vault-muted">
                   {' '}
                   · {a.fieldLabel}
                   {names.has(a.memberId) ? ` · ${names.get(a.memberId)}` : ''} —{' '}
@@ -117,19 +113,19 @@ export default function DocumentExpiryAlerts() {
                 </span>
               </li>
             ))}
-            {alerts.length > 6 && <li className="text-white/65">+{alerts.length - 6} more…</li>}
+            {alerts.length > 6 && <li className="text-vault-faint">+{alerts.length - 6} more…</li>}
           </ul>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <Link
               href="/document-vault"
-              className="text-xs font-700 text-vault-warm hover:text-white transition-colors"
+              className="text-xs font-700 text-vault-warm hover:text-vault-text transition-colors"
             >
               Open Document Vault →
             </Link>
             <button
               type="button"
               onClick={dismiss}
-              className="text-xs font-600 text-white/70 hover:text-white transition-colors"
+              className="text-xs font-600 text-vault-muted hover:text-vault-text transition-colors"
             >
               Dismiss for today
             </button>
@@ -138,7 +134,7 @@ export default function DocumentExpiryAlerts() {
         <button
           type="button"
           onClick={dismiss}
-          className="flex-shrink-0 p-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          className="flex-shrink-0 rounded-lg p-1 text-vault-muted transition-colors hover:bg-vault-elevated hover:text-vault-text"
           aria-label="Dismiss expiry alert"
         >
           <X size={18} />

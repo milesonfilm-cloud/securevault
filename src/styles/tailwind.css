@@ -7,16 +7,28 @@
 @import 'shadcn/tailwind.css';
 
 @layer base {
-  :root {
-    /* SecureVault dark purple — semantic tokens (HSL components for Tailwind hsl(var(--*))) */
-    --color-bg-primary: #312c51;
-    --color-bg-secondary: #48426d;
-    --color-bg-elevated: #3d3666;
-    --color-accent-warm: #f0c38e;
-    --color-accent-coral: #f1aa9b;
-    --color-text-primary: #ffffff;
-    --color-text-muted: #d4cced;
-    --color-text-faint: #bfb4df;
+  :root,
+  [data-theme='vault'] {
+    /* Palette tokens — overridden in [data-theme='wellness'] */
+    --vault-c-bg: #312c51;
+    --vault-c-panel: #48426d;
+    --vault-c-elevated: #3d3666;
+    --vault-c-warm: #f0c38e;
+    --vault-c-coral: #f1aa9b;
+    --vault-c-ink: #312c51;
+    --vault-c-text: #ffffff;
+    --vault-c-muted: #d4cced;
+    --vault-c-faint: #bfb4df;
+    --vault-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+
+    --color-bg-primary: var(--vault-c-bg);
+    --color-bg-secondary: var(--vault-c-panel);
+    --color-bg-elevated: var(--vault-c-elevated);
+    --color-accent-warm: var(--vault-c-warm);
+    --color-accent-coral: var(--vault-c-coral);
+    --color-text-primary: var(--vault-c-text);
+    --color-text-muted: var(--vault-c-muted);
+    --color-text-faint: var(--vault-c-faint);
     --color-border: rgba(255, 255, 255, 0.07);
 
     --background: 252 29% 25%;
@@ -125,7 +137,7 @@
   .neo-surface {
     background: var(--color-bg-secondary);
     border-right: 1px solid var(--color-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--vault-shadow);
   }
 
   .neo-card {
@@ -133,7 +145,7 @@
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--vault-shadow);
   }
 
   .neo-inset {
@@ -152,11 +164,11 @@
     @apply active:scale-[0.98] transition-all duration-150 font-700 text-sm inline-flex items-center justify-center gap-2;
     border-radius: 12px;
     border: 1px solid var(--color-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--vault-shadow);
   }
   .neo-btn-primary {
     background: var(--color-accent-warm);
-    color: var(--color-bg-primary);
+    color: var(--vault-c-ink);
   }
   .neo-btn-secondary {
     background: var(--color-bg-elevated);
@@ -179,7 +191,7 @@
     border: 1px solid var(--color-border);
     border-radius: 16px;
     padding: 2.5rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--vault-shadow);
   }
   .auth-input {
     @apply w-full px-4 py-3 text-sm transition-all duration-200 outline-none neo-input font-sans;
@@ -214,7 +226,7 @@
   .glass-card {
     background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--vault-shadow);
   }
 
   /* ── Buttons ── */
@@ -377,6 +389,375 @@
 }
 [data-theme='vault'] ::-webkit-scrollbar-thumb:hover {
   background: #3d3666;
+}
+
+[data-theme='wellness'] {
+  --vault-c-bg: #d6e8f0;
+  --vault-c-panel: #ffffff;
+  --vault-c-elevated: #d6eaf2;
+  --vault-c-warm: #6bb8cc;
+  --vault-c-coral: #e07070;
+  --vault-c-ink: #1a1a2e;
+  --vault-c-text: #1a1a2e;
+  --vault-c-muted: #8a8a9a;
+  --vault-c-faint: #8a8a9a;
+  --vault-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+
+  --color-bg-primary: var(--vault-c-bg);
+  --color-bg-secondary: var(--vault-c-panel);
+  --color-bg-elevated: var(--vault-c-elevated);
+  --color-accent-warm: var(--vault-c-warm);
+  --color-accent-coral: var(--vault-c-coral);
+  --color-text-primary: var(--vault-c-text);
+  --color-text-muted: var(--vault-c-muted);
+  --color-text-faint: var(--vault-c-faint);
+  --color-border: rgba(26, 26, 46, 0.08);
+
+  --background: 200 45% 92%;
+  --foreground: 240 31% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 31% 14%;
+  --muted: 200 35% 90%;
+  --muted-foreground: 240 8% 46%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 31% 14%;
+  --border: 240 16% 90%;
+  --input: 200 35% 88%;
+  --primary: 192 48% 60%;
+  --primary-foreground: 240 31% 14%;
+  --secondary: 200 35% 88%;
+  --secondary-foreground: 240 31% 14%;
+  --accent: 200 40% 92%;
+  --accent-foreground: 240 31% 14%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 192 48% 58%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 240 31% 14%;
+  --sidebar-primary: 192 48% 60%;
+  --sidebar-primary-foreground: 240 31% 14%;
+  --sidebar-accent: 200 35% 92%;
+  --sidebar-accent-foreground: 240 31% 14%;
+  --sidebar-border: 240 16% 90%;
+  --sidebar-ring: 192 48% 58%;
+
+  font-family: var(--font-wellness-sans), var(--font-sans), system-ui, sans-serif;
+}
+
+[data-theme='wellness'] html,
+[data-theme='wellness'] body {
+  background-color: var(--vault-c-bg);
+  color: var(--vault-c-text);
+}
+
+[data-theme='wellness'] ::-webkit-scrollbar-thumb {
+  background: rgba(26, 26, 46, 0.2);
+}
+[data-theme='wellness'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 26, 46, 0.35);
+}
+
+[data-theme='wellness'] .auth-input:focus,
+[data-theme='wellness'] .input-field:focus {
+  box-shadow: 0 0 0 2px rgba(107, 184, 204, 0.4);
+  border-color: rgba(107, 184, 204, 0.35);
+}
+
+/* ── Neon stack board — reference palette (#000–#121212, neon accents, #A0A0A0 muted) ─ */
+[data-theme='neon'] {
+  --vault-c-bg: #09090b;
+  --vault-c-panel: #121212;
+  --vault-c-elevated: #0e0e12;
+  --vault-c-warm: #00ff41;
+  --vault-c-coral: #ff0055;
+  --vault-c-ink: #0a0a0c;
+  --vault-c-text: #ffffff;
+  --vault-c-muted: #a0a0a0;
+  --vault-c-faint: #6b6b6b;
+  --vault-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+
+  --color-bg-primary: var(--vault-c-bg);
+  --color-bg-secondary: var(--vault-c-panel);
+  --color-bg-elevated: var(--vault-c-elevated);
+  --color-accent-warm: var(--vault-c-warm);
+  --color-accent-coral: var(--vault-c-coral);
+  --color-text-primary: var(--vault-c-text);
+  --color-text-muted: var(--vault-c-muted);
+  --color-text-faint: var(--vault-c-faint);
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  --background: 240 6% 4%;
+  --foreground: 0 0% 100%;
+  --card: 240 5% 7%;
+  --card-foreground: 0 0% 100%;
+  --muted: 240 4% 12%;
+  --muted-foreground: 0 0% 63%;
+  --popover: 240 5% 7%;
+  --popover-foreground: 0 0% 100%;
+  --border: 0 0% 100% / 0.08;
+  --input: 240 4% 12%;
+  --primary: 132 100% 50%;
+  --primary-foreground: 240 6% 4%;
+  --secondary: 240 4% 14%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 240 4% 14%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 348 100% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 132 100% 50%;
+  --sidebar: 240 5% 7%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 132 100% 50%;
+  --sidebar-primary-foreground: 240 6% 4%;
+  --sidebar-accent: 240 4% 14%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 100% / 0.08;
+  --sidebar-ring: 132 100% 50%;
+
+  font-family: var(--font-neon-stack), var(--font-sans), system-ui, sans-serif;
+}
+
+[data-theme='neon'] html,
+[data-theme='neon'] body {
+  background-color: var(--vault-c-bg);
+  color: var(--vault-c-text);
+}
+
+[data-theme='neon'] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 65, 0.2);
+}
+[data-theme='neon'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 65, 0.35);
+}
+
+[data-theme='neon'] .auth-input:focus,
+[data-theme='neon'] .input-field:focus {
+  box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.45);
+  border-color: rgba(0, 255, 65, 0.4);
+}
+
+[data-theme='neon'] .neo-btn-primary,
+[data-theme='neon'] .btn-primary {
+  color: var(--vault-c-ink);
+}
+
+/* ── Pastel studio — soft grey shell, white cards, peach accents, Inter ─ */
+[data-theme='pastel'] {
+  --vault-c-bg: #e8eaef;
+  --vault-c-panel: #ffffff;
+  --vault-c-elevated: #f1f3f7;
+  --vault-c-warm: #e8926b;
+  --vault-c-coral: #6ba3d4;
+  --vault-c-ink: #1a1f2e;
+  --vault-c-text: #1a1f2e;
+  --vault-c-muted: #5c6370;
+  --vault-c-faint: #8b929e;
+  --vault-shadow: 0 12px 44px rgba(15, 23, 42, 0.09);
+
+  --color-bg-primary: var(--vault-c-bg);
+  --color-bg-secondary: var(--vault-c-panel);
+  --color-bg-elevated: var(--vault-c-elevated);
+  --color-accent-warm: var(--vault-c-warm);
+  --color-accent-coral: var(--vault-c-coral);
+  --color-text-primary: var(--vault-c-text);
+  --color-text-muted: var(--vault-c-muted);
+  --color-text-faint: var(--vault-c-faint);
+  --color-border: rgba(26, 31, 46, 0.09);
+
+  --background: 220 14% 93%;
+  --foreground: 222 22% 14%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 22% 14%;
+  --muted: 220 16% 92%;
+  --muted-foreground: 220 9% 46%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 22% 14%;
+  --border: 220 14% 88%;
+  --input: 220 14% 90%;
+  --primary: 20 78% 58%;
+  --primary-foreground: 222 22% 14%;
+  --secondary: 220 16% 92%;
+  --secondary-foreground: 222 22% 14%;
+  --accent: 220 20% 94%;
+  --accent-foreground: 222 22% 14%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 20 78% 58%;
+  --radius: 1.25rem;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 222 22% 14%;
+  --sidebar-primary: 20 78% 58%;
+  --sidebar-primary-foreground: 222 22% 14%;
+  --sidebar-accent: 220 16% 94%;
+  --sidebar-accent-foreground: 222 22% 14%;
+  --sidebar-border: 220 14% 88%;
+  --sidebar-ring: 20 78% 58%;
+
+  font-family: var(--font-pastel), system-ui, sans-serif;
+}
+
+html[data-theme='pastel'] body {
+  background-color: var(--vault-c-bg);
+  color: var(--vault-c-text);
+}
+
+[data-theme='pastel'] ::-webkit-scrollbar-thumb {
+  background: rgba(26, 31, 46, 0.22);
+}
+[data-theme='pastel'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 31, 46, 0.38);
+}
+
+[data-theme='pastel'] .auth-input:focus,
+[data-theme='pastel'] .input-field:focus {
+  box-shadow: 0 0 0 2px rgba(232, 146, 107, 0.45);
+  border-color: rgba(232, 146, 107, 0.38);
+}
+
+[data-theme='pastel'] .neo-card,
+[data-theme='pastel'] .neo-inset {
+  border-radius: 20px;
+}
+[data-theme='pastel'] .neo-btn {
+  border-radius: 20px;
+}
+[data-theme='pastel'] .auth-card {
+  border-radius: 20px;
+}
+[data-theme='pastel'] .neo-btn-primary,
+[data-theme='pastel'] .btn-primary {
+  color: var(--vault-c-ink);
+}
+
+/* Studio: Inter must win over default --font-sans (Plus Jakarta) from layout */
+html[data-theme='pastel'] {
+  --font-sans: var(--font-pastel), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+[data-theme='pastel'] .neo-card,
+[data-theme='pastel'] .glass-card {
+  background: var(--vault-c-panel);
+  border-color: rgba(26, 31, 46, 0.1);
+  box-shadow: var(--vault-shadow);
+}
+
+[data-theme='pastel'] .neo-inset {
+  background: var(--vault-c-elevated);
+  border-color: rgba(26, 31, 46, 0.08);
+}
+
+[data-theme='pastel'] .neo-surface {
+  border-right-color: rgba(26, 31, 46, 0.08);
+  box-shadow: 0 4px 28px rgba(15, 23, 42, 0.06);
+}
+
+/* ── Voyager — editorial dark (#0a0a0a), white type, champagne accent, Inter ─ */
+[data-theme='voyager'] {
+  --vault-c-bg: #0a0a0a;
+  --vault-c-panel: #141414;
+  --vault-c-elevated: #1a1a1a;
+  --vault-c-warm: #c9b896;
+  --vault-c-coral: #a8a29e;
+  --vault-c-ink: #0a0a0a;
+  --vault-c-text: #fafaf9;
+  --vault-c-muted: #a3a3a3;
+  --vault-c-faint: #737373;
+  --vault-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+
+  --color-bg-primary: var(--vault-c-bg);
+  --color-bg-secondary: var(--vault-c-panel);
+  --color-bg-elevated: var(--vault-c-elevated);
+  --color-accent-warm: var(--vault-c-warm);
+  --color-accent-coral: var(--vault-c-coral);
+  --color-text-primary: var(--vault-c-text);
+  --color-text-muted: var(--vault-c-muted);
+  --color-text-faint: var(--vault-c-faint);
+  --color-border: rgba(255, 255, 255, 0.08);
+
+  --background: 0 0% 4%;
+  --foreground: 60 9% 98%;
+  --card: 0 0% 8%;
+  --card-foreground: 60 9% 98%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 0 0% 64%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 60 9% 98%;
+  --border: 0 0% 100% / 0.08;
+  --input: 0 0% 12%;
+  --primary: 43 26% 68%;
+  --primary-foreground: 0 0% 4%;
+  --secondary: 0 0% 14%;
+  --secondary-foreground: 60 9% 98%;
+  --accent: 0 0% 14%;
+  --accent-foreground: 60 9% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 43 26% 68%;
+  --sidebar: 0 0% 7%;
+  --sidebar-foreground: 60 9% 98%;
+  --sidebar-primary: 43 26% 68%;
+  --sidebar-primary-foreground: 0 0% 4%;
+  --sidebar-accent: 0 0% 12%;
+  --sidebar-accent-foreground: 60 9% 98%;
+  --sidebar-border: 0 0% 100% / 0.08;
+  --sidebar-ring: 43 26% 68%;
+
+  font-family: var(--font-pastel), system-ui, sans-serif;
+}
+
+[data-theme='voyager'] html,
+[data-theme='voyager'] body {
+  background-color: var(--vault-c-bg);
+  color: var(--vault-c-text);
+}
+
+[data-theme='voyager'] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+}
+[data-theme='voyager'] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+[data-theme='voyager'] .auth-input:focus,
+[data-theme='voyager'] .input-field:focus {
+  box-shadow: 0 0 0 2px rgba(201, 184, 150, 0.45);
+  border-color: rgba(201, 184, 150, 0.4);
+}
+
+[data-theme='voyager'] .neo-btn-primary,
+[data-theme='voyager'] .btn-primary {
+  color: var(--vault-c-ink);
+}
+
+html[data-theme='voyager'] {
+  --font-sans: var(--font-pastel), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.voyager-vault-bg {
+  background-color: #050506;
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -30%, rgba(201, 184, 150, 0.09) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 50% at 100% 60%, rgba(120, 113, 108, 0.08) 0%, transparent 45%),
+    radial-gradient(ellipse 60% 45% at 0% 40%, rgba(91, 33, 182, 0.06) 0%, transparent 42%),
+    linear-gradient(180deg, #000000 0%, #0a0a0a 45%, #050506 100%);
+}
+
+.neon-vault-bg {
+  background-color: #09090b;
+  background-image:
+    radial-gradient(ellipse 100% 60% at 50% -25%, rgba(0, 255, 65, 0.12) 0%, transparent 55%),
+    radial-gradient(circle at 85% 70%, rgba(255, 0, 85, 0.08) 0%, transparent 42%),
+    radial-gradient(circle at 10% 40%, rgba(204, 255, 0, 0.05) 0%, transparent 38%),
+    linear-gradient(180deg, #050506 0%, #09090b 100%);
+}
+
+.pastel-vault-bg {
+  background-color: #e8eaef;
+  background-image: linear-gradient(165deg, #eef1f6 0%, #e4e7ee 45%, #dcdfe8 100%);
 }
 
 /* PWA safe area */

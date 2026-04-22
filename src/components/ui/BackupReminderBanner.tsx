@@ -19,7 +19,7 @@ export default function BackupReminderBanner({
       className={[
         'rounded-2xl border px-4 py-3 flex items-start gap-3',
         isDark
-          ? 'bg-[#3D3666] border-[rgba(255,255,255,0.07)] text-vault-muted'
+          ? 'border-[color:var(--color-border)] bg-vault-elevated text-vault-muted'
           : 'bg-amber-50 border-amber-100 text-amber-900',
         className,
       ].join(' ')}
@@ -27,13 +27,15 @@ export default function BackupReminderBanner({
       <div
         className={[
           'w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5',
-          isDark ? 'bg-[rgba(49,44,81,0.25)] text-[#F0C38E]' : 'bg-amber-100 text-amber-700',
+          isDark ? 'bg-vault-warm/15 text-vault-warm' : 'bg-amber-100 text-amber-700',
         ].join(' ')}
       >
         <AlertTriangle size={18} />
       </div>
       <div className="min-w-0">
-        <p className={['text-sm font-700', isDark ? 'text-white' : 'text-amber-900'].join(' ')}>
+        <p
+          className={['text-sm font-700', isDark ? 'text-vault-text' : 'text-amber-900'].join(' ')}
+        >
           Backup reminder (offline-only vault)
         </p>
         <p className={['text-xs mt-0.5', isDark ? 'text-vault-muted' : 'text-amber-700'].join(' ')}>

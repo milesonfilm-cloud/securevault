@@ -24,6 +24,7 @@ import { getCategoryById } from '@/lib/categories';
 import { DEFAULT_EXPIRY_WARN_DAYS, getDocumentExpiryUrgency } from '@/lib/documentExpiry';
 import { hexAlpha } from '@/lib/memberAvatarColors';
 import PhotoAttachments from './PhotoAttachments';
+import { useTheme } from '@/context/ThemeContext';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   CreditCard: <CreditCard size={16} />,
@@ -84,6 +85,7 @@ export default function DocumentList({
   onEdit,
   onDelete,
 }: DocumentListProps) {
+  const { theme } = useTheme();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [maskedFields, setMaskedFields] = useState<Set<string>>(new Set());
   const [flashRow, setFlashRow] = useState<{
@@ -132,10 +134,10 @@ export default function DocumentList({
         id="vault-document-list"
         className="flex flex-col items-center justify-center py-20 text-center"
       >
-        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5 bg-vault-elevated border border-[rgba(255,255,255,0.07)] shadow-vault">
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5 bg-vault-elevated border border-border shadow-vault">
           <CreditCard size={30} className="text-vault-warm" />
         </div>
-        <h3 className="text-base font-bold mb-1 text-white">No documents yet</h3>
+        <h3 className="text-base font-bold mb-1 text-vault-text">No documents yet</h3>
         <p className="text-sm max-w-xs text-vault-muted">
           Start adding your documents — IDs, bank accounts, cards, and more — all stored privately
           on this device.
@@ -214,7 +216,13 @@ export default function DocumentList({
           <div
             id={`vault-doc-${doc.id}`}
             key={`doc-item-${doc.id}`}
-            className={`rounded-2xl overflow-hidden transition-all duration-200 relative z-0 bg-vault-panel border border-[rgba(255,255,255,0.07)] shadow-vault ${
+            className={`rounded-2xl overflow-hidden transition-all duration-200 relative z-0 bg-vault-panel border border-border ${
+              theme === 'pastel'
+                ? 'shadow-pastel-card'
+                : theme === 'neon'
+                  ? 'shadow-[0_12px_40px_rgba(0,0,0,0.55)] ring-1 ring-[rgba(0,255,65,0.16)]'
+                  : 'shadow-vault'
+            } ${
               filterAccentColor ? 'border-l-[3px]' : ''
             } ${flashClass}`}
             style={filterAccentColor ? { borderLeftColor: filterAccentColor } : undefined}
@@ -224,10 +232,12 @@ export default function DocumentList({
               onClick={() => toggleExpand(doc.id)}
             >
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border border-[rgba(255,255,255,0.08)]"
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border border-border"
                 style={{
-                  backgroundColor: cat ? hexAlpha(cat.color, 0.2) : 'rgba(61,54,102,0.9)',
-                  color: cat?.color ?? '#F0C38E',
+                  backgroundColor: cat
+                    ? hexAlpha(cat.color, 0.2)
+                    : 'color-mix(in srgb, var(--vault-c-elevated) 88%, var(--vault-c-warm) 12%)',
+                  color: cat?.color ?? 'var(--vault-c-warm)',
                 }}
               >
                 {cat ? ICON_MAP[cat.icon] : <CreditCard size={16} />}
@@ -242,7 +252,7 @@ export default function DocumentList({
                   </p>
                 )}
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
-                  <p className="text-[15px] font-semibold text-white leading-snug truncate">
+                  <p className="text-[15px] font-semibold text-vault-text leading-snug truncate">
                     {doc.title}
                   </p>
                   {expiryUrgency === 'expired' && (
@@ -259,12 +269,20 @@ export default function DocumentList({
                 <div className="flex items-center gap-2 flex-wrap mt-1.5">
                   {member && (
                     <span
-                      className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-[20px] text-white"
+                      className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-[20px] text-white"
                       style={{
                         backgroundColor: hexAlpha(member.avatarColor, 0.4),
                         border: `1px solid ${hexAlpha(member.avatarColor, 0.65)}`,
                       }}
                     >
+                      {member.photoDataUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={member.photoDataUrl}
+                          alt=""
+                          className="h-4 w-4 shrink-0 rounded-full object-cover ring-1 ring-white/25"
+                        />
+                      ) : null}
                       {member.name.split(' ')[0]}
                     </span>
                   )}
@@ -287,7 +305,7 @@ export default function DocumentList({
             </div>
 
             {isExpanded && (
-              <div className="relative z-[1] px-5 pb-4 pt-1 animate-slide-up border-t border-[rgba(255,255,255,0.07)]">
+              <div className="relative z-[1] px-5 pb-4 pt-1 animate-slide-up border-t border-border">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {fieldEntries.map(([key, value]) => {
                     const catField = cat?.fields.find((f) => f.key === key);
@@ -327,7 +345,7 @@ export default function DocumentList({
                             )}
                           </div>
                         </div>
-                        <p className="text-sm font-bold font-mono mt-0.5 break-all text-white">
+                        <p className="text-sm font-bold font-mono mt-0.5 break-all text-vault-text">
                           {isMasked ? maskValue(value) : value}
                         </p>
                       </div>
@@ -336,7 +354,7 @@ export default function DocumentList({
                 </div>
 
                 {doc.notes && (
-                  <div className="mt-2.5 flex items-start gap-2 rounded-xl px-3 py-2 border border-[rgba(255,255,255,0.07)] bg-vault-elevated">
+                  <div className="mt-2.5 flex items-start gap-2 rounded-xl px-3 py-2 border border-border bg-vault-elevated">
                     <StickyNote size={13} className="mt-0.5 flex-shrink-0 text-vault-warm" />
                     <p className="text-xs text-vault-muted">{doc.notes}</p>
                   </div>
@@ -347,7 +365,7 @@ export default function DocumentList({
                     {doc.tags.map((tag) => (
                       <span
                         key={`tag-${doc.id}-${tag}`}
-                        className="neo-pill text-xs px-2.5 py-1 rounded-full font-bold bg-vault-elevated text-vault-muted border border-[rgba(255,255,255,0.07)]"
+                        className="neo-pill text-xs px-2.5 py-1 rounded-full font-bold bg-vault-elevated text-vault-muted border border-border"
                       >
                         #{tag}
                       </span>

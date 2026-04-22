@@ -106,3 +106,14 @@ export function clearPersistedVaultKey(): void {
     /* ignore */
   }
 }
+
+/** End session and reload so AuthGuard shows the unlock screen (sidebar + mobile nav). */
+export function lockVaultAndReload(): void {
+  try {
+    sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
+  } catch {
+    /* ignore */
+  }
+  clearPersistedVaultKey();
+  window.location.reload();
+}

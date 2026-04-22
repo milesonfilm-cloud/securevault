@@ -20,12 +20,12 @@ export default function StorageMeter() {
   const isWarning = storageInfo.percent > 70;
   const isDanger = storageInfo.percent > 90;
 
-  const barColor = isDanger ? '#EF4444' : isWarning ? '#F1AA9B' : '#F0C38E';
+  const barColor = isDanger ? '#EF4444' : isWarning ? 'var(--vault-c-coral)' : 'var(--vault-c-warm)';
 
   return (
     <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-vault-elevated border border-[rgba(255,255,255,0.07)]">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-vault-elevated border border-border">
           {isDanger || isWarning ? (
             <AlertTriangle size={20} className={isDanger ? 'text-red-400' : 'text-vault-warm'} />
           ) : (
@@ -33,7 +33,7 @@ export default function StorageMeter() {
           )}
         </div>
         <div>
-          <h3 className="text-base font-700 text-white">Local Storage (IndexedDB)</h3>
+          <h3 className="text-base font-700 text-vault-text">Local Storage (IndexedDB)</h3>
           <p className="text-xs text-vault-faint">
             Data persists in IndexedDB — survives cache clearing
           </p>
@@ -45,7 +45,7 @@ export default function StorageMeter() {
           <span>{formatBytes(storageInfo.used)} used</span>
           <span>{formatBytes(storageInfo.total)} available</span>
         </div>
-        <div className="h-3 bg-vault-elevated rounded-full overflow-hidden border border-[rgba(255,255,255,0.07)]">
+        <div className="h-3 bg-vault-elevated rounded-full overflow-hidden border border-border">
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{ width: `${storageInfo.percent}%`, backgroundColor: barColor }}

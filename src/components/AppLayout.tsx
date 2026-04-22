@@ -5,6 +5,7 @@ import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
 import DocumentExpiryAlerts from './DocumentExpiryAlerts';
 import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,10 +14,21 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, activePath }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  useTheme();
+  const { theme } = useTheme();
 
   return (
-    <div className="flex h-screen overflow-hidden relative neo-bg">
+    <div
+      className={cn(
+        'relative flex h-screen overflow-hidden',
+        theme === 'neon'
+          ? 'neon-vault-bg'
+          : theme === 'pastel'
+            ? 'pastel-vault-bg'
+            : theme === 'voyager'
+              ? 'voyager-vault-bg'
+              : 'neo-bg'
+      )}
+    >
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar
@@ -28,7 +40,7 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 flex flex-col overflow-y-auto pb-20 lg:pb-0">
+        <main className="flex flex-1 flex-col overflow-y-auto pb-28 lg:pb-0">
           {activePath !== '/document-vault' && <DocumentExpiryAlerts />}
           <div className="flex-1 min-h-0">{children}</div>
         </main>

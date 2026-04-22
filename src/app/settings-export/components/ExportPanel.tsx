@@ -1,27 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Download, FileJson, Sheet, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { loadVaultDataAsync, saveVaultDataAsync, VaultData, ExportRecord } from '@/lib/storage';
+import { VaultData, ExportRecord } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
 import { CATEGORIES } from '@/lib/categories';
 
 type ExportFormat = 'json' | 'csv';
 
 export default function ExportPanel() {
+  const { vaultData, persistVaultData } = useVaultData();
   const [format, setFormat] = useState<ExportFormat>('json');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedMember, setSelectedMember] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
-  const [vaultData, setVaultData] = useState<VaultData>({
-    members: [],
-    documents: [],
-    exportHistory: [],
-  });
-
-  useEffect(() => {
-    loadVaultDataAsync().then(setVaultData);
-  }, []);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -39,6 +32,8 @@ export default function ExportPanel() {
           version: '1.0',
           members: vaultData.members,
           documents: docs,
+          exportHistory: vaultData.exportHistory,
+          documentStacks: vaultData.documentStacks,
         };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -96,8 +91,7 @@ export default function ExportPanel() {
         ...vaultData,
         exportHistory: [record, ...vaultData.exportHistory].slice(0, 10),
       };
-      await saveVaultDataAsync(updated);
-      setVaultData(updated);
+      await persistVaultData(updated);
 
       toast.success(`Exported ${docs.length} documents as ${format.toUpperCase()}`);
     } catch (_err) {
@@ -126,11 +120,11 @@ export default function ExportPanel() {
   return (
     <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-[rgba(255,255,255,0.07)]">
+        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-border">
           <Download size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-white">Export Documents</h3>
+          <h3 className="text-base font-700 text-vault-text">Export Documents</h3>
           <p className="text-xs text-vault-faint">
             Create a local backup — files download to your device
           </p>
@@ -148,13 +142,13 @@ export default function ExportPanel() {
               className={`flex items-start gap-3 p-3 rounded-xl border-2 text-left transition-all duration-150 ${
                 format === opt.id
                   ? 'border-vault-warm/50 bg-vault-elevated'
-                  : 'border-[rgba(255,255,255,0.07)] hover:border-vault-warm/25 bg-vault-elevated/50'
+                  : 'border-border hover:border-vault-warm/25 bg-vault-elevated/50'
               }`}
             >
               <div className="mt-0.5">{opt.icon}</div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-600 text-white">{opt.label}</span>
+                  <span className="text-sm font-600 text-vault-text">{opt.label}</span>
                   {format === opt.id && <CheckCircle2 size={14} className="text-vault-warm" />}
                 </div>
                 <p className="text-xs text-vault-faint mt-0.5">{opt.desc}</p>
@@ -199,9 +193,9 @@ export default function ExportPanel() {
       </div>
 
       {/* Export count preview */}
-      <div className="bg-vault-elevated rounded-xl px-4 py-3 mb-4 flex items-center justify-between border border-[rgba(255,255,255,0.07)]">
+      <div className="bg-vault-elevated rounded-xl px-4 py-3 mb-4 flex items-center justify-between border border-border">
         <span className="text-sm text-vault-muted">Documents to export</span>
-        <span className="text-sm font-700 text-white tabular-nums">
+        <span className="text-sm font-700 text-vault-text tabular-nums">
           {
             vaultData.documents.filter((d) => {
               const catOk = selectedCategory === 'all' || d.categoryId === selectedCategory;

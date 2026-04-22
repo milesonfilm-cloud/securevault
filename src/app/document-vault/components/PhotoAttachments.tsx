@@ -128,7 +128,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-[rgba(255,255,255,0.12)] bg-vault-elevated text-xs text-vault-muted hover:bg-vault-panel transition-all duration-150 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-dashed border-border/60 bg-vault-elevated text-xs text-vault-muted hover:bg-vault-panel transition-all duration-150 disabled:opacity-50"
         >
           <ImagePlus size={14} />
           Attach photos (optional)
@@ -147,7 +147,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="aspect-square rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.12)] bg-vault-elevated flex items-center justify-center text-vault-faint hover:bg-vault-panel transition-all duration-150 disabled:opacity-50"
+              className="aspect-square rounded-2xl border-2 border-dashed border-border/60 bg-vault-elevated flex items-center justify-center text-vault-faint hover:bg-vault-panel transition-all duration-150 disabled:opacity-50"
             >
               {uploading ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
             </button>
@@ -202,7 +202,7 @@ function PhotoThumb({ photo, onDelete, onOpen }: PhotoThumbProps) {
   if (!url) return null;
 
   return (
-    <div className="relative group aspect-square rounded-2xl overflow-hidden border border-[rgba(255,255,255,0.07)] bg-vault-elevated shadow-vault">
+    <div className="relative group aspect-square rounded-2xl overflow-hidden border border-border bg-vault-elevated shadow-vault">
       <Image src={url} alt={photo.name} fill unoptimized sizes="96px" className="object-cover" />
       {/* Hover overlay */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-150 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">

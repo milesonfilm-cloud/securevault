@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Shield, Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-react';
+import { Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-react';
 import BackupReminderBanner from '@/components/ui/BackupReminderBanner';
+import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
+import { useTheme } from '@/context/ThemeContext';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
 import {
   isBiometricSupported,
@@ -22,8 +24,14 @@ import {
   setVaultKey,
 } from '@/lib/vaultSession';
 import { persistUnlockedVaultKey, tryRestoreVaultKeyFromPersist } from '@/lib/vaultKeyPersist';
-import { computePinVerifier, deriveAesKeyFromPin, newKdfParams } from '@/lib/crypto/vaultCrypto';
+import {
+  computePinVerifier,
+  deriveAesKeyFromPin,
+  newKdfParams,
+  timingSafeEqualVerifierB64,
+} from '@/lib/crypto/vaultCrypto';
 import { resetVaultLocalOnly } from '@/lib/storage';
+import { VaultDataProvider } from '@/context/VaultDataContext';
 import { AUTH_INTRO_SESSION_KEY, completeAuthIntroSession } from '@/lib/authIntroSession';
 
 const SESSION_KEY = SESSION_UNLOCKED_KEY;
@@ -41,6 +49,7 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
+  const { theme } = useTheme();
   const [phase, setPhase] = useState<'loading' | 'setup' | 'login' | 'unlocked'>('loading');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -144,19 +153,52 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
     void (async () => {
       try {
+        if (typeof crypto === 'undefined' || !crypto.subtle) {
+          setError(
+            'Secure encryption is not available. Use https:// or open this app on localhost, not a raw IP or file URL.'
+          );
+          triggerShake();
+          return;
+        }
         const params = newKdfParams();
         const key = await deriveAesKeyFromPin(pin, params);
         const verifier = await computePinVerifier(key);
-        setStoredKdfParams(params);
-        setStoredVerifier(verifier);
+        try {
+          setStoredKdfParams(params);
+          setStoredVerifier(verifier);
+        } catch (storageErr) {
+          const name = storageErr instanceof DOMException ? storageErr.name : '';
+          if (name === 'QuotaExceededError' || (storageErr as Error)?.name === 'QuotaExceededError') {
+            setError('Browser storage is full. Free some space and try again.');
+          } else {
+            setError('Could not save your vault keys. Check browser storage permissions and try again.');
+          }
+          triggerShake();
+          return;
+        }
         setVaultKey(key);
         if (biometricAvailable && !biometricRegistered) {
           setBiometricSetupOffer(true);
         } else {
           unlockVault();
         }
-      } catch {
-        setError('Could not create vault. Try again.');
+      } catch (err) {
+        console.error('[SecureVault] setup failed', err);
+        const msg = err instanceof Error ? err.message.toLowerCase() : '';
+        if (
+          msg.includes('memory') ||
+          msg.includes('wasm') ||
+          msg.includes('allocation') ||
+          msg.includes('out of memory')
+        ) {
+          setError(
+            'This device ran out of memory while securing your password. Close other tabs or apps and try again.'
+          );
+        } else if (msg.includes('hash-wasm') || msg.includes('failed to fetch') || msg.includes('loading')) {
+          setError('Could not load password security module. Refresh the page and try again.');
+        } else {
+          setError('Could not create vault. Check that you are on a secure page (https or localhost) and try again.');
+        }
         triggerShake();
       }
     })();
@@ -172,7 +214,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       if (!params || !verifier) throw new Error('not_initialized');
       const key = await deriveAesKeyFromPin(pin, params);
       const got = await computePinVerifier(key);
-      if (got !== verifier) throw new Error('bad_pin');
+      if (!(await timingSafeEqualVerifierB64(got, verifier))) throw new Error('bad_pin');
       setVaultKey(key);
       unlockVault();
     })().catch(() => {
@@ -235,7 +277,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const handleForgotPin = async () => {
     setError('');
     const ok = window.confirm(
-      'Resetting will permanently delete your local vault data on this device.\\n\\nIf you have an encrypted backup file, you can restore after reset.\\n\\nContinue?'
+      'Resetting will permanently delete your local vault data on this device.\n\nIf you have an encrypted backup file, you can restore after reset.\n\nContinue?'
     );
     if (!ok) return;
     await resetVaultLocalOnly();
@@ -254,7 +296,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (phase === 'unlocked') {
-    return <>{children}</>;
+    return <VaultDataProvider>{children}</VaultDataProvider>;
   }
 
   // Biometric setup offer screen (shown after password creation)
@@ -264,11 +306,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         <div className="relative w-full max-w-sm auth-card animate-auth-in">
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-4">
-              <div className="w-20 h-20 rounded-2xl bg-vault-elevated border border-[rgba(255,255,255,0.07)] flex items-center justify-center">
+              <div className="w-20 h-20 rounded-2xl bg-vault-elevated border border-border flex items-center justify-center">
                 <Fingerprint size={36} className="text-vault-warm" />
               </div>
             </div>
-            <h1 className="text-2xl font-800 text-white tracking-tight">Enable Biometrics</h1>
+            <h1 className="text-2xl font-800 text-vault-text tracking-tight">Enable Biometrics</h1>
             <p className="text-sm text-vault-muted mt-1 text-center">
               Use fingerprint or Face ID for quick, secure access
             </p>
@@ -276,11 +318,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
           {/* Biometric type indicators */}
           <div className="flex gap-3 mb-6">
-            <div className="flex-1 flex flex-col items-center gap-2 bg-vault-elevated border border-[rgba(255,255,255,0.07)] rounded-2xl p-4">
+            <div className="flex-1 flex flex-col items-center gap-2 bg-vault-elevated border border-border rounded-2xl p-4">
               <Fingerprint size={24} className="text-vault-warm" />
               <span className="text-xs text-vault-muted text-center">Fingerprint</span>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-2 bg-vault-elevated border border-[rgba(255,255,255,0.07)] rounded-2xl p-4">
+            <div className="flex-1 flex flex-col items-center gap-2 bg-vault-elevated border border-border rounded-2xl p-4">
               <ScanFace size={24} className="text-vault-warm" />
               <span className="text-xs text-vault-muted text-center">Face ID</span>
             </div>
@@ -349,18 +391,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <div
             className={`relative mb-4 transition-all duration-500 ${success ? 'scale-110' : ''}`}
           >
-            <div className="w-20 h-20 rounded-2xl bg-vault-elevated border border-[rgba(255,255,255,0.07)] flex items-center justify-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated">
               {success ? (
                 <CheckCircle2 size={36} className="text-vault-warm animate-scale-in" />
-              ) : phase === 'setup' ? (
-                <Shield size={36} className="text-vault-warm" />
               ) : (
-                <Lock size={36} className="text-vault-warm" />
+                <VaultBrandIcon variant={theme} size={48} aria-label="SecureVault" />
               )}
             </div>
           </div>
 
-          <h1 className="text-2xl font-800 text-white tracking-tight">
+          <h1 className="text-2xl font-800 text-vault-text tracking-tight">
             {success ? 'Welcome!' : phase === 'setup' ? 'Create Password' : 'Unlock vault'}
           </h1>
           <p className="text-sm text-vault-muted mt-1 text-center">
@@ -381,10 +421,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             <button
               onClick={handleBiometricLogin}
               disabled={biometricLoading}
-              className="w-full mb-5 flex flex-col items-center gap-2 bg-vault-elevated hover:bg-vault-panel border border-[rgba(255,255,255,0.07)] rounded-2xl py-4 px-4 transition-all duration-200 group"
+              className="w-full mb-5 flex flex-col items-center gap-2 bg-vault-elevated hover:bg-vault-panel border border-[color:var(--color-border)] rounded-2xl py-4 px-4 transition-all duration-200 group"
             >
               <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-[#312C51] border border-[rgba(255,255,255,0.07)] flex items-center justify-center transition-all duration-200">
+                <div className="w-14 h-14 rounded-2xl bg-vault-panel border border-[color:var(--color-border)] flex items-center justify-center transition-all duration-200">
                   {biometricLoading ? (
                     <div className="w-6 h-6 border-2 border-vault-faint border-t-vault-warm rounded-full animate-spin" />
                   ) : (
@@ -393,7 +433,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                 </div>
               </div>
               <div className="text-center">
-                <p className="text-sm font-700 text-white transition-colors">
+                <p className="text-sm font-700 text-vault-text transition-colors">
                   {biometricLoading ? 'Authenticating…' : 'Use Biometrics'}
                 </p>
                 <p className="text-xs text-vault-muted mt-0.5">Fingerprint or Face ID</p>
@@ -408,9 +448,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           biometricRegistered &&
           !loginHint && (
             <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-[rgba(255,255,255,0.07)]" />
+              <div className="flex-1 h-px bg-border" />
               <span className="text-xs text-vault-faint font-600">or use password</span>
-              <div className="flex-1 h-px bg-[rgba(255,255,255,0.07)]" />
+              <div className="flex-1 h-px bg-border" />
             </div>
           )}
 

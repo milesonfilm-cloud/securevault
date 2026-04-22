@@ -2,7 +2,7 @@
   "name": "SecureVault",
   "short_name": "SecureVault",
   "description": "Private offline document storage for families",
-  "start_url": "/document-vault",
+  "start_url": "/family-management",
   "display": "standalone",
   "background_color": "#312C51",
   "theme_color": "#312C51",

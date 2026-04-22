@@ -1,4 +1,4 @@
-import type { KdfParamsV1 } from './crypto/vaultCrypto';
+import { parseKdfParamsJson, type KdfParams } from './crypto/vaultCrypto';
 
 let _vaultKey: CryptoKey | null = null;
 
@@ -19,17 +19,13 @@ export function getVaultKey(): CryptoKey {
   return _vaultKey;
 }
 
-export function getStoredKdfParams(): KdfParamsV1 | null {
+export function getStoredKdfParams(): KdfParams | null {
   const raw = localStorage.getItem(PIN_KDF_PARAMS_KEY);
   if (!raw) return null;
-  try {
-    return JSON.parse(raw) as KdfParamsV1;
-  } catch {
-    return null;
-  }
+  return parseKdfParamsJson(raw);
 }
 
-export function setStoredKdfParams(params: KdfParamsV1) {
+export function setStoredKdfParams(params: KdfParams) {
   localStorage.setItem(PIN_KDF_PARAMS_KEY, JSON.stringify(params));
 }
 

@@ -19,7 +19,19 @@ export type CategoryId =
   | 'institutional-docs'
   | 'vehicle-documents'
   | 'family-profiles'
-  | 'password-vault';
+  | 'password-vault'
+  | 'passport'
+  | 'drivers-license'
+  | 'insurance'
+  | 'visa'
+  | 'medical-record'
+  | 'certificate'
+  | 'contract'
+  | 'warranty'
+  | 'membership'
+  | 'subscription'
+  | 'permit'
+  | 'other';
 
 export interface FamilyMember {
   id: string;
@@ -27,6 +39,8 @@ export interface FamilyMember {
   relationship: string;
   dob: string;
   avatarColor: string;
+  /** Optional profile photo (JPEG data URL, resized client-side). */
+  photoDataUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -41,12 +55,43 @@ export interface Document {
   createdAt: string;
   updatedAt: string;
   tags: string[];
+  /** At most one stack board folder; null = not in any folder. */
+  stackId: string | null;
+}
+
+/** Normalize legacy `stackIds[]` or missing field to single `stackId`. */
+export function migrateDocumentStackField(
+  d: Document & { stackIds?: string[] }
+): Document {
+  const fromArray =
+    Array.isArray(d.stackIds) && d.stackIds.length > 0 ? d.stackIds[0] : null;
+  const stackId =
+    typeof d.stackId === 'string' && d.stackId.length > 0 ? d.stackId : fromArray;
+  const { stackIds: _drop, ...rest } = d;
+  return { ...(rest as Document), stackId };
+}
+
+/**
+ * User-defined folder on the stack board: combine member scope and/or categories.
+ * A document matches when it passes both: optional member filter AND optional category list
+ * (empty category list = all categories allowed under the member scope; no member = any member).
+ */
+export interface DocumentStack {
+  id: string;
+  name: string;
+  accentColor: string;
+  memberScopeId: string | null;
+  categoryIds: CategoryId[];
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface VaultData {
   members: FamilyMember[];
   documents: Document[];
   exportHistory: ExportRecord[];
+  documentStacks: DocumentStack[];
 }
 
 export interface ExportRecord {
@@ -96,6 +141,12 @@ export async function loadVaultDataAsync(): Promise<VaultData> {
   normalized.documents = normalized.documents.map((d) =>
     (d.categoryId as unknown as string) === 'websites' ? { ...d, categoryId: 'password-vault' } : d
   );
+  if (!Array.isArray(normalized.documentStacks)) {
+    normalized.documentStacks = [];
+  }
+  normalized.documents = normalized.documents.map((d) =>
+    migrateDocumentStackField(d as Document & { stackIds?: string[] })
+  );
   return normalized;
 }
 
@@ -116,11 +167,18 @@ export async function getStorageSizeAsync(): Promise<{
 // Prefer the Async variants above for all new code.
 
 export function loadVaultData(): VaultData {
-  if (typeof window === 'undefined') return { members: [], documents: [], exportHistory: [] };
+  if (typeof window === 'undefined') {
+    return { members: [], documents: [], exportHistory: [], documentStacks: [] };
+  }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return getDefaultData();
-    return JSON.parse(raw) as VaultData;
+    const parsed = JSON.parse(raw) as VaultData;
+    if (!Array.isArray(parsed.documentStacks)) parsed.documentStacks = [];
+    parsed.documents = parsed.documents.map((d) =>
+      migrateDocumentStackField(d as Document & { stackIds?: string[] })
+    );
+    return parsed;
   } catch {
     return getDefaultData();
   }
@@ -220,6 +278,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['primary', 'kyc'],
+      stackId: null,
     },
     {
       id: 'doc-002',
@@ -235,6 +294,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['tax', 'kyc'],
+      stackId: null,
     },
     {
       id: 'doc-003',
@@ -252,6 +312,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['salary', 'primary'],
+      stackId: null,
     },
     {
       id: 'doc-004',
@@ -270,6 +331,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['rewards', 'travel'],
+      stackId: null,
     },
     {
       id: 'doc-005',
@@ -288,6 +350,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['car', 'honda'],
+      stackId: null,
     },
     {
       id: 'doc-006',
@@ -305,6 +368,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['travel', 'international'],
+      stackId: null,
     },
     {
       id: 'doc-007',
@@ -322,6 +386,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['joint', 'household'],
+      stackId: null,
     },
     {
       id: 'doc-008',
@@ -340,6 +405,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['insurance', 'life'],
+      stackId: null,
     },
     {
       id: 'doc-009',
@@ -357,6 +423,7 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['school', 'education'],
+      stackId: null,
     },
     {
       id: 'doc-010',
@@ -375,10 +442,11 @@ function getDefaultData(): VaultData {
       createdAt: now,
       updatedAt: now,
       tags: ['loan', 'property'],
+      stackId: null,
     },
   ];
 
-  const data: VaultData = { members, documents, exportHistory: [] };
+  const data: VaultData = { members, documents, exportHistory: [], documentStacks: [] };
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }

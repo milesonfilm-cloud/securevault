@@ -1,6 +1,13 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google';
+import {
+  Plus_Jakarta_Sans,
+  JetBrains_Mono,
+  DM_Sans,
+  DM_Serif_Display,
+  Roboto_Condensed,
+  Inter,
+} from 'next/font/google';
 import '../styles/tailwind.css';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/context/ThemeContext';
@@ -24,6 +31,40 @@ const fontMono = JetBrains_Mono({
   fallback: ['ui-monospace', 'monospace'],
 });
 
+const fontWellnessSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-wellness-sans',
+  display: 'swap',
+  fallback: ['system-ui', 'sans-serif'],
+});
+
+const fontWellnessSerif = DM_Serif_Display({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-wellness-serif',
+  display: 'swap',
+  fallback: ['Georgia', 'serif'],
+});
+
+/** Matches reference dashboard: condensed geometric sans (Roboto Condensed). */
+const fontNeonStack = Roboto_Condensed({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-neon-stack',
+  display: 'swap',
+  fallback: ['system-ui', 'sans-serif'],
+});
+
+/** Studio / pastel theme — Inter per design reference */
+const fontPastel = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-pastel',
+  display: 'swap',
+  fallback: ['system-ui', 'sans-serif'],
+});
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -33,7 +74,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'SecureVault — Private Document Storage for Families',
   description:
-    'Store, organize, and access your personal and family documents 100% offline. Zero cloud, zero tracking. Your data stays on your device.',
+    'SecureVault app — store and organize family documents offline on your device. Zero cloud vault sync, zero tracking.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -53,7 +94,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="en"
-      className={cn(fontSans.variable, fontMono.variable, 'font-sans')}
+      className={cn(
+        fontSans.variable,
+        fontMono.variable,
+        fontWellnessSans.variable,
+        fontWellnessSerif.variable,
+        fontNeonStack.variable,
+        fontPastel.variable,
+        'font-sans'
+      )}
       data-theme="vault"
     >
       <body>
@@ -64,7 +113,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           position="bottom-right"
           toastOptions={{
             style: {
-              fontFamily: 'var(--font-sans), system-ui, sans-serif',
+              fontFamily: 'inherit',
               fontSize: '14px',
             },
           }}

@@ -1,36 +1,39 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
-import { loadVaultDataAsync, saveVaultDataAsync, FamilyMember, VaultData } from '@/lib/storage';
-import { getPastelLedgerTile } from '@/lib/pastelLedgerPalette';
-import MemberCard from './MemberCard';
+import { FamilyMember, VaultData } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
+import { getPastelLedgerTile, type LedgerTileTheme } from '@/lib/pastelLedgerPalette';
+import { useTheme } from '@/context/ThemeContext';
+import FamilyMembersRow from './FamilyMembersRow';
 import MemberFormModal from './MemberFormModal';
-import MemberDocumentPanel from './MemberDocumentPanel';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { DEMO_FAMILY_MEMBERS, isDemoMemberId } from '@/lib/demoFamilyMembers';
 
 export default function FamilyManagementContent() {
-  const [vaultData, setVaultData] = useState<VaultData>({
-    members: [],
-    documents: [],
-    exportHistory: [],
-  });
-  const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
+  const ledgerTheme: LedgerTileTheme =
+    theme === 'pastel'
+      ? 'pastel'
+      : theme === 'wellness'
+        ? 'wellness'
+        : theme === 'voyager'
+          ? 'voyager'
+          : theme === 'neon'
+            ? 'neon'
+            : 'vault';
+
+  const { vaultData, loading, persistVaultData } = useVaultData();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editMember, setEditMember] = useState<FamilyMember | null>(null);
   const [deleteMember, setDeleteMember] = useState<FamilyMember | null>(null);
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadVaultDataAsync().then((data) => {
-      setVaultData(data);
-      setLoading(false);
-      if (data.members.length > 0) {
-        setSelectedMemberId(data.members[0].id);
-      }
-    });
-  }, []);
+  const displayMembers = useMemo(
+    () => [...vaultData.members, ...DEMO_FAMILY_MEMBERS],
+    [vaultData.members]
+  );
 
   const handleSaveMember = async (
     memberData: Omit<FamilyMember, 'id' | 'createdAt' | 'updatedAt'>
@@ -54,11 +57,9 @@ export default function FamilyManagementContent() {
       };
       updated = { ...vaultData, members: [...vaultData.members, newMember] };
       toast.success(`${newMember.name} added to family vault`);
-      setSelectedMemberId(newMember.id);
     }
 
-    await saveVaultDataAsync(updated);
-    setVaultData(updated);
+    await persistVaultData(updated);
     setShowAddModal(false);
     setEditMember(null);
   };
@@ -71,30 +72,24 @@ export default function FamilyManagementContent() {
       members: vaultData.members.filter((m) => m.id !== deleteMember.id),
       documents: vaultData.documents.filter((d) => d.memberId !== deleteMember.id),
     };
-    await saveVaultDataAsync(updated);
-    setVaultData(updated);
-    if (selectedMemberId === deleteMember.id) {
-      setSelectedMemberId(updated.members[0]?.id || null);
-    }
+    await persistVaultData(updated);
     toast.success(
       `${deleteMember.name} and ${docCount} document${docCount !== 1 ? 's' : ''} removed`
     );
     setDeleteMember(null);
   };
 
-  const selectedMember = vaultData.members.find((m) => m.id === selectedMemberId) || null;
-  const selectedMemberDocs = selectedMember
-    ? vaultData.documents.filter((d) => d.memberId === selectedMember.id)
-    : [];
-
   if (loading) {
     return (
-      <div className="p-6 max-w-screen-2xl mx-auto bg-vault-bg min-h-full">
+      <div className="mx-auto min-h-full max-w-screen-2xl bg-vault-bg p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-vault-elevated rounded-[10px] w-48" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="h-8 w-48 rounded-[10px] bg-vault-elevated" />
+          <div className="-mx-4 flex gap-4 overflow-hidden px-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={`skel-member-${i}`} className="h-48 bg-vault-panel rounded-2xl" />
+              <div
+                key={`skel-member-${i}`}
+                className="h-[440px] min-w-[280px] shrink-0 rounded-2xl bg-vault-panel"
+              />
             ))}
           </div>
         </div>
@@ -103,15 +98,15 @@ export default function FamilyManagementContent() {
   }
 
   return (
-    <div className="p-4 lg:p-6 max-w-screen-2xl mx-auto bg-vault-bg min-h-full">
+    <div className="mx-auto min-h-full max-w-screen-2xl bg-vault-bg p-4 lg:p-6">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 gap-4">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs text-vault-faint font-medium">Family</p>
-          <h1 className="text-[32px] font-bold text-white tracking-tight leading-tight mt-0.5">
+          <p className="text-xs font-medium text-vault-faint">Family</p>
+          <h1 className="mt-0.5 text-[32px] font-bold leading-tight tracking-tight text-vault-text">
             Members
           </h1>
-          <p className="text-[13px] text-vault-muted mt-2">
+          <p className="mt-2 text-[13px] text-vault-muted">
             {vaultData.members.length} member{vaultData.members.length !== 1 ? 's' : ''} ·{' '}
             {vaultData.documents.length} total documents stored
           </p>
@@ -121,7 +116,7 @@ export default function FamilyManagementContent() {
             setEditMember(null);
             setShowAddModal(true);
           }}
-          className="flex-shrink-0 flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold bg-vault-warm text-vault-ink transition-all active:scale-[0.98] shadow-vault"
+          className="flex flex-shrink-0 items-center gap-2 rounded-xl bg-vault-warm px-5 py-2.5 text-sm font-semibold text-vault-ink shadow-vault transition-all active:scale-[0.98]"
         >
           <Plus size={18} strokeWidth={2.5} className="text-vault-ink" />
           Add
@@ -129,97 +124,47 @@ export default function FamilyManagementContent() {
       </div>
 
       {vaultData.members.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-20 h-20 bg-vault-elevated rounded-2xl flex items-center justify-center mb-5 border border-[rgba(255,255,255,0.07)]">
-            <Users size={36} className="text-vault-warm" />
-          </div>
-          <h3 className="text-lg font-bold text-white mb-2">No family members yet</h3>
-          <p className="text-sm text-vault-muted max-w-sm mb-6">
-            Add family member profiles to organize documents by person — IDs, accounts, and records
-            stay neatly separated.
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold bg-vault-warm text-vault-ink transition-all active:scale-[0.98] shadow-vault"
-          >
-            <Plus size={18} strokeWidth={2.5} />
-            Add
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-col xl:flex-row gap-5">
-          {/* Members grid */}
-          <div className="flex-1 min-w-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 gap-4">
-              {vaultData.members.map((member, index) => (
-                <MemberCard
-                  key={`member-card-${member.id}`}
-                  member={member}
-                  documents={vaultData.documents.filter((d) => d.memberId === member.id)}
-                  isSelected={selectedMemberId === member.id}
-                  tile={getPastelLedgerTile(index)}
-                  onSelect={() => setSelectedMemberId(member.id)}
-                  onEdit={() => {
-                    setEditMember(member);
-                    setShowAddModal(true);
-                  }}
-                  onDelete={() => setDeleteMember(member)}
-                />
-              ))}
+        <div className="mb-6 flex flex-col items-center gap-3 rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated/40 px-4 py-5 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[color:var(--color-border)] bg-vault-panel">
+              <Users size={24} className="text-vault-warm" />
             </div>
-
-            {/* Stats row */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { label: 'Total Members', value: vaultData.members.length },
-                { label: 'Total Documents', value: vaultData.documents.length },
-                {
-                  label: 'Most Documents',
-                  value: vaultData.members.reduce(
-                    (best, m) => {
-                      const count = vaultData.documents.filter((d) => d.memberId === m.id).length;
-                      return count > (best.count || 0)
-                        ? { name: m.name.split(' ')[0], count }
-                        : best;
-                    },
-                    { name: '—', count: 0 }
-                  ).name,
-                },
-                {
-                  label: 'Categories Used',
-                  value: new Set(vaultData.documents.map((d) => d.categoryId)).size,
-                },
-              ].map((stat, i) => {
-                const tile = getPastelLedgerTile(i);
-                return (
-                  <div
-                    key={`family-stat-${i}`}
-                    className="rounded-2xl p-4 border border-[rgba(255,255,255,0.07)] shadow-vault"
-                    style={{ background: tile.bg }}
-                  >
-                    <p className="text-[11px] font-700 uppercase tracking-widest mb-1 text-white/88">
-                      {stat.label}
-                    </p>
-                    <p className="text-xl font-800 tabular-nums text-white">{stat.value}</p>
-                  </div>
-                );
-              })}
+            <div>
+              <p className="text-sm font-700 text-vault-text">No members yet</p>
+              <p className="mt-0.5 max-w-md text-xs text-vault-muted">
+                Sample cards below show how profiles look — add your own with{' '}
+                <span className="font-600 text-vault-text">Add</span>.
+              </p>
             </div>
           </div>
-
-          {/* Document panel */}
-          {selectedMember && (
-            <div className="xl:w-80 2xl:w-96 flex-shrink-0">
-              <MemberDocumentPanel
-                member={selectedMember}
-                documents={selectedMemberDocs}
-                onClose={() => setSelectedMemberId(null)}
-              />
-            </div>
-          )}
         </div>
-      )}
+      ) : null}
+
+      <div className="min-w-0">
+        <p className="mb-3 text-center text-xs text-vault-faint">
+          Scroll horizontally — tap a card to flip for details.
+        </p>
+        <FamilyMembersRow
+          members={displayMembers}
+          ledgerTheme={ledgerTheme}
+          documentsByMemberId={(id) => vaultData.documents.filter((d) => d.memberId === id)}
+          onEdit={(member) => {
+            if (isDemoMemberId(member.id)) {
+              toast.message('Sample profile — add your own member to edit.');
+              return;
+            }
+            setEditMember(member);
+            setShowAddModal(true);
+          }}
+          onDelete={(member) => {
+            if (isDemoMemberId(member.id)) {
+              toast.message('Sample profile — cannot delete.');
+              return;
+            }
+            setDeleteMember(member);
+          }}
+        />
+      </div>
 
       {/* Modals */}
       <MemberFormModal

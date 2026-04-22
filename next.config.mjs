@@ -2,8 +2,24 @@ import { imageHosts } from './image-hosts.config.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  productionBrowserSourceMaps: true,
+  /**
+   * Dev-only: allow other hostnames (e.g. LAN IP) to load `/_next/*` without cross-origin warnings
+   * when you open the app as http://192.168.x.x:4028 instead of localhost.
+   * @see https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+   */
+  allowedDevOrigins: [
+    '192.168.1.6',
+    ...(process.env.NEXT_ALLOWED_DEV_ORIGINS?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean) ?? []),
+  ],
+  /** Never ship TS/source maps to browsers in production — they make reverse engineering trivial. */
+  productionBrowserSourceMaps: false,
   poweredByHeader: false,
+  transpilePackages: ['hash-wasm'],
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
   distDir: process.env.DIST_DIR || '.next',
   typescript: {
     ignoreBuildErrors: true,
@@ -19,7 +35,12 @@ const nextConfig = {
     return [
       {
         source: '/',
-        destination: '/document-vault',
+        destination: '/family-management',
+        permanent: false,
+      },
+      {
+        source: '/stack-board',
+        destination: '/family-management',
         permanent: false,
       },
     ];
@@ -33,7 +54,7 @@ const nextConfig = {
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       {
         key: 'Permissions-Policy',
-        value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+        value: 'camera=(self), microphone=(), geolocation=(), payment=(), usb=()',
       },
       { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
       { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
@@ -51,19 +72,20 @@ const nextConfig = {
     ];
   },
 
-  webpack(
-    config,
-    {
-      dev: dev
-    }
-  ) {
+  webpack(config, { dev, isServer }) {
+    /** Root layout is on the critical path; skipping the tagger here speeds dev compiles and avoids chunk load timeouts. */
     config.module.rules.push({
       test: /\.(jsx|tsx)$/,
-      exclude: [/node_modules/],
-      use: [{
-        loader: '@dhiwise/component-tagger/nextLoader',
-      }],
+      exclude: [/node_modules/, /[/\\]app[/\\]layout\.tsx$/],
+      use: [
+        {
+          loader: '@dhiwise/component-tagger/nextLoader',
+        },
+      ],
     });
+    if (!isServer && dev && config.output) {
+      config.output.chunkLoadTimeout = 300000;
+    }
     if (dev) {
       const ignoredPaths = (process.env.WATCH_IGNORED_PATHS || '')
         .split(',')

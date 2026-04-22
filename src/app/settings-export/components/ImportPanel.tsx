@@ -3,7 +3,8 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileJson, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { loadVaultDataAsync, saveVaultDataAsync, VaultData } from '@/lib/storage';
+import { VaultData, type Document, migrateDocumentStackField } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
 
 type ImportState = 'idle' | 'dragging' | 'parsing' | 'preview' | 'error';
 
@@ -15,6 +16,7 @@ interface ParsedImport {
 }
 
 export default function ImportPanel() {
+  const { vaultData: existingVault, persistVaultData } = useVaultData();
   const [importState, setImportState] = useState<ImportState>('idle');
   const [parsedData, setParsedData] = useState<ParsedImport | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -42,8 +44,11 @@ export default function ImportPanel() {
           exportedAt: raw.exportedAt || 'Unknown',
           data: {
             members: raw.members,
-            documents: raw.documents,
+            documents: (raw.documents as (Document & { stackIds?: string[] })[]).map((d) =>
+              migrateDocumentStackField(d)
+            ),
             exportHistory: raw.exportHistory || [],
+            documentStacks: Array.isArray(raw.documentStacks) ? raw.documentStacks : [],
           },
         });
         setImportState('preview');
@@ -72,22 +77,35 @@ export default function ImportPanel() {
     setIsImporting(true);
     try {
       if (mergeMode === 'merge') {
-        const existing = await loadVaultDataAsync();
+        const existing = existingVault;
         const existingMemberIds = new Set(existing.members.map((m) => m.id));
         const existingDocIds = new Set(existing.documents.map((d) => d.id));
         const newMembers = parsedData.data.members.filter((m) => !existingMemberIds.has(m.id));
-        const newDocs = parsedData.data.documents.filter((d) => !existingDocIds.has(d.id));
+        const newDocs = parsedData.data.documents
+          .filter((d) => !existingDocIds.has(d.id))
+          .map((d) => migrateDocumentStackField(d as Document & { stackIds?: string[] }));
+        const existingStackIds = new Set(existing.documentStacks.map((s) => s.id));
+        const importedStacks = parsedData.data.documentStacks ?? [];
+        const newStacks = importedStacks.filter((s) => !existingStackIds.has(s.id));
         const merged: VaultData = {
           ...existing,
           members: [...existing.members, ...newMembers],
           documents: [...existing.documents, ...newDocs],
+          documentStacks: [...existing.documentStacks, ...newStacks],
         };
-        await saveVaultDataAsync(merged);
+        await persistVaultData(merged);
         toast.success(
           `Merged — ${newMembers.length} new members, ${newDocs.length} new documents added`
         );
       } else {
-        await saveVaultDataAsync(parsedData.data);
+        const replaced: VaultData = {
+          ...parsedData.data,
+          documentStacks: parsedData.data.documentStacks ?? [],
+          documents: parsedData.data.documents.map((d) =>
+            migrateDocumentStackField(d as Document & { stackIds?: string[] })
+          ),
+        };
+        await persistVaultData(replaced);
         toast.success(`Replaced vault with ${parsedData.documents} documents from backup`);
       }
       setImportState('idle');
@@ -110,11 +128,11 @@ export default function ImportPanel() {
   return (
     <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-[rgba(255,255,255,0.07)]">
+        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-border">
           <Upload size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-white">Import Backup</h3>
+          <h3 className="text-base font-700 text-vault-text">Import Backup</h3>
           <p className="text-xs text-vault-faint">Restore from a SecureVault JSON backup file</p>
         </div>
       </div>
@@ -131,7 +149,7 @@ export default function ImportPanel() {
           className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
             importState === 'dragging'
               ? 'border-vault-warm/50 bg-vault-elevated'
-              : 'border-[rgba(255,255,255,0.07)] hover:border-vault-warm/25 hover:bg-vault-elevated/50'
+              : 'border-border hover:border-vault-warm/25 hover:bg-vault-elevated/50'
           }`}
         >
           <FileJson
@@ -184,7 +202,7 @@ export default function ImportPanel() {
             <div className="flex items-start gap-3">
               <CheckCircle2 size={18} className="text-vault-warm mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-700 text-white mb-1">
+                <p className="text-sm font-700 text-vault-text mb-1">
                   Valid SecureVault backup detected
                 </p>
                 <div className="flex flex-wrap gap-3 mt-2">
@@ -227,10 +245,10 @@ export default function ImportPanel() {
                       ? mode.id === 'replace'
                         ? 'border-red-400/80 bg-red-500/10'
                         : 'border-vault-warm/50 bg-vault-elevated'
-                      : 'border-[rgba(255,255,255,0.07)] hover:border-vault-warm/25 bg-vault-elevated/50'
+                      : 'border-border hover:border-vault-warm/25 bg-vault-elevated/50'
                   }`}
                 >
-                  <div className="text-sm font-600 text-white">{mode.label}</div>
+                  <div className="text-sm font-600 text-vault-text">{mode.label}</div>
                   <div className="text-xs text-vault-faint mt-0.5">{mode.desc}</div>
                 </button>
               ))}

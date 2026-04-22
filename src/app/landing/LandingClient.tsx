@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
 import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
+import { useTheme } from '@/context/ThemeContext';
 import { getStoredVerifier } from '@/lib/vaultSession';
 import { completeAuthIntroSession } from '@/lib/authIntroSession';
 
@@ -73,6 +74,8 @@ const FRAGMENTS = [
 
 function LandingHero({ onContinue }: { onContinue: () => void }) {
   const [showCta, setShowCta] = useState(false);
+  const { theme } = useTheme();
+  const calm = theme === 'wellness' || theme === 'pastel';
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowCta(true), 2200);
@@ -80,7 +83,7 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
   }, []);
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#312C51] px-4 py-12">
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-vault-bg px-4 py-12">
       <button
         type="button"
         onClick={onContinue}
@@ -102,7 +105,9 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.45) 1px, transparent 0)`,
+            backgroundImage: calm
+              ? `radial-gradient(circle at 1px 1px, rgba(26,26,46,0.2) 1px, transparent 0)`
+              : `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.45) 1px, transparent 0)`,
             backgroundSize: '28px 28px',
           }}
         />
@@ -151,9 +156,14 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-              className="drop-shadow-[0_24px_56px_rgba(0,0,0,0.55)]"
+              className={
+                calm
+                  ? 'drop-shadow-[0_20px_48px_rgba(26,26,46,0.12)]'
+                  : 'drop-shadow-[0_24px_56px_rgba(0,0,0,0.55)]'
+              }
             >
               <VaultBrandIcon
+                variant={theme}
                 aria-label=""
                 size={64}
                 className="h-[min(220px,52vw)] w-[min(220px,52vw)] max-h-[260px] max-w-[260px]"
@@ -175,7 +185,7 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
         </div>
 
         <div className="mt-2" style={{ perspective: 800 }}>
-          <h1 className="flex flex-wrap justify-center gap-y-1 font-sans text-[clamp(1.65rem,6.5vw,2.35rem)] font-800 tracking-[0.12em] text-vault-muted">
+          <h1 className="flex flex-wrap justify-center gap-y-1 text-[clamp(1.65rem,6.5vw,2.35rem)] font-semibold tracking-[0.12em] text-vault-muted">
             {TITLE.split('').map((ch, i) => (
               <motion.span
                 key={`${ch}-${i}`}
@@ -262,7 +272,7 @@ export default function LandingClient() {
 
   const goVault = () => {
     completeAuthIntroSession();
-    router.push('/document-vault');
+    router.push('/family-management');
   };
 
   return (
@@ -283,7 +293,7 @@ export default function LandingClient() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="flex min-h-[100dvh] flex-col items-center justify-center bg-[#312C51] px-4 py-10"
+          className="flex min-h-[100dvh] flex-col items-center justify-center bg-vault-bg px-4 py-10"
         >
           <AuthWelcomePanel phase={vaultPhase} onFinish={goVault} />
         </motion.div>

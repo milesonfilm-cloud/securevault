@@ -4,8 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Modal from '@/components/ui/Modal';
 import { CATEGORIES, getCategoryById } from '@/lib/categories';
-import { Document, FamilyMember } from '@/lib/storage';
+import { Document, DocumentStack, FamilyMember } from '@/lib/storage';
 import { CategoryId } from '@/lib/storage';
+import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
 
 interface DocumentFormData {
   memberId: string;
@@ -22,6 +23,11 @@ interface DocumentFormModalProps {
   onSave: (data: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>) => void;
   editDoc?: Document | null;
   members: FamilyMember[];
+  /** Stack board folders (sorted). */
+  folders: DocumentStack[];
+  /** Pre-select folder when adding (e.g. vault opened with `?stack=`). */
+  defaultStackId?: string | null;
+  prefill?: DocumentPrefill | null;
 }
 
 export default function DocumentFormModal({
@@ -30,8 +36,12 @@ export default function DocumentFormModal({
   onSave,
   editDoc,
   members,
+  folders,
+  defaultStackId = null,
+  prefill = null,
 }: DocumentFormModalProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedStackId, setSelectedStackId] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -58,6 +68,7 @@ export default function DocumentFormModal({
   }, [categoryConfig]);
 
   useEffect(() => {
+    if (!isOpen) return;
     if (editDoc) {
       reset({
         memberId: editDoc.memberId,
@@ -67,6 +78,20 @@ export default function DocumentFormModal({
         tags: editDoc.tags.join(', '),
         ...editDoc.fields,
       });
+      setSelectedStackId(editDoc.stackId ?? null);
+    } else if (prefill) {
+      reset({
+        memberId: members[0]?.id || '',
+        categoryId: prefill.categoryId ?? 'government-ids',
+        title: prefill.title ?? '',
+        notes: (prefill.notesAppend ?? '').trim(),
+        tags: '',
+        ...(prefill.fields ?? {}),
+      });
+      const valid = new Set(folders.map((f) => f.id));
+      setSelectedStackId(
+        defaultStackId && valid.has(defaultStackId) ? defaultStackId : null
+      );
     } else {
       reset({
         memberId: members[0]?.id || '',
@@ -75,8 +100,12 @@ export default function DocumentFormModal({
         notes: '',
         tags: '',
       });
+      const valid = new Set(folders.map((f) => f.id));
+      setSelectedStackId(
+        defaultStackId && valid.has(defaultStackId) ? defaultStackId : null
+      );
     }
-  }, [editDoc, isOpen, members, reset]);
+  }, [editDoc, isOpen, members, prefill, reset, folders, defaultStackId]);
 
   const onSubmit = (data: DocumentFormData) => {
     const { memberId, categoryId, title, notes, tags, ...rest } = data;
@@ -98,6 +127,7 @@ export default function DocumentFormModal({
         .split(',')
         .map((t) => t.trim())
         .filter(Boolean),
+      stackId: selectedStackId,
     });
   };
 
@@ -110,6 +140,15 @@ export default function DocumentFormModal({
       size="lg"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+        {!editDoc && prefill?.fromOcr ? (
+          <div className="rounded-xl border border-[rgba(20,115,230,0.35)] bg-[rgba(20,115,230,0.08)] px-4 py-3 text-sm text-vault-text">
+            <p className="font-semibold text-vault-warm">Review extracted fields</p>
+            <p className="text-vault-muted text-xs mt-1">
+              Text was recognized on this device. Verify IDs and dates before saving.
+            </p>
+          </div>
+        ) : null}
+
         {/* Basic info */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -142,6 +181,33 @@ export default function DocumentFormModal({
               ))}
             </select>
           </div>
+        </div>
+
+        {/* Optional folder — at most one */}
+        <div className="rounded-xl border border-[color:var(--color-border)] bg-vault-elevated/40 px-4 py-3">
+          <label className="label-text mb-1">Folder</label>
+          <p className="text-xs text-vault-faint mb-3">
+            Optional — assign this document to one folder, or leave as &quot;No folder&quot;.
+          </p>
+          {folders.length === 0 ? (
+            <p className="text-sm text-vault-muted">
+              No folders in your vault yet. Leave as &quot;No folder&quot; or add folder metadata via
+              export/import if you use it.
+            </p>
+          ) : (
+            <select
+              className="input-field"
+              value={selectedStackId ?? ''}
+              onChange={(e) => setSelectedStackId(e.target.value || null)}
+            >
+              <option value="">No folder</option>
+              {folders.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div>
@@ -303,7 +369,7 @@ export default function DocumentFormModal({
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-2 border-t border-[rgba(255,255,255,0.07)]">
+        <div className="flex justify-end gap-3 pt-2 border-t border-border">
           <button type="button" onClick={onClose} className="btn-secondary">
             Cancel
           </button>

@@ -46,7 +46,7 @@ export default function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
       <div
-        className="absolute inset-0 bg-[#312C51]/85 backdrop-blur-md"
+        className="absolute inset-0 bg-vault-ink/80 backdrop-blur-md"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -57,9 +57,9 @@ export default function Modal({
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[rgba(255,255,255,0.07)] flex-shrink-0">
+        <div className="flex items-start justify-between p-6 border-b border-[color:var(--color-border)] flex-shrink-0">
           <div>
-            <h2 id="modal-title" className="text-lg font-700 text-white">
+            <h2 id="modal-title" className="text-lg font-700 text-vault-text">
               {title}
             </h2>
             {subtitle && <p className="text-sm text-vault-muted mt-0.5">{subtitle}</p>}

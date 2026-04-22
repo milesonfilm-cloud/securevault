@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { History, FileJson, FileText } from 'lucide-react';
-import { loadVaultDataAsync, ExportRecord } from '@/lib/storage';
+import { ExportRecord } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
 
 function formatDate(iso: string): string {
   try {
@@ -19,22 +20,17 @@ function formatDate(iso: string): string {
 }
 
 export default function ExportHistory() {
-  const [history, setHistory] = useState<ExportRecord[]>([]);
-
-  useEffect(() => {
-    loadVaultDataAsync().then((data) => {
-      setHistory(data.exportHistory || []);
-    });
-  }, []);
+  const { vaultData } = useVaultData();
+  const history: ExportRecord[] = vaultData.exportHistory ?? [];
 
   return (
     <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-vault-elevated border border-[rgba(255,255,255,0.07)] rounded-2xl flex items-center justify-center">
+        <div className="w-10 h-10 bg-vault-elevated border border-border rounded-2xl flex items-center justify-center">
           <History size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-white">Export History</h3>
+          <h3 className="text-base font-700 text-vault-text">Export History</h3>
           <p className="text-xs text-vault-faint">Last 10 exports from this device</p>
         </div>
       </div>
@@ -59,7 +55,7 @@ export default function ExportHistory() {
                   <FileText size={16} className="text-vault-warm flex-shrink-0" />
                 )}
                 <div>
-                  <span className="text-sm font-700 text-white">{record.format} backup</span>
+                  <span className="text-sm font-700 text-vault-text">{record.format} backup</span>
                   <p className="text-xs text-vault-faint">{formatDate(record.exportedAt)}</p>
                 </div>
               </div>

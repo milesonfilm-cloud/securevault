@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useMemo, useState, useCallback } from 'react';
-import { AlertOctagon, AlertTriangle, Info } from 'lucide-react';
+import { AlertOctagon, AlertTriangle, Compass, Info, Moon, Palette, Sun, Zap } from 'lucide-react';
+import { getNextTheme, THEME_LABEL, useTheme } from '@/context/ThemeContext';
 import type { Document } from '@/lib/storage';
 import {
   DEFAULT_EXPIRY_WARN_DAYS,
@@ -26,6 +27,18 @@ export default function DocumentVaultNotificationStrip({
   onGoToDocument,
   onInfoClick,
 }: DocumentVaultNotificationStripProps) {
+  const { theme, toggleTheme } = useTheme();
+  const nextTheme = getNextTheme(theme);
+  const DestIcon =
+    nextTheme === 'vault'
+      ? Moon
+      : nextTheme === 'wellness'
+        ? Sun
+        : nextTheme === 'neon'
+          ? Zap
+          : nextTheme === 'pastel'
+            ? Palette
+            : Compass;
   const { expired, soon } = useMemo(
     () => summarizeExpiryDocCounts(documents, DEFAULT_EXPIRY_WARN_DAYS),
     [documents]
@@ -60,8 +73,8 @@ export default function DocumentVaultNotificationStrip({
     <div className="flex w-full justify-center mb-4 pointer-events-auto">
       <div
         role="group"
-        aria-label="Vault expiry and status"
-        className="inline-flex items-center gap-1 sm:gap-2 rounded-2xl border border-[rgba(255,255,255,0.1)] bg-vault-panel/95 px-2 py-1.5 shadow-vault backdrop-blur-sm"
+        aria-label="Vault expiry, status, and theme"
+        className="inline-flex items-center gap-1 sm:gap-2 rounded-2xl border border-[color:var(--color-border)] bg-vault-panel/95 px-2 py-1.5 shadow-vault backdrop-blur-sm"
       >
         {expired > 0 ? (
           <button
@@ -76,7 +89,7 @@ export default function DocumentVaultNotificationStrip({
         ) : (
           <span
             role="img"
-            className={`${baseBtn} border-[rgba(255,255,255,0.06)] bg-transparent text-white/22 cursor-default`}
+            className={`${baseBtn} border-[color:var(--color-border)] bg-transparent text-vault-faint/40 cursor-default`}
             title="Critical: no expired documents"
             aria-label="Critical: no expired documents"
           >
@@ -97,7 +110,7 @@ export default function DocumentVaultNotificationStrip({
         ) : (
           <span
             role="img"
-            className={`${baseBtn} border-[rgba(255,255,255,0.06)] bg-transparent text-white/22 cursor-default`}
+            className={`${baseBtn} border-[color:var(--color-border)] bg-transparent text-vault-faint/40 cursor-default`}
             title={`Warning: no documents expiring within ${DEFAULT_EXPIRY_WARN_DAYS} days`}
             aria-label={`Warning: no documents expiring within ${DEFAULT_EXPIRY_WARN_DAYS} days`}
           >
@@ -113,6 +126,16 @@ export default function DocumentVaultNotificationStrip({
           aria-label="Informational: local vault — scroll to document list"
         >
           <Info size={20} strokeWidth={2.25} aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className={`${baseBtn} border-vault-warm/35 bg-vault-warm/10 text-vault-warm hover:bg-vault-warm/20`}
+          title={`Current: ${THEME_LABEL[theme]} — switch to ${THEME_LABEL[nextTheme]}`}
+          aria-label={`Current theme ${THEME_LABEL[theme]}, switch to ${THEME_LABEL[nextTheme]}`}
+        >
+          <DestIcon size={20} strokeWidth={2.25} aria-hidden />
         </button>
       </div>
     </div>

@@ -1,10 +1,42 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp } from 'lucide-react';
-import { loadVaultDataAsync } from '@/lib/storage';
+import { useVaultData } from '@/context/VaultDataContext';
 import { CATEGORIES } from '@/lib/categories';
+import { useTheme } from '@/context/ThemeContext';
+import type { AppTheme } from '@/context/ThemeContext';
+
+function chartAxisFill(theme: AppTheme): string {
+  switch (theme) {
+    case 'neon':
+      return '#a0a0a0';
+    case 'wellness':
+      return '#6b7a8c';
+    case 'pastel':
+      return '#5c6370';
+    case 'voyager':
+      return '#a3a3a3';
+    default:
+      return '#d4cced';
+  }
+}
+
+function chartCursorFill(theme: AppTheme): string {
+  switch (theme) {
+    case 'neon':
+      return 'rgba(0, 255, 65, 0.12)';
+    case 'wellness':
+      return 'rgba(26, 26, 46, 0.06)';
+    case 'pastel':
+      return 'rgba(26, 31, 46, 0.08)';
+    case 'voyager':
+      return 'rgba(255, 255, 255, 0.07)';
+    default:
+      return 'rgba(212, 204, 237, 0.14)';
+  }
+}
 
 interface ChartDataPoint {
   name: string;
@@ -22,50 +54,49 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload || !payload.length) return null;
   return (
     <div className="neo-card rounded-2xl px-3 py-2">
-      <p className="text-xs font-600 text-white/80">{label}</p>
-      <p className="text-sm font-700 text-white">{payload[0].value} documents</p>
+      <p className="text-xs font-600 text-vault-muted">{label}</p>
+      <p className="text-sm font-700 text-vault-text">{payload[0].value} documents</p>
     </div>
   );
 }
 
 export default function VaultStatsPanel() {
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [totalDocs, setTotalDocs] = useState(0);
-  const [totalMembers, setTotalMembers] = useState(0);
+  const { vaultData } = useVaultData();
+  const { theme } = useTheme();
+  const axisFill = chartAxisFill(theme);
+  const cursorFill = chartCursorFill(theme);
 
-  useEffect(() => {
-    loadVaultDataAsync().then((data) => {
-      setTotalDocs(data.documents.length);
-      setTotalMembers(data.members.length);
-      const points: ChartDataPoint[] = CATEGORIES.map((cat) => ({
-        name: cat.shortLabel,
-        count: data.documents.filter((d) => d.categoryId === cat.id).length,
-        color: cat.color,
-      }));
-      setChartData(points);
-    });
-  }, []);
+  const totalDocs = vaultData.documents.length;
+  const totalMembers = vaultData.members.length;
+
+  const chartData = useMemo((): ChartDataPoint[] => {
+    return CATEGORIES.map((cat) => ({
+      name: cat.shortLabel,
+      count: vaultData.documents.filter((d) => d.categoryId === cat.id).length,
+      color: cat.color,
+    }));
+  }, [vaultData.documents]);
 
   return (
     <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-[rgba(255,255,255,0.07)]">
+        <div className="w-10 h-10 bg-vault-elevated rounded-xl flex items-center justify-center border border-border">
           <TrendingUp size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-white">Vault Overview</h3>
-          <p className="text-xs text-white/75">Documents stored per category</p>
+          <h3 className="text-base font-700 text-vault-text">Vault Overview</h3>
+          <p className="text-xs text-vault-muted">Documents stored per category</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <div className="bg-vault-elevated rounded-xl p-3 text-center border border-[rgba(255,255,255,0.07)]">
-          <p className="text-2xl font-800 text-white tabular-nums">{totalDocs}</p>
-          <p className="text-xs text-white/82 font-600 mt-0.5">Total Documents</p>
+        <div className="bg-vault-elevated rounded-xl p-3 text-center border border-border">
+          <p className="text-2xl font-800 text-vault-text tabular-nums">{totalDocs}</p>
+          <p className="text-xs font-600 mt-0.5 text-vault-muted">Total Documents</p>
         </div>
-        <div className="bg-vault-elevated rounded-xl p-3 text-center border border-[rgba(255,255,255,0.07)]">
-          <p className="text-2xl font-800 text-white tabular-nums">{totalMembers}</p>
-          <p className="text-xs text-white/82 font-600 mt-0.5">Family Members</p>
+        <div className="bg-vault-elevated rounded-xl p-3 text-center border border-border">
+          <p className="text-2xl font-800 text-vault-text tabular-nums">{totalMembers}</p>
+          <p className="text-xs font-600 mt-0.5 text-vault-muted">Family Members</p>
         </div>
       </div>
 
@@ -78,17 +109,17 @@ export default function VaultStatsPanel() {
           >
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 10, fill: '#E4DCF5', fontFamily: 'Plus Jakarta Sans' }}
+              tick={{ fontSize: 10, fill: axisFill, fontFamily: 'system-ui, sans-serif' }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: '#E4DCF5', fontFamily: 'Plus Jakarta Sans' }}
+              tick={{ fontSize: 10, fill: axisFill, fontFamily: 'system-ui, sans-serif' }}
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(61,54,102,0.35)' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: cursorFill }} />
             <Bar dataKey="count" radius={[6, 6, 0, 0]}>
               {chartData.map((entry, index) => (
                 <Cell key={`bar-cell-${index}`} fill={entry.color} fillOpacity={0.9} />

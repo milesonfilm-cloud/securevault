@@ -61,11 +61,11 @@ export default function BiometricSettings() {
     return (
       <div className="neo-card rounded-2xl p-6">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 bg-vault-elevated border border-[rgba(255,255,255,0.07)] rounded-2xl flex items-center justify-center">
+          <div className="w-9 h-9 bg-vault-elevated border border-border rounded-2xl flex items-center justify-center">
             <Fingerprint size={18} className="text-vault-warm" />
           </div>
           <div>
-            <h3 className="text-sm font-700 text-white">Biometric Login</h3>
+            <h3 className="text-sm font-700 text-vault-text">Biometric Login</h3>
             <p className="text-xs text-vault-faint">Fingerprint &amp; Face ID</p>
           </div>
         </div>
@@ -79,18 +79,18 @@ export default function BiometricSettings() {
   return (
     <div className="neo-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-vault-elevated border border-[rgba(255,255,255,0.07)]">
+        <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-vault-elevated border border-border">
           <Fingerprint size={18} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-sm font-700 text-white">Biometric Login</h3>
+          <h3 className="text-sm font-700 text-vault-text">Biometric Login</h3>
           <p className="text-xs text-vault-faint">Fingerprint &amp; Face ID</p>
         </div>
         <div
           className={`ml-auto px-2.5 py-1 rounded-full text-xs font-700 border ${
             registered
               ? 'bg-vault-warm/20 text-vault-warm border-vault-warm/35'
-              : 'bg-vault-elevated text-vault-muted border-[rgba(255,255,255,0.08)]'
+              : 'bg-vault-elevated text-vault-muted border-border'
           }`}
         >
           {registered ? 'Enabled' : 'Disabled'}

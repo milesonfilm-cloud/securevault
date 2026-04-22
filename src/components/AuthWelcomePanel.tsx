@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Shield, FolderLock, Users, Download, ChevronRight, Sparkles } from 'lucide-react';
+import { FolderLock, Users, Download, ChevronRight, Sparkles } from 'lucide-react';
+import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
+import { useTheme, type AppTheme } from '@/context/ThemeContext';
 
 interface AuthWelcomePanelProps {
   phase: 'setup' | 'login';
@@ -105,7 +107,7 @@ function AmbientOrbs({
         transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
       />
       <motion.div
-        className="absolute left-1/2 top-1/2 h-[min(280px,60vw)] w-[min(280px,60vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#312C51]/90 blur-[60px]"
+        className="absolute left-1/2 top-1/2 h-[min(280px,60vw)] w-[min(280px,60vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-vault-ink/25 blur-[60px]"
         animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0.65, 0.5] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -113,7 +115,15 @@ function AmbientOrbs({
   );
 }
 
-function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolean }) {
+function SlideVisual({
+  id,
+  reducedMotion,
+  theme,
+}: {
+  id: SlideId;
+  reducedMotion: boolean;
+  theme: AppTheme;
+}) {
   switch (id) {
     case 'welcome':
       return (
@@ -145,12 +155,12 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
             )
           )}
           <motion.div
-            className="relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.12)] bg-vault-elevated shadow-vault"
+            className="relative flex h-[72px] w-[72px] items-center justify-center rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated shadow-vault"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 260, damping: 22 }}
           >
-            <Shield className="h-9 w-9 text-vault-warm" strokeWidth={1.5} aria-hidden />
+            <VaultBrandIcon variant={theme} size={44} aria-label="" className="shrink-0" />
             {reducedMotion ? (
               <div className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-lg bg-vault-warm/20">
                 <Sparkles className="h-3.5 w-3.5 text-vault-warm" aria-hidden />
@@ -174,7 +184,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
             reducedMotion ? (
               <div
                 key={i}
-                className="w-[26%] rounded-xl border border-[rgba(255,255,255,0.1)] bg-vault-panel/80"
+                className="w-[26%] rounded-xl border border-border bg-vault-panel/80"
                 style={{ height: 48 + i * 22 }}
               >
                 <div className="mx-2 mt-2 h-1.5 rounded-full bg-vault-warm/40" />
@@ -183,7 +193,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
             ) : (
               <motion.div
                 key={i}
-                className="w-[26%] rounded-xl border border-[rgba(255,255,255,0.1)] bg-vault-panel/80"
+                className="w-[26%] rounded-xl border border-border bg-vault-panel/80"
                 style={{ height: 48 + i * 22 }}
                 initial={{ y: 24, opacity: 0 }}
                 animate={{ y: [0, -6 - i * 2, 0], opacity: 1 }}
@@ -237,7 +247,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
             return reducedMotion ? (
               <div
                 key={i}
-                className="absolute flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(255,255,255,0.1)] bg-vault-elevated text-[10px] font-800 text-vault-warm"
+                className="absolute flex h-11 w-11 items-center justify-center rounded-full border border-border bg-vault-elevated text-[10px] font-800 text-vault-warm"
                 style={{
                   left: '50%',
                   top: '50%',
@@ -250,7 +260,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
             ) : (
               <motion.div
                 key={i}
-                className="absolute flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(255,255,255,0.1)] bg-vault-elevated text-[10px] font-800 text-vault-warm"
+                className="absolute flex h-11 w-11 items-center justify-center rounded-full border border-border bg-vault-elevated text-[10px] font-800 text-vault-warm"
                 style={{ left: '50%', top: '50%', marginLeft: -22, marginTop: -22 }}
                 animate={{
                   x: [Math.cos(angle) * r, Math.cos(angle + 0.4) * r, Math.cos(angle) * r],
@@ -262,7 +272,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
               </motion.div>
             );
           })}
-          <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-xl border border-vault-coral/35 bg-[#312C51]">
+          <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-xl border border-vault-coral/35 bg-vault-panel">
             <Users className="h-6 w-6 text-vault-coral" strokeWidth={1.5} aria-hidden />
           </div>
         </div>
@@ -271,12 +281,12 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
       return (
         <div className="relative mx-auto flex h-[140px] w-full max-w-[200px] flex-col items-center justify-center gap-3">
           {reducedMotion ? (
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.1)] bg-vault-elevated shadow-[0_0_20px_rgba(240,195,142,0.12)]">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-vault-elevated shadow-[0_0_20px_rgba(240,195,142,0.12)]">
               <Download className="h-8 w-8 text-vault-warm" strokeWidth={1.5} aria-hidden />
             </div>
           ) : (
             <motion.div
-              className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.1)] bg-vault-elevated"
+              className="flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-vault-elevated"
               animate={{
                 boxShadow: [
                   '0 0 0 0 rgba(240,195,142,0)',
@@ -316,6 +326,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
 }
 
 export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelProps) {
+  const { theme } = useTheme();
   const reducedMotion = usePrefersReducedMotion();
   const slides = getSlides(phase);
   const [index, setIndex] = useState(0);
@@ -336,7 +347,7 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
   return (
     <div className="relative flex min-h-[min(520px,calc(100vh-3rem))] w-full max-w-[420px] flex-col">
       <motion.div
-        className="relative flex flex-1 flex-col overflow-hidden rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-vault-panel/95 shadow-vault"
+        className="relative flex flex-1 flex-col overflow-hidden rounded-[24px] border border-[color:var(--color-border)] bg-vault-panel/95 shadow-vault"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -372,11 +383,11 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
                 transition={reducedMotion ? slideTransitionFade : slideTransitionSpring}
                 className="flex h-full flex-col"
               >
-                <SlideVisual id={slide.id} reducedMotion={reducedMotion} />
+                <SlideVisual id={slide.id} reducedMotion={reducedMotion} theme={theme} />
                 <p className="mt-6 text-center text-[10px] font-700 uppercase tracking-[0.22em] text-vault-warm/90">
                   {slide.kicker}
                 </p>
-                <h2 className="mt-2 text-center text-[22px] font-800 leading-tight tracking-tight text-white sm:text-2xl">
+                <h2 className="mt-2 text-center text-[22px] font-800 leading-tight tracking-tight text-vault-text sm:text-2xl">
                   {slide.title}
                 </h2>
                 <p className="mx-auto mt-3 max-w-[300px] text-center text-sm leading-relaxed text-vault-muted">

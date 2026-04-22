@@ -2,9 +2,38 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export type AppTheme = 'vault';
+export type AppTheme = 'vault' | 'wellness' | 'neon' | 'pastel' | 'voyager';
+
+export const THEME_ORDER: AppTheme[] = ['vault', 'wellness', 'neon', 'pastel', 'voyager'];
+
+export const THEME_LABEL: Record<AppTheme, string> = {
+  vault: 'Vault',
+  wellness: 'Calm',
+  neon: 'Neon',
+  pastel: 'Studio',
+  voyager: 'Voyager',
+};
 
 const STORAGE_KEY = 'sv_ui_theme';
+
+export function getNextTheme(current: AppTheme): AppTheme {
+  const i = THEME_ORDER.indexOf(current);
+  return THEME_ORDER[(i + 1) % THEME_ORDER.length];
+}
+
+function parseStoredTheme(raw: string | null): AppTheme {
+  if (
+    raw === 'wellness' ||
+    raw === 'vault' ||
+    raw === 'neon' ||
+    raw === 'pastel' ||
+    raw === 'voyager'
+  )
+    return raw;
+  if (raw === 'cinema') return 'vault';
+  if (raw === 'spectrum') return 'vault';
+  return 'vault';
+}
 
 type ThemeContextValue = {
   theme: AppTheme;
@@ -22,12 +51,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
     try {
-      localStorage.setItem(STORAGE_KEY, 'vault');
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const next = parseStoredTheme(raw);
+      setThemeState(next);
+      document.documentElement.dataset.theme = next;
     } catch {
-      /* ignore */
+      document.documentElement.dataset.theme = 'vault';
     }
-    setThemeState('vault');
-    document.documentElement.dataset.theme = 'vault';
   }, []);
 
   const setTheme = useCallback((t: AppTheme) => {
@@ -45,7 +75,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dataset.theme = theme;
   }, [theme, mounted]);
 
-  const toggleTheme = useCallback(() => setTheme('vault'), [setTheme]);
+  const toggleTheme = useCallback(() => {
+    const i = THEME_ORDER.indexOf(theme);
+    setTheme(THEME_ORDER[(i + 1) % THEME_ORDER.length]);
+  }, [theme, setTheme]);
 
   const value: ThemeContextValue = {
     theme,
