@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FolderLock, Users, Download, ChevronRight, Sparkles } from 'lucide-react';
 import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
 import { useTheme, type AppTheme } from '@/context/ThemeContext';
+import { useTranslations } from 'next-intl';
 
 interface AuthWelcomePanelProps {
   phase: 'setup' | 'login';
@@ -18,36 +19,6 @@ interface SlideDef {
   kicker: string;
   title: string;
   body: string;
-}
-
-const BASE_SLIDES: Omit<SlideDef, 'body'>[] = [
-  { id: 'welcome', kicker: 'Welcome', title: 'SecureVault' },
-  { id: 'vault', kicker: 'Your data', title: 'Private document vault' },
-  { id: 'family', kicker: 'Organize', title: 'Built for families' },
-  { id: 'backup', kicker: 'Stay safe', title: 'Back up regularly' },
-];
-
-function getSlides(phase: 'setup' | 'login'): SlideDef[] {
-  const welcomeBody =
-    phase === 'setup'
-      ? 'Create a strong password to encrypt your vault. Nothing is uploaded — your secrets stay on this device.'
-      : 'Sign in with your password to decrypt your vault. Everything remains local and offline.';
-
-  return [
-    { ...BASE_SLIDES[0], body: welcomeBody },
-    {
-      ...BASE_SLIDES[1],
-      body: 'Store government IDs, bank details, passwords, and more — organized by category and encrypted at rest.',
-    },
-    {
-      ...BASE_SLIDES[2],
-      body: 'Link documents to family members so household records stay structured and easy to find.',
-    },
-    {
-      ...BASE_SLIDES[3],
-      body: 'Export encrypted JSON backups from Settings. If you reset or lose access, a backup is your safety net.',
-    },
-  ];
 }
 
 const slideTransitionSpring = { type: 'spring' as const, stiffness: 380, damping: 34, mass: 0.85 };
@@ -326,9 +297,38 @@ function SlideVisual({
 }
 
 export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelProps) {
+  const tw = useTranslations('welcome');
   const { theme } = useTheme();
   const reducedMotion = usePrefersReducedMotion();
-  const slides = getSlides(phase);
+  const slides = useMemo((): SlideDef[] => {
+    const welcomeBody = phase === 'setup' ? tw('bodySetup') : tw('bodyLogin');
+    return [
+      {
+        id: 'welcome',
+        kicker: tw('kickerWelcome'),
+        title: tw('titleSecureVault'),
+        body: welcomeBody,
+      },
+      {
+        id: 'vault',
+        kicker: tw('kickerYourData'),
+        title: tw('titlePrivateVault'),
+        body: tw('bodyVault'),
+      },
+      {
+        id: 'family',
+        kicker: tw('kickerOrganize'),
+        title: tw('titleBuiltFamilies'),
+        body: tw('bodyFamily'),
+      },
+      {
+        id: 'backup',
+        kicker: tw('kickerStaySafe'),
+        title: tw('titleBackup'),
+        body: tw('bodyBackup'),
+      },
+    ];
+  }, [phase, tw]);
   const [index, setIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const slide = slides[index];
@@ -363,7 +363,7 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
             onClick={handleSkip}
             className="rounded-[10px] px-3 py-1.5 text-xs font-600 text-vault-muted transition-colors hover:bg-white/5 hover:text-vault-warm"
           >
-            Skip intro
+            {tw('skip')}
           </button>
         </div>
 
@@ -430,7 +430,7 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {isLast ? (phase === 'setup' ? 'Create password' : 'Sign in') : 'Next'}
+              {isLast ? (phase === 'setup' ? tw('createPassword') : tw('signIn')) : tw('next')}
               <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden />
             </motion.button>
           </div>

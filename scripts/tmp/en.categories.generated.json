@@ -1,0 +1,219 @@
+{
+  "categories": {
+    "password-vault": {
+      "label": "Passwords",
+      "shortLabel": "Passwords",
+      "fields": {
+        "website_app": "Website / App",
+        "login_url": "Login URL",
+        "user_id_email": "User ID / Email",
+        "password": "Password",
+        "2fa_recovery": "2FA / Recovery notes"
+      }
+    },
+    "government-ids": {
+      "label": "Government IDs",
+      "shortLabel": "Gov IDs",
+      "fields": {
+        "document_type": "Document Type",
+        "id_document_number": "ID / Document Number",
+        "date_of_issue": "Date of Issue",
+        "expiry_date": "Expiry Date",
+        "issuing_authority": "Issuing Authority",
+        "address_on_document": "Address on Document"
+      }
+    },
+    "bank-accounts": {
+      "label": "Bank Accounts",
+      "shortLabel": "Bank",
+      "fields": {
+        "bank_name": "Bank Name",
+        "account_number": "Account Number",
+        "ifsc_code": "IFSC / SWIFT Code",
+        "account_type": "Account Type",
+        "branch": "Branch",
+        "nominee": "Nominee",
+        "net_banking_id": "Net Banking User ID"
+      }
+    },
+    "credit-debit-cards": {
+      "label": "Credit / Debit Cards",
+      "shortLabel": "Cards",
+      "fields": {
+        "card_name": "Card Name / Type",
+        "card_number_last_4": "Last 4 Digits",
+        "card_network": "Card Network",
+        "expiry": "Expiry (MM/YYYY)",
+        "credit_limit": "Credit Limit",
+        "billing_cycle": "Billing Cycle Date",
+        "customer_care": "Customer Care Number"
+      }
+    },
+    "institutional-docs": {
+      "label": "Institutional Documents",
+      "shortLabel": "Institutional",
+      "fields": {
+        "institution_name": "Institution / Company",
+        "document_type": "Document Type",
+        "reference_number": "Policy / Reference Number",
+        "start_date": "Start / Issue Date",
+        "end_maturity_date": "End / Maturity Date",
+        "amount_value": "Amount / Sum",
+        "contact_number": "Contact / Agent Number"
+      }
+    },
+    "vehicle-documents": {
+      "label": "Vehicle Documents",
+      "shortLabel": "Vehicles",
+      "fields": {
+        "vehicle_name": "Vehicle Name / Model",
+        "registration_number": "Registration Number",
+        "engine_number": "Engine Number",
+        "chassis_number": "Chassis Number",
+        "fuel_type": "Fuel Type",
+        "insurance_expiry": "Insurance Expiry",
+        "puc_expiry": "PUC / Emission Expiry"
+      }
+    },
+    "family-profiles": {
+      "label": "Family Member Profiles",
+      "shortLabel": "Profiles",
+      "fields": {
+        "full_name": "Full Name",
+        "relationship": "Relationship",
+        "date_of_birth": "Date of Birth",
+        "blood_group": "Blood Group",
+        "emergency_contact": "Emergency Contact",
+        "medical_conditions": "Medical Conditions / Allergies"
+      }
+    },
+    "passport": {
+      "label": "Passport",
+      "shortLabel": "Passport",
+      "fields": {
+        "passport_number": "Passport Number",
+        "date_of_issue": "Date of Issue",
+        "expiry_date": "Expiry Date",
+        "place_of_issue": "Place of Issue",
+        "file_number": "File Number"
+      }
+    },
+    "drivers-license": {
+      "label": "Driver\\u2019s License",
+      "shortLabel": "License",
+      "fields": {
+        "license_number": "License Number",
+        "date_of_issue": "Date of Issue",
+        "expiry_date": "Expiry Date",
+        "issuing_authority": "Issuing Authority",
+        "vehicle_class": "Vehicle Class"
+      }
+    },
+    "insurance": {
+      "label": "Insurance",
+      "shortLabel": "Insurance",
+      "fields": {
+        "provider": "Provider",
+        "policy_number": "Policy Number",
+        "type": "Type",
+        "start_date": "Start Date",
+        "end_date": "End Date / Expiry",
+        "contact": "Agent / Support Contact"
+      }
+    },
+    "visa": {
+      "label": "Visa",
+      "shortLabel": "Visa",
+      "fields": {
+        "country": "Country",
+        "visa_type": "Visa Type",
+        "visa_number": "Visa Number",
+        "issue_date": "Issue Date",
+        "expiry_date": "Expiry Date"
+      }
+    },
+    "medical-record": {
+      "label": "Medical Record",
+      "shortLabel": "Medical",
+      "fields": {
+        "hospital_clinic": "Hospital / Clinic",
+        "doctor": "Doctor",
+        "record_id": "Record ID",
+        "date": "Date",
+        "notes": "Notes"
+      }
+    },
+    "certificate": {
+      "label": "Certificate",
+      "shortLabel": "Cert",
+      "fields": {
+        "certificate_name": "Certificate Name",
+        "issuer": "Issuer",
+        "certificate_id": "Certificate ID",
+        "issue_date": "Issue Date",
+        "expiry_date": "Expiry Date"
+      }
+    },
+    "contract": {
+      "label": "Contract",
+      "shortLabel": "Contract",
+      "fields": {
+        "party": "Party / Vendor",
+        "contract_id": "Contract ID",
+        "start_date": "Start Date",
+        "end_date": "End Date",
+        "notes": "Notes"
+      }
+    },
+    "warranty": {
+      "label": "Warranty",
+      "shortLabel": "Warranty",
+      "fields": {
+        "product": "Product",
+        "brand": "Brand",
+        "serial_number": "Serial Number",
+        "purchase_date": "Purchase Date",
+        "warranty_expiry": "Warranty Expiry"
+      }
+    },
+    "membership": {
+      "label": "Membership",
+      "shortLabel": "Member",
+      "fields": {
+        "organization": "Organization",
+        "member_id": "Member ID",
+        "start_date": "Start Date",
+        "expiry_date": "Expiry Date"
+      }
+    },
+    "subscription": {
+      "label": "Subscription",
+      "shortLabel": "Subs",
+      "fields": {
+        "service": "Service",
+        "plan": "Plan",
+        "billing_cycle": "Billing Cycle",
+        "renewal_date": "Renewal Date",
+        "account_email": "Account Email"
+      }
+    },
+    "permit": {
+      "label": "Permit",
+      "shortLabel": "Permit",
+      "fields": {
+        "permit_type": "Permit Type",
+        "permit_number": "Permit Number",
+        "issue_date": "Issue Date",
+        "expiry_date": "Expiry Date",
+        "authority": "Authority"
+      }
+    },
+    "other": {
+      "label": "Other",
+      "shortLabel": "Other",
+      "fields": {
+        "reference": "Reference / ID"
+      }
+    }
+  }
+}

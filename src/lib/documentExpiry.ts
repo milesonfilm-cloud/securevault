@@ -118,6 +118,55 @@ export function collectExpiryAlerts(
   return alerts;
 }
 
+/** One row per document: worst (soonest) expiry among known expiry fields, within horizon. */
+export interface RenewalItem {
+  docId: string;
+  title: string;
+  memberId: string;
+  categoryId: Document['categoryId'];
+  daysUntil: number;
+  expiryDay: Date;
+  fieldKey: string;
+  fieldLabel: string;
+}
+
+/** Documents with any expiry date up to `maxDaysAhead` days from today, or already expired. */
+export function collectRenewalItems(
+  documents: Document[],
+  maxDaysAhead: number
+): RenewalItem[] {
+  const today = startOfLocalDay(new Date());
+  const items: RenewalItem[] = [];
+
+  for (const doc of documents) {
+    let best: RenewalItem | null = null;
+    for (const key of EXPIRY_FIELD_KEYS) {
+      const raw = doc.fields[key];
+      if (!raw?.trim()) continue;
+      const exp = parseExpiryValue(raw);
+      if (!exp) continue;
+      const expiryDay = startOfLocalDay(exp);
+      const daysUntil = Math.round((expiryDay.getTime() - today.getTime()) / MS_PER_DAY);
+      if (daysUntil > maxDaysAhead) continue;
+      const cand: RenewalItem = {
+        docId: doc.id,
+        title: doc.title,
+        memberId: doc.memberId,
+        categoryId: doc.categoryId,
+        daysUntil,
+        expiryDay,
+        fieldKey: key,
+        fieldLabel: fieldLabelForKey(doc.categoryId, key),
+      };
+      if (!best || cand.daysUntil < best.daysUntil) best = cand;
+    }
+    if (best) items.push(best);
+  }
+
+  items.sort((a, b) => a.daysUntil - b.daysUntil);
+  return items;
+}
+
 export function formatExpirySummary(daysUntil: number): string {
   if (daysUntil < 0)
     return `Expired ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} ago`;

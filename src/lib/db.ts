@@ -23,7 +23,7 @@ export interface PhotoEntry {
 }
 
 type EncryptedPayloadV1 = { v: 1; ivB64: string; ctB64: string };
-type EncryptedVaultRecordV1 = { v: 1; payload: EncryptedPayloadV1 };
+export type EncryptedVaultRecordV1 = { v: 1; payload: EncryptedPayloadV1 };
 type EncryptedPhotoEntryV1 = Omit<PhotoEntry, 'blob'> & { v: 1; blobEnc: EncryptedPayloadV1 };
 
 let _db: IDBDatabase | null = null;
@@ -84,6 +84,36 @@ export async function idbGetVaultData<T>(fallback: T): Promise<T> {
   } catch {
     return fallback;
   }
+}
+
+/** Raw encrypted vault record for cloud backup (never decrypt). */
+export async function idbGetEncryptedVaultRecord(): Promise<EncryptedVaultRecordV1 | null> {
+  try {
+    const db = await openDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(STORE_VAULT, 'readonly');
+      const req = tx.objectStore(STORE_VAULT).get('data');
+      req.onsuccess = () => {
+        const raw = req.result;
+        if (raw && typeof raw === 'object' && (raw as EncryptedVaultRecordV1).v === 1) {
+          resolve(raw as EncryptedVaultRecordV1);
+        } else resolve(null);
+      };
+      req.onerror = () => resolve(null);
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function idbPutEncryptedVaultRecord(record: EncryptedVaultRecordV1): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_VAULT, 'readwrite');
+    tx.objectStore(STORE_VAULT).put(record, 'data');
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB vault write failed'));
+  });
 }
 
 export async function idbSaveVaultData<T>(data: T): Promise<void> {

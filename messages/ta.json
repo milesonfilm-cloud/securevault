@@ -1,0 +1,80 @@
+{
+  "categories": {
+    "password-vault": {
+      "label": "கடவுச்சொற்கள்",
+      "shortLabel": "கடவுச்சொற்கள்"
+    },
+    "government-ids": {
+      "label": "அரசு அடையாளங்கள்",
+      "shortLabel": "அரசு ஐடி"
+    },
+    "bank-accounts": {
+      "label": "வங்கிக் கணக்குகள்",
+      "shortLabel": "வங்கி"
+    },
+    "credit-debit-cards": {
+      "label": "கிரெடிட் / டெபிட் கார்டுகள்",
+      "shortLabel": "கார்டுகள்"
+    },
+    "institutional-docs": {
+      "label": "நிறுவன ஆவணங்கள்",
+      "shortLabel": "நிறுவனம்"
+    },
+    "vehicle-documents": {
+      "label": "வாகன ஆவணங்கள்",
+      "shortLabel": "வாகனங்கள்"
+    },
+    "family-profiles": {
+      "label": "குடும்ப உறுப்பினர் சுயவிவரங்கள்",
+      "shortLabel": "சுயவிவரம்"
+    },
+    "passport": {
+      "label": "கடவுச்சீட்டு",
+      "shortLabel": "கடவுச்சீட்டு"
+    },
+    "drivers-license": {
+      "label": "ஓட்டுநர் உரிமம்",
+      "shortLabel": "உரிமம்"
+    },
+    "insurance": {
+      "label": "காப்பீடு",
+      "shortLabel": "காப்பீடு"
+    },
+    "visa": {
+      "label": "விசா",
+      "shortLabel": "விசா"
+    },
+    "medical-record": {
+      "label": "மருத்துவ பதிவு",
+      "shortLabel": "மருத்துவம்"
+    },
+    "certificate": {
+      "label": "சான்றிதழ்",
+      "shortLabel": "சான்று"
+    },
+    "contract": {
+      "label": "ஒப்பந்தம்",
+      "shortLabel": "ஒப்பந்தம்"
+    },
+    "warranty": {
+      "label": "உத்தரவாதம்",
+      "shortLabel": "உத்தரவாதம்"
+    },
+    "membership": {
+      "label": "உறுப்பினர்",
+      "shortLabel": "உறுப்பினர்"
+    },
+    "subscription": {
+      "label": "சந்தா",
+      "shortLabel": "சந்தா"
+    },
+    "permit": {
+      "label": "அனுமதி",
+      "shortLabel": "அனுமதி"
+    },
+    "other": {
+      "label": "மற்றவை",
+      "shortLabel": "மற்றவை"
+    }
+  }
+}

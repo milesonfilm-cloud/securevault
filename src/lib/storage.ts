@@ -33,6 +33,28 @@ export type CategoryId =
   | 'permit'
   | 'other';
 
+export type VaultRole = 'admin' | 'member' | 'viewer';
+
+export interface VaultPermissions {
+  role: VaultRole;
+  sharedDocumentIds: string[];
+  privateDocumentIds: string[];
+  canExport: boolean;
+  canShare: boolean;
+}
+
+export function defaultPermissions(role: VaultRole = 'admin'): VaultPermissions {
+  const canExport = role !== 'viewer';
+  const canShare = role !== 'viewer';
+  return {
+    role,
+    sharedDocumentIds: [],
+    privateDocumentIds: [],
+    canExport,
+    canShare,
+  };
+}
+
 export interface FamilyMember {
   id: string;
   name: string;
@@ -43,6 +65,9 @@ export interface FamilyMember {
   photoDataUrl?: string | null;
   createdAt: string;
   updatedAt: string;
+  permissions?: VaultPermissions;
+  /** SHA-256 hex of optional member switch PIN (see `hashMemberPin`). */
+  pinHash?: string | null;
 }
 
 export interface Document {
@@ -57,6 +82,81 @@ export interface Document {
   tags: string[];
   /** At most one stack board folder; null = not in any folder. */
   stackId: string | null;
+  /** Hidden from admin when true (member privacy). */
+  isPrivate?: boolean;
+  /** Members who can see this document when shared by admin. */
+  sharedWithMemberIds?: string[];
+  /** Issued or verified via DigiLocker import. */
+  isDigiLockerVerified?: boolean;
+}
+
+export interface ShareViewEvent {
+  at: string;
+  userAgent: string;
+}
+
+export interface ShareLink {
+  id: string;
+  /** Short id used in /share/[shareId] fetch; decryption key lives in URL hash. */
+  shareId: string;
+  docId: string;
+  docTitle: string;
+  categoryId: CategoryId;
+  createdAt: string;
+  expiresAt: string;
+  views: ShareViewEvent[];
+}
+
+export interface EmergencyContact {
+  name: string;
+  email: string;
+  inactivityDays: 7 | 14 | 30;
+  lastCheckInAt: string;
+}
+
+export interface VaultSettings {
+  language: string;
+  cloudSyncEnabled: boolean;
+  notificationsEnabled: boolean;
+  expiryWarnDays: number;
+  digilockerConnectedAt: string | null;
+  adminRole: VaultRole;
+  theme: 'vault' | 'wellness' | 'pastel' | 'voyager' | 'neon';
+  /** Read-only vault UI for owner; pair with handover link for trusted access. */
+  emergencyModeEnabled: boolean;
+}
+
+export interface StreakData {
+  lastOpenDate: string;
+  streakDays: number;
+  lastStreakCheckDate: string;
+  badges: string[];
+  onboardingDone: boolean;
+  onboardingSteps: Record<string, boolean>;
+}
+
+export function defaultVaultSettings(): VaultSettings {
+  return {
+    language: 'en',
+    cloudSyncEnabled: false,
+    notificationsEnabled: true,
+    expiryWarnDays: 30,
+    digilockerConnectedAt: null,
+    adminRole: 'admin',
+    theme: 'vault',
+    emergencyModeEnabled: false,
+  };
+}
+
+export function defaultStreakData(): StreakData {
+  return {
+    lastOpenDate: '',
+    streakDays: 0,
+    lastStreakCheckDate: '',
+    badges: [],
+    onboardingDone: false,
+    onboardingSteps: {},
+  };
 }
 
 /** Normalize legacy `stackIds[]` or missing field to single `stackId`. */
@@ -92,6 +192,51 @@ export interface VaultData {
   documents: Document[];
   exportHistory: ExportRecord[];
   documentStacks: DocumentStack[];
+  shareLinks: ShareLink[];
+  emergencyContact: EmergencyContact | null;
+  settings: VaultSettings;
+  streakData: StreakData;
+}
+
+export function normalizeVaultData(data: VaultData): VaultData {
+  const settings = { ...defaultVaultSettings(), ...data.settings };
+  const streakData = { ...defaultStreakData(), ...data.streakData };
+  return {
+    ...data,
+    shareLinks: Array.isArray(data.shareLinks) ? data.shareLinks : [],
+    emergencyContact: data.emergencyContact ?? null,
+    settings,
+    streakData,
+    members: (() => {
+      const withPerms = data.members.map((m, i) => ({
+        ...m,
+        permissions: m.permissions ?? defaultPermissions(i === 0 ? 'admin' : 'member'),
+      }));
+      if (withPerms.length === 0) return withPerms;
+      const hasAdmin = withPerms.some((m) => m.permissions!.role === 'admin');
+      if (hasAdmin) return withPerms;
+      return withPerms.map((m, i) =>
+        i === 0
+          ? {
+              ...m,
+              permissions: {
+                ...m.permissions!,
+                ...defaultPermissions('admin'),
+                role: 'admin',
+              },
+            }
+          : m
+      );
+    })(),
+    documents: data.documents.map((d) => {
+      const legacy = d as Document & { digilockerVerified?: boolean };
+      const { digilockerVerified: _dropLegacy, ...rest } = legacy;
+      return {
+        ...rest,
+        isDigiLockerVerified: rest.isDigiLockerVerified ?? legacy.digilockerVerified,
+      };
+    }),
+  };
 }
 
 export interface ExportRecord {
@@ -147,7 +292,7 @@ export async function loadVaultDataAsync(): Promise<VaultData> {
   normalized.documents = normalized.documents.map((d) =>
     migrateDocumentStackField(d as Document & { stackIds?: string[] })
   );
-  return normalized;
+  return normalizeVaultData(normalized);
 }
 
 export async function saveVaultDataAsync(data: VaultData): Promise<void> {
@@ -168,7 +313,16 @@ export async function getStorageSizeAsync(): Promise<{
 
 export function loadVaultData(): VaultData {
   if (typeof window === 'undefined') {
-    return { members: [], documents: [], exportHistory: [], documentStacks: [] };
+    return {
+      members: [],
+      documents: [],
+      exportHistory: [],
+      documentStacks: [],
+      shareLinks: [],
+      emergencyContact: null,
+      settings: defaultVaultSettings(),
+      streakData: defaultStreakData(),
+    };
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -178,7 +332,7 @@ export function loadVaultData(): VaultData {
     parsed.documents = parsed.documents.map((d) =>
       migrateDocumentStackField(d as Document & { stackIds?: string[] })
     );
-    return parsed;
+    return normalizeVaultData(parsed);
   } catch {
     return getDefaultData();
   }
@@ -208,11 +362,14 @@ export async function resetVaultLocalOnly(): Promise<void> {
     localStorage.removeItem(ENCRYPTION_MIGRATED_KEY);
     localStorage.removeItem(PIN_KDF_PARAMS_KEY);
     localStorage.removeItem(PIN_VERIFIER_KEY);
+    localStorage.removeItem('sv_active_member');
+    localStorage.removeItem('sv_streak');
   } catch {
     // ignore
   }
   try {
     sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
+    sessionStorage.removeItem('sv_gamification_hydrate_v1');
   } catch {
     // ignore
   }
@@ -357,6 +514,7 @@ function getDefaultData(): VaultData {
       memberId: 'member-002',
       categoryId: 'government-ids',
       title: 'Passport',
+      isPrivate: true,
       fields: {
         'Passport Number': 'N1234567',
         'Date of Issue': '2021-09-10',
@@ -446,7 +604,20 @@ function getDefaultData(): VaultData {
     },
   ];
 
-  const data: VaultData = { members, documents, exportHistory: [], documentStacks: [] };
+  const data: VaultData = {
+    members: [
+      { ...members[0], permissions: defaultPermissions('admin') },
+      { ...members[1], permissions: defaultPermissions('member') },
+      { ...members[2], permissions: defaultPermissions('viewer') },
+    ],
+    documents,
+    exportHistory: [],
+    documentStacks: [],
+    shareLinks: [],
+    emergencyContact: null,
+    settings: defaultVaultSettings(),
+    streakData: defaultStreakData(),
+  };
   if (typeof window !== 'undefined') {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }

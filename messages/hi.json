@@ -1,0 +1,390 @@
+{
+  "nav": {
+    "home": "होम",
+    "documents": "दस्तावेज़",
+    "renewals": "नवीनीकरण",
+    "progress": "प्रगति",
+    "settings": "सेटिंग्स",
+    "members": "सदस्य",
+    "familyMembers": "परिवार के सदस्य",
+    "documentVault": "दस्तावेज़ वॉल्ट",
+    "settingsExport": "सेटिंग्स और निर्यात",
+    "about": "परिचय",
+    "navigation": "नेविगेशन",
+    "lock": "लॉक",
+    "lockVault": "वॉल्ट लॉक करें",
+    "private": "निजी",
+    "renew": "नवीकरण",
+    "vault": "वॉल्ट",
+    "family": "परिवार",
+    "offlineTitle": "100% ऑफ़लाइन",
+    "offlineSubtitle": "डेटा इस डिवाइस से बाहर नहीं जाता",
+    "lockVaultButton": "वॉल्ट लॉक करें",
+    "collapse": "संकुचित करें",
+    "expandSidebar": "साइडबार विस्तृत करें"
+  },
+  "common": {
+    "add": "जोड़ें",
+    "edit": "संपादित करें",
+    "delete": "हटाएँ",
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "search": "खोजें",
+    "back": "पीछे",
+    "next": "आगे",
+    "loading": "लोड हो रहा है…",
+    "error": "त्रुटि",
+    "close": "बंद करें",
+    "continue": "जारी रखें",
+    "yes": "हाँ",
+    "no": "नहीं",
+    "fieldRequired": "{field} आवश्यक है"
+  },
+  "documents": {
+    "addDocument": "दस्तावेज़ जोड़ें",
+    "editDocument": "दस्तावेज़ संपादित करें",
+    "noDocuments": "अभी कोई दस्तावेज़ नहीं",
+    "scanDocument": "दस्तावेज़ स्कैन करें",
+    "shareDocument": "दस्तावेज़ साझा करें",
+    "modalAddTitle": "नया दस्तावेज़ जोड़ें",
+    "modalEditTitle": "दस्तावेज़ संपादित करें",
+    "saveLocalSubtitle": "सारा डेटा केवल आपके डिवाइस पर स्थानीय रूप से सहेजा जाता है",
+    "scanTitle": "कैमरे से दस्तावेज़ स्कैन करें और फ़ील्ड भरें",
+    "familyMemberLabel": "परिवार का सदस्य *",
+    "selectFamilyMember": "एक परिवार के सदस्य का चयन करें",
+    "categoryLabel": "श्रेणी *",
+    "selectCategory": "एक श्रेणी चुनें",
+    "folderLabel": "फ़ोल्डर",
+    "folderHint": "वैकल्पिक — इस दस्तावेज़ को एक फ़ोल्डर में रखें, या \"कोई फ़ोल्डर नहीं\" रखें।",
+    "noFolders": "अभी आपके वॉल्ट में कोई फ़ोल्डर नहीं है।",
+    "titleLabel": "दस्तावेज़ शीर्षक *",
+    "titleHint": "यादगार नाम — जैसे \"आधार कार्ड\"",
+    "titleRequired": "दस्तावेज़ शीर्षक आवश्यक है",
+    "titlePlaceholder": "जैसे आधार कार्ड",
+    "reviewOcrTitle": "निकाले गए फ़ील्ड की समीक्षा करें",
+    "reviewOcrBody": "टेक्स्ट इस डिवाइस पर पहचाना गया। सहेजने से पहले आईडी और तारीखें जाँचें।",
+    "aiVerifyTitle": "AI से भरे फ़ील्ड — कृपया सत्यापित करें",
+    "aiVerifyBody": "OCR डिवाइस पर चला; फ़ील्ड मैपिंग में AI का उपयोग हुआ।",
+    "sensitiveTag": "(संवेदनशील)",
+    "aiFilledBadge": "AI भरा",
+    "selectPlaceholder": "चुनें…",
+    "noFolderOption": "कोई फ़ोल्डर नहीं",
+    "showPassword": "पासवर्ड दिखाएँ",
+    "hidePassword": "पासवर्ड छिपाएँ",
+    "notesLabel": "नोट्स",
+    "notesHint": "वैकल्पिक — याद दिलाने वाली बातें",
+    "notesPlaceholder": "जैसे मोबाइल नंबर से जुड़ा",
+    "tagsLabel": "टैग",
+    "tagsHint": "अल्पविराम से अलग — जैसे primary, kyc",
+    "tagsPlaceholder": "primary, kyc, travel",
+    "saving": "सहेज रहा है…",
+    "saveChanges": "परिवर्तन सहेजें",
+    "addDocumentCta": "दस्तावेज़ जोड़ें",
+    "fieldsHeading": "{category} फ़ील्ड",
+    "fieldPlaceholder": "{field} दर्ज करें"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "backupAppTitle": "बैकअप और ऐप",
+    "backupAppSubtitle": "वॉल्ट डेटा, बैकअप और ऐप सेटिंग्स प्रबंधित करें",
+    "cloudSync": "क्लाउड सिंक",
+    "digilocker": "डिजिलॉकर",
+    "emergency": "आपातकालीन पहुँच",
+    "emergencySubtitle": "विश्वसनीय संपर्क, PDF, हैंडओवर लिंक →",
+    "language": "भाषा",
+    "languageSubtitle": "पसंदीदा भाषा चुनें। इस डिवाइस पर सहेजी जाती है।",
+    "permissions": "अनुमतियाँ",
+    "logout": "लॉग आउट",
+    "privacyTitle": "100% निजी — कोई क्लाउड स्टोरेज नहीं",
+    "privacyBody": "आपका सारा डेटा इस ऐप में स्थानीय रूप से रहता है। SecureVault आपके वॉल्ट डेटा को किसी सर्वर पर नहीं भेजता।"
+  },
+  "auth": {
+    "enterPin": "जारी रखने के लिए अपना पासवर्ड दर्ज करें",
+    "createPin": "अपने वॉल्ट की सुरक्षा के लिए पासवर्ड सेट करें",
+    "unlockVault": "वॉल्ट अनलॉक करें",
+    "biometric": "बायोमेट्रिक्स का उपयोग करें",
+    "welcome": "स्वागत है!",
+    "createPassword": "पासवर्ड बनाएँ",
+    "unlocking": "वॉल्ट अनलॉक हो रहा है…",
+    "authenticating": "प्रमाणीकरण…",
+    "usePassword": "या पासवर्ड का उपयोग करें",
+    "fingerprintOrFace": "फ़िंगरप्रिंट या फेस आईडी",
+    "enableBiometrics": "बायोमेट्रिक्स सक्षम करें",
+    "enableBiometricLogin": "बायोमेट्रिक लॉगिन सक्षम करें",
+    "settingUp": "सेट अप हो रहा है…",
+    "fingerprint": "फ़िंगरप्रिंट",
+    "faceId": "फेस आईडी",
+    "offlineNote": "100% ऑफ़लाइन · केवल इस डिवाइस पर",
+    "identityVerifiedHint": "पहचान सत्यापित। वॉल्ट डिक्रिप्ट करने के लिए पासवर्ड दर्ज करें।",
+    "pwdMin": "पासवर्ड कम से कम 4 अक्षरों का हो",
+    "pwdMismatch": "पासवर्ड मेल नहीं खाते",
+    "incorrectPwd": "गलत पासवर्ड। पुनः प्रयास करें।",
+    "bioFailed": "बायोमेट्रिक विफल। पासवर्ड का उपयोग करें।",
+    "bioUnavailable": "बायोमेट्रिक उपलब्ध नहीं। पासवर्ड का उपयोग करें।",
+    "bioSetupLater": "बायोमेट्रिक सेटअप विफल। बाद में सेटिंग्स में सक्षम करें।",
+    "bioSetupFailed": "बायोमेट्रिक सेटअप विफल।",
+    "secureContext": "सुरक्षित एन्क्रिप्शन उपलब्ध नहीं। https या localhost का उपयोग करें।",
+    "storageFull": "ब्राउज़र स्टोरेज भरा है। स्थान खाली करें।",
+    "storageSaveFailed": "कुंजी सहेजी नहीं जा सकीं। अनुमतियाँ जाँचें।",
+    "oom": "मेमोरी समाप्त। अन्य टैब बंद करें।",
+    "wasmLoadFailed": "सुरक्षा मॉड्यूल लोड नहीं हुआ। पृष्ठ रिफ़्रेश करें।",
+    "createFailed": "वॉल्ट नहीं बन सका। सुरक्षित पृष्ठ पर खोलें।",
+    "resetConfirm": "रीसेट करने पर इस डिवाइस का स्थानीय वॉल्ट डेटा हमेशा के लिए मिट जाएगा।\n\nयदि एन्क्रिप्टेड बैकअप है तो बाद में पुनर्स्थापित कर सकते हैं।\n\nजारी रखें?",
+    "biometricSetupSubtitle": "त्वरित पहुँच के लिए फ़िंगरप्रिंट या फेस आईडी का उपयोग करें",
+    "skipForNow": "अभी छोड़ें",
+    "newPasswordLabel": "नया पासवर्ड",
+    "passwordLabel": "पासवर्ड",
+    "enterPasswordPlaceholder": "पासवर्ड दर्ज करें",
+    "confirmPasswordLabel": "पासवर्ड की पुष्टि करें",
+    "confirmPasswordPlaceholder": "पासवर्ड पुष्टि करें",
+    "createVaultPassword": "वॉल्ट पासवर्ड बनाएँ",
+    "submitUnlock": "वॉल्ट अनलॉक करें",
+    "forgotReset": "पासवर्ड भूल गए? वॉल्ट रीसेट (बैकअप के बिना डेटा खो सकता है)",
+    "biometricTip": "टिप: अनलॉक के बाद सेटिंग्स से बायोमेट्रिक सक्षम करें"
+  },
+  "welcome": {
+    "kickerWelcome": "स्वागत है",
+    "kickerYourData": "आपका डेटा",
+    "kickerOrganize": "व्यवस्थित करें",
+    "kickerStaySafe": "सुरक्षित रहें",
+    "titleSecureVault": "SecureVault",
+    "titlePrivateVault": "निजी दस्तावेज़ वॉल्ट",
+    "titleBuiltFamilies": "परिवारों के लिए बना",
+    "titleBackup": "नियमित बैकअप लें",
+    "bodySetup": "अपने वॉल्ट को एन्क्रिप्ट करने के लिए मज़बूत पासवर्ड बनाएँ। कुछ भी अपलोड नहीं होता — सब कुछ इस डिवाइस पर रहता है।",
+    "bodyLogin": "अपने पासवर्ड से साइन इन करें। सब कुछ स्थानीय और ऑफ़लाइन रहता है।",
+    "bodyVault": "सरकारी आईडी, बैंक विवरण, पासवर्ड और अधिक — श्रेणीबद्ध और एन्क्रिप्टेड।",
+    "bodyFamily": "दस्तावेज़ों को परिवार के सदस्यों से जोड़ें ताकि रिकॉर्ड व्यवस्थित रहें।",
+    "bodyBackup": "सेटिंग्स से एन्क्रिप्टेड JSON बैकअप निर्यात करें।",
+    "skip": "इंट्रो छोड़ें",
+    "next": "आगे",
+    "createPassword": "पासवर्ड बनाएँ",
+    "signIn": "साइन इन"
+  },
+  "language": {
+    "label": "भाषा",
+    "en": "🇮🇳 English",
+    "hi": "🇮🇳 हिन्दी",
+    "ta": "🇮🇳 தமிழ்",
+    "te": "🇮🇳 తెలుగు",
+    "kn": "🇮🇳 ಕನ್ನಡ",
+    "bn": "🇮🇳 বাংলা"
+  },
+  "categories": {
+    "password-vault": {
+      "label": "पासवर्ड",
+      "shortLabel": "पासवर्ड",
+      "fields": {
+        "website_app": "वेबसाइट / ऐप",
+        "login_url": "लॉगिन URL",
+        "user_id_email": "यूज़र आईडी / ईमेल",
+        "password": "पासवर्ड",
+        "2fa_recovery": "2FA / रिकवरी नोट्स"
+      }
+    },
+    "government-ids": {
+      "label": "सरकारी पहचान पत्र",
+      "shortLabel": "सरकारी आईडी",
+      "fields": {
+        "document_type": "दस्तावेज़ प्रकार",
+        "id_document_number": "आईडी / दस्तावेज़ संख्या",
+        "date_of_issue": "जारी करने की तिथि",
+        "expiry_date": "समाप्ति तिथि",
+        "issuing_authority": "जारी करने वाला प्राधिकरण",
+        "address_on_document": "दस्तावेज़ पर पता"
+      }
+    },
+    "bank-accounts": {
+      "label": "बैंक खाते",
+      "shortLabel": "बैंक",
+      "fields": {
+        "bank_name": "बैंक का नाम",
+        "account_number": "खाता संख्या",
+        "ifsc_code": "IFSC / SWIFT कोड",
+        "account_type": "खाता प्रकार",
+        "branch": "शाखा",
+        "nominee": "नामांकित",
+        "net_banking_id": "नेट बैंकिंग यूज़र आईडी"
+      }
+    },
+    "credit-debit-cards": {
+      "label": "क्रेडिट / डेबिट कार्ड",
+      "shortLabel": "कार्ड",
+      "fields": {
+        "card_name": "कार्ड नाम / प्रकार",
+        "card_number_last_4": "अंतिम 4 अंक",
+        "card_network": "कार्ड नेटवर्क",
+        "expiry": "समाप्ति (MM/YYYY)",
+        "credit_limit": "क्रेडिट सीमा",
+        "billing_cycle": "बिलिंग चक्र तिथि",
+        "customer_care": "ग्राहक सेवा नंबर"
+      }
+    },
+    "institutional-docs": {
+      "label": "संस्थागत दस्तावेज़",
+      "shortLabel": "संस्थागत",
+      "fields": {
+        "institution_name": "संस्थान / कंपनी",
+        "document_type": "दस्तावेज़ प्रकार",
+        "reference_number": "पॉलिसी / संदर्भ संख्या",
+        "start_date": "प्रारंभ / जारी तिथि",
+        "end_maturity_date": "समाप्ति / परिपक्वता तिथि",
+        "amount_value": "राशि / योग",
+        "contact_number": "संपर्क / एजेंट नंबर"
+      }
+    },
+    "vehicle-documents": {
+      "label": "वाहन दस्तावेज़",
+      "shortLabel": "वाहन",
+      "fields": {
+        "vehicle_name": "वाहन नाम / मॉडल",
+        "registration_number": "पंजीकरण संख्या",
+        "engine_number": "इंजन संख्या",
+        "chassis_number": "चेसिस संख्या",
+        "fuel_type": "ईंधन प्रकार",
+        "insurance_expiry": "बीमा समाप्ति",
+        "puc_expiry": "PUC / उत्सर्जन समाप्ति"
+      }
+    },
+    "family-profiles": {
+      "label": "परिवार सदस्य प्रोफ़ाइल",
+      "shortLabel": "प्रोफ़ाइल",
+      "fields": {
+        "full_name": "पूरा नाम",
+        "relationship": "रिश्ता",
+        "date_of_birth": "जन्म तिथि",
+        "blood_group": "रक्त समूह",
+        "emergency_contact": "आपातकालीन संपर्क",
+        "medical_conditions": "चिकित्सा स्थिति / एलर्जी"
+      }
+    },
+    "passport": {
+      "label": "पासपोर्ट",
+      "shortLabel": "पासपोर्ट",
+      "fields": {
+        "passport_number": "पासपोर्ट संख्या",
+        "date_of_issue": "जारी करने की तिथि",
+        "expiry_date": "समाप्ति तिथि",
+        "place_of_issue": "जारी करने का स्थान",
+        "file_number": "फ़ाइल संख्या"
+      }
+    },
+    "drivers-license": {
+      "label": "Driver\\u2019s License",
+      "shortLabel": "लाइसेंस",
+      "fields": {
+        "license_number": "लाइसेंस संख्या",
+        "date_of_issue": "जारी करने की तिथि",
+        "expiry_date": "समाप्ति तिथि",
+        "issuing_authority": "जारी करने वाला प्राधिकरण",
+        "vehicle_class": "वाहन वर्ग"
+      }
+    },
+    "insurance": {
+      "label": "बीमा",
+      "shortLabel": "बीमा",
+      "fields": {
+        "provider": "प्रदाता",
+        "policy_number": "पॉलिसी संख्या",
+        "type": "प्रकार",
+        "start_date": "प्रारंभ तिथि",
+        "end_date": "समाप्ति तिथि",
+        "contact": "एजेंट / सहायता संपर्क"
+      }
+    },
+    "visa": {
+      "label": "वीज़ा",
+      "shortLabel": "वीज़ा",
+      "fields": {
+        "country": "देश",
+        "visa_type": "वीज़ा प्रकार",
+        "visa_number": "वीज़ा संख्या",
+        "issue_date": "जारी तिथि",
+        "expiry_date": "समाप्ति तिथि"
+      }
+    },
+    "medical-record": {
+      "label": "चिकित्सा रिकॉर्ड",
+      "shortLabel": "चिकित्सा",
+      "fields": {
+        "hospital_clinic": "अस्पताल / क्लिनिक",
+        "doctor": "डॉक्टर",
+        "record_id": "रिकॉर्ड आईडी",
+        "date": "तिथि",
+        "notes": "नोट्स"
+      }
+    },
+    "certificate": {
+      "label": "प्रमाणपत्र",
+      "shortLabel": "प्रमाण",
+      "fields": {
+        "certificate_name": "प्रमाणपत्र नाम",
+        "issuer": "जारीकर्ता",
+        "certificate_id": "प्रमाणपत्र आईडी",
+        "issue_date": "जारी तिथि",
+        "expiry_date": "समाप्ति तिथि"
+      }
+    },
+    "contract": {
+      "label": "अनुबंध",
+      "shortLabel": "अनुबंध",
+      "fields": {
+        "party": "पक्ष / विक्रेता",
+        "contract_id": "अनुबंध आईडी",
+        "start_date": "प्रारंभ तिथि",
+        "end_date": "End Date",
+        "notes": "नोट्स"
+      }
+    },
+    "warranty": {
+      "label": "वारंटी",
+      "shortLabel": "वारंटी",
+      "fields": {
+        "product": "उत्पाद",
+        "brand": "ब्रांड",
+        "serial_number": "सीरियल नंबर",
+        "purchase_date": "खरीद तिथि",
+        "warranty_expiry": "वारंटी समाप्ति"
+      }
+    },
+    "membership": {
+      "label": "सदस्यता",
+      "shortLabel": "सदस्य",
+      "fields": {
+        "organization": "संगठन",
+        "member_id": "सदस्य आईडी",
+        "start_date": "प्रारंभ तिथि",
+        "expiry_date": "समाप्ति तिथि"
+      }
+    },
+    "subscription": {
+      "label": "सदस्यता",
+      "shortLabel": "सब्स",
+      "fields": {
+        "service": "सेवा",
+        "plan": "योजना",
+        "billing_cycle": "बिलिंग चक्र",
+        "renewal_date": "नवीनीकरण तिथि",
+        "account_email": "खाता ईमेल"
+      }
+    },
+    "permit": {
+      "label": "परमिट",
+      "shortLabel": "परमिट",
+      "fields": {
+        "permit_type": "परमिट प्रकार",
+        "permit_number": "परमिट संख्या",
+        "issue_date": "जारी तिथि",
+        "expiry_date": "समाप्ति तिथि",
+        "authority": "प्राधिकरण"
+      }
+    },
+    "other": {
+      "label": "अन्य",
+      "shortLabel": "अन्य",
+      "fields": {
+        "reference": "संदर्भ / आईडी"
+      }
+    }
+  }
+}

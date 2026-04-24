@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-react';
 import BackupReminderBanner from '@/components/ui/BackupReminderBanner';
 import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
@@ -32,6 +33,7 @@ import {
 } from '@/lib/crypto/vaultCrypto';
 import { resetVaultLocalOnly } from '@/lib/storage';
 import { VaultDataProvider } from '@/context/VaultDataContext';
+import { VaultPermissionsProvider } from '@/hooks/useVaultPermissions';
 import { AUTH_INTRO_SESSION_KEY, completeAuthIntroSession } from '@/lib/authIntroSession';
 
 const SESSION_KEY = SESSION_UNLOCKED_KEY;
@@ -49,6 +51,7 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
+  const t = useTranslations('auth');
   const { theme } = useTheme();
   const [phase, setPhase] = useState<'loading' | 'setup' | 'login' | 'unlocked'>('loading');
   const [pin, setPin] = useState('');
@@ -141,12 +144,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     e.preventDefault();
     setError('');
     if (pin.length < 4) {
-      setError('Password must be at least 4 characters');
+      setError(t('pwdMin'));
       triggerShake();
       return;
     }
     if (pin !== confirmPin) {
-      setError('Passwords do not match');
+      setError(t('pwdMismatch'));
       triggerShake();
       setConfirmPin('');
       return;
@@ -154,9 +157,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     void (async () => {
       try {
         if (typeof crypto === 'undefined' || !crypto.subtle) {
-          setError(
-            'Secure encryption is not available. Use https:// or open this app on localhost, not a raw IP or file URL.'
-          );
+          setError(t('secureContext'));
           triggerShake();
           return;
         }
@@ -169,9 +170,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         } catch (storageErr) {
           const name = storageErr instanceof DOMException ? storageErr.name : '';
           if (name === 'QuotaExceededError' || (storageErr as Error)?.name === 'QuotaExceededError') {
-            setError('Browser storage is full. Free some space and try again.');
+            setError(t('storageFull'));
           } else {
-            setError('Could not save your vault keys. Check browser storage permissions and try again.');
+            setError(t('storageSaveFailed'));
           }
           triggerShake();
           return;
@@ -191,13 +192,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           msg.includes('allocation') ||
           msg.includes('out of memory')
         ) {
-          setError(
-            'This device ran out of memory while securing your password. Close other tabs or apps and try again.'
-          );
+          setError(t('oom'));
         } else if (msg.includes('hash-wasm') || msg.includes('failed to fetch') || msg.includes('loading')) {
-          setError('Could not load password security module. Refresh the page and try again.');
+          setError(t('wasmLoadFailed'));
         } else {
-          setError('Could not create vault. Check that you are on a secure page (https or localhost) and try again.');
+          setError(t('createFailed'));
         }
         triggerShake();
       }
@@ -218,7 +217,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       setVaultKey(key);
       unlockVault();
     })().catch(() => {
-      setError('Incorrect password. Please try again.');
+      setError(t('incorrectPwd'));
       triggerShake();
       setPin('');
     });
@@ -234,16 +233,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           throw new Error('not_initialized');
         }
         // Biometrics prove presence; the AES key is still derived from PIN only.
-        setLoginHint('Identity verified. Enter your password to decrypt the vault.');
+        setLoginHint(t('identityVerifiedHint'));
         setPhase('login');
         setPin('');
         setTimeout(() => inputRef.current?.focus(), 100);
       } else {
-        setError('Biometric authentication failed. Use your password.');
+        setError(t('bioFailed'));
         triggerShake();
       }
     } catch {
-      setError('Biometric not available. Use your password.');
+      setError(t('bioUnavailable'));
       triggerShake();
     } finally {
       setBiometricLoading(false);
@@ -259,11 +258,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         setBiometricRegistered(true);
         unlockVault();
       } else {
-        setError('Biometric setup failed. You can enable it later in settings.');
+        setError(t('bioSetupLater'));
         unlockVault();
       }
     } catch {
-      setError('Biometric setup failed.');
+      setError(t('bioSetupFailed'));
       unlockVault();
     } finally {
       setBiometricLoading(false);
@@ -276,9 +275,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   const handleForgotPin = async () => {
     setError('');
-    const ok = window.confirm(
-      'Resetting will permanently delete your local vault data on this device.\n\nIf you have an encrypted backup file, you can restore after reset.\n\nContinue?'
-    );
+    const ok = window.confirm(t('resetConfirm'));
     if (!ok) return;
     await resetVaultLocalOnly();
     clearVaultKey();
@@ -296,7 +293,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (phase === 'unlocked') {
-    return <VaultDataProvider>{children}</VaultDataProvider>;
+    return (
+      <VaultDataProvider>
+        <VaultPermissionsProvider>{children}</VaultPermissionsProvider>
+      </VaultDataProvider>
+    );
   }
 
   // Biometric setup offer screen (shown after password creation)
@@ -310,21 +311,19 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                 <Fingerprint size={36} className="text-vault-warm" />
               </div>
             </div>
-            <h1 className="text-2xl font-800 text-vault-text tracking-tight">Enable Biometrics</h1>
-            <p className="text-sm text-vault-muted mt-1 text-center">
-              Use fingerprint or Face ID for quick, secure access
-            </p>
+            <h1 className="text-2xl font-800 text-vault-text tracking-tight">{t('enableBiometrics')}</h1>
+            <p className="text-sm text-vault-muted mt-1 text-center">{t('biometricSetupSubtitle')}</p>
           </div>
 
           {/* Biometric type indicators */}
           <div className="flex gap-3 mb-6">
             <div className="flex-1 flex flex-col items-center gap-2 bg-vault-elevated border border-border rounded-2xl p-4">
               <Fingerprint size={24} className="text-vault-warm" />
-              <span className="text-xs text-vault-muted text-center">Fingerprint</span>
+              <span className="text-xs text-vault-muted text-center">{t('fingerprint')}</span>
             </div>
             <div className="flex-1 flex flex-col items-center gap-2 bg-vault-elevated border border-border rounded-2xl p-4">
               <ScanFace size={24} className="text-vault-warm" />
-              <span className="text-xs text-vault-muted text-center">Face ID</span>
+              <span className="text-xs text-vault-muted text-center">{t('faceId')}</span>
             </div>
           </div>
 
@@ -345,19 +344,19 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             ) : (
               <Fingerprint size={18} />
             )}
-            {biometricLoading ? 'Setting up…' : 'Enable Biometric Login'}
+            {biometricLoading ? t('settingUp') : t('enableBiometricLogin')}
           </button>
 
           <button
             onClick={skipBiometricSetup}
             className="w-full py-3 text-sm text-vault-muted hover:text-vault-warm transition-colors"
           >
-            Skip for now
+            {t('skipForNow')}
           </button>
 
           <div className="mt-4 flex items-center justify-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-vault-warm" />
-            <p className="text-xs text-vault-faint">100% offline · stored on this device only</p>
+            <p className="text-xs text-vault-faint">{t('offlineNote')}</p>
           </div>
         </div>
       </div>
@@ -401,14 +400,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           </div>
 
           <h1 className="text-2xl font-800 text-vault-text tracking-tight">
-            {success ? 'Welcome!' : phase === 'setup' ? 'Create Password' : 'Unlock vault'}
+            {success ? t('welcome') : phase === 'setup' ? t('createPassword') : t('unlockVault')}
           </h1>
           <p className="text-sm text-vault-muted mt-1 text-center">
             {success
-              ? 'Unlocking your vault…'
+              ? t('unlocking')
               : phase === 'setup'
-                ? 'Set a password to protect your vault'
-                : 'Enter your password to continue'}
+                ? t('createPin')
+                : t('enterPin')}
           </p>
         </div>
 
@@ -434,9 +433,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
               </div>
               <div className="text-center">
                 <p className="text-sm font-700 text-vault-text transition-colors">
-                  {biometricLoading ? 'Authenticating…' : 'Use Biometrics'}
+                  {biometricLoading ? t('authenticating') : t('biometric')}
                 </p>
-                <p className="text-xs text-vault-muted mt-0.5">Fingerprint or Face ID</p>
+                <p className="text-xs text-vault-muted mt-0.5">{t('fingerprintOrFace')}</p>
               </div>
             </button>
           )}
@@ -449,7 +448,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           !loginHint && (
             <div className="flex items-center gap-3 mb-5">
               <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-vault-faint font-600">or use password</span>
+              <span className="text-xs text-vault-faint font-600">{t('usePassword')}</span>
               <div className="flex-1 h-px bg-border" />
             </div>
           )}
@@ -460,7 +459,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             {/* Password field */}
             <div className="space-y-1.5">
               <label className="text-xs font-700 text-vault-muted uppercase tracking-widest">
-                {phase === 'setup' ? 'New Password' : 'Password'}
+                {phase === 'setup' ? t('newPasswordLabel') : t('passwordLabel')}
               </label>
               <div className="relative">
                 <input
@@ -472,7 +471,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                     setError('');
                     setLoginHint('');
                   }}
-                  placeholder="Enter password"
+                  placeholder={t('enterPasswordPlaceholder')}
                   className="auth-input pr-11"
                   autoComplete={phase === 'setup' ? 'new-password' : 'current-password'}
                 />
@@ -490,7 +489,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             {phase === 'setup' && (
               <div className="space-y-1.5">
                 <label className="text-xs font-700 text-vault-muted uppercase tracking-widest">
-                  Confirm Password
+                  {t('confirmPasswordLabel')}
                 </label>
                 <div className="relative">
                   <input
@@ -500,7 +499,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                       setConfirmPin(e.target.value);
                       setError('');
                     }}
-                    placeholder="Confirm password"
+                    placeholder={t('confirmPasswordPlaceholder')}
                     className="auth-input pr-11"
                     autoComplete="new-password"
                   />
@@ -533,7 +532,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             {/* Submit */}
             <button type="submit" className="auth-btn w-full mt-2">
               <Lock size={18} />
-              {phase === 'setup' ? 'Create Vault Password' : 'Unlock Vault'}
+              {phase === 'setup' ? t('createVaultPassword') : t('submitUnlock')}
             </button>
           </form>
         )}
@@ -548,21 +547,21 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             onClick={handleForgotPin}
             className="mt-4 w-full text-center text-xs text-vault-muted hover:text-vault-warm transition-colors"
           >
-            Forgot password? Reset vault (data will be lost without backup)
+            {t('forgotReset')}
           </button>
         )}
 
         {/* Biometric setup hint (login phase, available but not registered) */}
         {!success && phase === 'login' && biometricAvailable && !biometricRegistered && (
           <p className="mt-4 text-center text-xs text-vault-faint">
-            Tip: Enable biometric login after unlocking via Settings
+            {t('biometricTip')}
           </p>
         )}
 
         {/* Footer */}
         <div className="mt-6 flex items-center justify-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-vault-warm" />
-          <p className="text-xs text-vault-faint">100% offline · stored on this device only</p>
+          <p className="text-xs text-vault-faint">{t('offlineNote')}</p>
         </div>
       </div>
     </div>

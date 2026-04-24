@@ -11,7 +11,6 @@ import {
 import '../styles/tailwind.css';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/context/ThemeContext';
-import ConditionalAuthGuard from '@/components/ConditionalAuthGuard';
 import { cn } from '@/lib/utils';
 
 /** Bundled at build time — no runtime request to font CDNs (offline-capable after `next build`). */
@@ -94,6 +93,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         fontSans.variable,
         fontMono.variable,
@@ -106,12 +106,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       data-theme="vault"
     >
       <body>
-        <ThemeProvider>
-          <ConditionalAuthGuard>{children}</ConditionalAuthGuard>
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
         <Toaster
           position="bottom-right"
+          closeButton
+          duration={5000}
           toastOptions={{
+            duration: 5000,
+            closeButton: true,
             style: {
               fontFamily: 'inherit',
               fontSize: '14px',

@@ -1,9 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import AuthGuard from './AuthGuard';
 
-const PUBLIC_PATHS = ['/landing', '/voyager'];
+const PUBLIC_PATHS = ['/landing', '/voyager', '/share', '/handover'];
 
 export default function ConditionalAuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

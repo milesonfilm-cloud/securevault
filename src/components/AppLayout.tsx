@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
 import DocumentExpiryAlerts from './DocumentExpiryAlerts';
+import MemberSwitcher from '@/components/vault/MemberSwitcher';
+import GamificationCheckIn from '@/components/gamification/GamificationCheckIn';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +31,7 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
               : 'neo-bg'
       )}
     >
+      <GamificationCheckIn />
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar
@@ -39,10 +42,13 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header className="flex flex-shrink-0 items-center justify-end gap-3 border-b border-[color:var(--color-border)] bg-vault-panel/90 px-3 py-2 backdrop-blur-md lg:px-4">
+          <MemberSwitcher />
+        </header>
         <main className="flex flex-1 flex-col overflow-y-auto pb-28 lg:pb-0">
           {activePath !== '/document-vault' && <DocumentExpiryAlerts />}
-          <div className="flex-1 min-h-0">{children}</div>
+          <div className="min-h-0 flex-1">{children}</div>
         </main>
       </div>
 

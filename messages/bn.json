@@ -1,0 +1,80 @@
+{
+  "categories": {
+    "password-vault": {
+      "label": "পাসওয়ার্ড",
+      "shortLabel": "পাসওয়ার্ড"
+    },
+    "government-ids": {
+      "label": "সরকারি পরিচয়পত্র",
+      "shortLabel": "গভ. আইডি"
+    },
+    "bank-accounts": {
+      "label": "ব্যাংক অ্যাকাউন্ট",
+      "shortLabel": "ব্যাংক"
+    },
+    "credit-debit-cards": {
+      "label": "ক্রেডিট / ডেবিট কার্ড",
+      "shortLabel": "কার্ড"
+    },
+    "institutional-docs": {
+      "label": "প্রাতিষ্ঠানিক নথি",
+      "shortLabel": "প্রতিষ্ঠান"
+    },
+    "vehicle-documents": {
+      "label": "যানবাহন নথি",
+      "shortLabel": "যান"
+    },
+    "family-profiles": {
+      "label": "পরিবারের সদস্য প্রোফাইল",
+      "shortLabel": "প্রোফাইল"
+    },
+    "passport": {
+      "label": "পাসপোর্ট",
+      "shortLabel": "পাসপোর্ট"
+    },
+    "drivers-license": {
+      "label": "ড্রাইভিং লাইসেন্স",
+      "shortLabel": "লাইসেন্স"
+    },
+    "insurance": {
+      "label": "বীমা",
+      "shortLabel": "বীমা"
+    },
+    "visa": {
+      "label": "ভিসা",
+      "shortLabel": "ভিসা"
+    },
+    "medical-record": {
+      "label": "চিকিৎসা রেকর্ড",
+      "shortLabel": "চিকিৎসা"
+    },
+    "certificate": {
+      "label": "সার্টিফিকেট",
+      "shortLabel": "সার্টি."
+    },
+    "contract": {
+      "label": "চুক্তি",
+      "shortLabel": "চুক্তি"
+    },
+    "warranty": {
+      "label": "ওয়ারেন্টি",
+      "shortLabel": "ওয়ারেন্টি"
+    },
+    "membership": {
+      "label": "সদস্যতা",
+      "shortLabel": "সদস্য"
+    },
+    "subscription": {
+      "label": "সাবস্ক্রিপশন",
+      "shortLabel": "সাবস্"
+    },
+    "permit": {
+      "label": "পারমিট",
+      "shortLabel": "পারমিট"
+    },
+    "other": {
+      "label": "অন্যান্য",
+      "shortLabel": "অন্যান্য"
+    }
+  }
+}

@@ -50,11 +50,13 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,md,json}\"",
     "serve": "next start",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "i18n:compose": "node scripts/generate-en-messages.mjs && node scripts/compose-messages.mjs && node scripts/merge-hi-categories.mjs && node scripts/merge-indic-category-labels.mjs"
   },
   "dependencies": {
     "@dhiwise/component-tagger": "^1.0.15",
     "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
     "class-variance-authority": "^0.7.1",
@@ -62,9 +64,12 @@
     "file-saver": "^2.0.5",
     "gsap": "^3.14.2",
     "hash-wasm": "^4.12.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^1.8.0",
     "motion": "^12.38.0",
     "next": "15.5.14",
+    "next-intl": "^4.9.1",
     "pdfjs-dist": "^5.6.205",
     "radix-ui": "^1.4.3",
     "react": "19.0.3",

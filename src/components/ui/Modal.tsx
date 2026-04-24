@@ -8,6 +8,8 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  /** Rendered in the header row next to the close control (e.g. scan action). */
+  headerActions?: React.ReactNode;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
 }
@@ -17,6 +19,7 @@ export default function Modal({
   onClose,
   title,
   subtitle,
+  headerActions,
   children,
   size = 'md',
 }: ModalProps) {
@@ -57,20 +60,23 @@ export default function Modal({
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-[color:var(--color-border)] flex-shrink-0">
-          <div>
+        <div className="flex items-start justify-between gap-3 p-6 border-b border-[color:var(--color-border)] flex-shrink-0">
+          <div className="min-w-0 flex-1">
             <h2 id="modal-title" className="text-lg font-700 text-vault-text">
               {title}
             </h2>
             {subtitle && <p className="text-sm text-vault-muted mt-0.5">{subtitle}</p>}
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-[10px] hover:bg-white/10 text-vault-faint hover:text-vault-warm transition-colors"
-            aria-label="Close modal"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            {headerActions}
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-[10px] hover:bg-white/10 text-vault-faint hover:text-vault-warm transition-colors"
+              aria-label="Close modal"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
         {/* Body */}
         <div className="flex-1 overflow-y-auto">{children}</div>

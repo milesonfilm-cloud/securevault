@@ -283,7 +283,7 @@ export const CATEGORIES: CategoryConfig[] = [
   },
   {
     id: 'drivers-license',
-    label: "Driver's License",
+    label: 'Driver\u2019s License',
     shortLabel: 'License',
     color: '#8ED1C7',
     bgColor: 'bg-vault-elevated',

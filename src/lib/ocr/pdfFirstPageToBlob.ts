@@ -15,7 +15,7 @@ export async function pdfFirstPageToPngBlob(data: ArrayBuffer): Promise<Blob> {
   if (!ctx) throw new Error('Canvas is not available');
   canvas.width = Math.floor(viewport.width);
   canvas.height = Math.floor(viewport.height);
-  await page.render({ canvasContext: ctx, viewport }).promise;
+  await page.render({ canvas, canvasContext: ctx, viewport }).promise;
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error('PNG encode failed'))),

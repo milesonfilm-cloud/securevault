@@ -1,0 +1,80 @@
+{
+  "categories": {
+    "password-vault": {
+      "label": "పాస్‌వర్డ్‌లు",
+      "shortLabel": "పాస్‌వర్డ్‌లు"
+    },
+    "government-ids": {
+      "label": "ప్రభుత్వ గుర్తింపు",
+      "shortLabel": "గవర్నమెంట్ ఐడి"
+    },
+    "bank-accounts": {
+      "label": "బ్యాంక్ ఖాతాలు",
+      "shortLabel": "బ్యాంక్"
+    },
+    "credit-debit-cards": {
+      "label": "క్రెడిట్ / డెబిట్ కార్డ్‌లు",
+      "shortLabel": "కార్డ్‌లు"
+    },
+    "institutional-docs": {
+      "label": "సంస్థాగత పత్రాలు",
+      "shortLabel": "సంస్థ"
+    },
+    "vehicle-documents": {
+      "label": "వాహన పత్రాలు",
+      "shortLabel": "వాహనాలు"
+    },
+    "family-profiles": {
+      "label": "కుటుంబ సభ్యుల ప్రొఫైల్‌లు",
+      "shortLabel": "ప్రొఫైల్"
+    },
+    "passport": {
+      "label": "పాస్‌పోర్ట్",
+      "shortLabel": "పాస్‌పోర్ట్"
+    },
+    "drivers-license": {
+      "label": "డ్రైవింగ్ లైసెన్స్",
+      "shortLabel": "లైసెన్స్"
+    },
+    "insurance": {
+      "label": "ఇన్సూరెన్స్",
+      "shortLabel": "ఇన్సూరెన్స్"
+    },
+    "visa": {
+      "label": "వీసా",
+      "shortLabel": "వీసా"
+    },
+    "medical-record": {
+      "label": "వైద్య రికార్డ్",
+      "shortLabel": "వైద్యం"
+    },
+    "certificate": {
+      "label": "సర్టిఫికేట్",
+      "shortLabel": "సర్ట్"
+    },
+    "contract": {
+      "label": "కాంట్రాక్ట్",
+      "shortLabel": "కాంట్రాక్ట్"
+    },
+    "warranty": {
+      "label": "వారంటీ",
+      "shortLabel": "వారంటీ"
+    },
+    "membership": {
+      "label": "మెంబర్‌షిప్",
+      "shortLabel": "మెంబర్"
+    },
+    "subscription": {
+      "label": "సబ్‌స్క్రిప్షన్",
+      "shortLabel": "సబ్స్"
+    },
+    "permit": {
+      "label": "పర్మిట్",
+      "shortLabel": "పర్మిట్"
+    },
+    "other": {
+      "label": "ఇతర",
+      "shortLabel": "ఇతర"
+    }
+  }
+}

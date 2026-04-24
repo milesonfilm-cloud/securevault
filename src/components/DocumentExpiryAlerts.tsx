@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVaultData } from '@/context/VaultDataContext';
+import { useVaultPermissions } from '@/hooks/useVaultPermissions';
 import {
   collectExpiryAlerts,
   DEFAULT_EXPIRY_WARN_DAYS,
   formatExpirySummary,
   type DocumentExpiryAlert,
 } from '@/lib/documentExpiry';
+import { requestNotificationPermissionOnFirstExpiryDismiss } from '@/lib/notifications/reminderScheduler';
 const TOAST_SESSION_KEY = 'sv_expiry_toast_session';
 const DISMISS_DAY_KEY = 'sv_expiry_banner_dismissed_day';
 
@@ -21,6 +23,7 @@ function localDayKey(): string {
 
 export default function DocumentExpiryAlerts() {
   const { vaultData } = useVaultData();
+  const { visibleDocuments } = useVaultPermissions();
   const [dismissedToday, setDismissedToday] = useState(false);
 
   useEffect(() => {
@@ -42,8 +45,8 @@ export default function DocumentExpiryAlerts() {
   );
 
   const alerts: DocumentExpiryAlert[] = useMemo(
-    () => collectExpiryAlerts(vaultData.documents, DEFAULT_EXPIRY_WARN_DAYS),
-    [vaultData.documents]
+    () => collectExpiryAlerts(visibleDocuments, DEFAULT_EXPIRY_WARN_DAYS),
+    [visibleDocuments]
   );
 
   useEffect(() => {
@@ -58,7 +61,8 @@ export default function DocumentExpiryAlerts() {
         if (soon) parts.push(`${soon} expiring within ${DEFAULT_EXPIRY_WARN_DAYS} days`);
         toast.warning('Document expiry reminder', {
           description: parts.join(' · ') + '. Open Document Vault to review.',
-          duration: 10_000,
+          duration: 6000,
+          closeButton: true,
         });
       }
     } catch {
@@ -67,6 +71,7 @@ export default function DocumentExpiryAlerts() {
   }, [alerts]);
 
   const dismiss = () => {
+    requestNotificationPermissionOnFirstExpiryDismiss();
     try {
       sessionStorage.setItem(DISMISS_DAY_KEY, localDayKey());
     } catch {
@@ -117,10 +122,16 @@ export default function DocumentExpiryAlerts() {
           </ul>
           <div className="mt-2 flex flex-wrap items-center gap-3">
             <Link
-              href="/document-vault"
+              href="/renewals"
               className="text-xs font-700 text-vault-warm hover:text-vault-text transition-colors"
             >
-              Open Document Vault →
+              Renewals timeline →
+            </Link>
+            <Link
+              href="/document-vault"
+              className="text-xs font-700 text-vault-muted hover:text-vault-text transition-colors"
+            >
+              Document Vault →
             </Link>
             <button
               type="button"

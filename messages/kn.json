@@ -1,0 +1,80 @@
+{
+  "categories": {
+    "password-vault": {
+      "label": "ಪಾಸ್‌ವರ್ಡ್‌ಗಳು",
+      "shortLabel": "ಪಾಸ್‌ವರ್ಡ್"
+    },
+    "government-ids": {
+      "label": "ಸರ್ಕಾರಿ ಗುರುತಿನ ದಾಖಲೆಗಳು",
+      "shortLabel": "ಸರ್ಕಾರಿ ಐಡಿ"
+    },
+    "bank-accounts": {
+      "label": "ಬ್ಯಾಂಕ್ ಖಾತೆಗಳು",
+      "shortLabel": "ಬ್ಯಾಂಕ್"
+    },
+    "credit-debit-cards": {
+      "label": "ಕ್ರೆಡಿಟ್ / ಡೆಬಿಟ್ ಕಾರ್ಡ್‌ಗಳು",
+      "shortLabel": "ಕಾರ್ಡ್‌ಗಳು"
+    },
+    "institutional-docs": {
+      "label": "ಸಂಸ್ಥಾತ್ಮಕ ದಾಖಲೆಗಳು",
+      "shortLabel": "ಸಂಸ್ಥೆ"
+    },
+    "vehicle-documents": {
+      "label": "ವಾಹನ ದಾಖಲೆಗಳು",
+      "shortLabel": "ವಾಹನಗಳು"
+    },
+    "family-profiles": {
+      "label": "ಕುಟುಂಬ ಸದಸ್ಯರ ಪ್ರೊಫೈಲ್‌ಗಳು",
+      "shortLabel": "ಪ್ರೊಫೈಲ್"
+    },
+    "passport": {
+      "label": "ಪಾಸ್‌ಪೋರ್ಟ್",
+      "shortLabel": "ಪಾಸ್‌ಪೋರ್ಟ್"
+    },
+    "drivers-license": {
+      "label": "ಚಾಲನೆ ಪರವಾನಗಿ",
+      "shortLabel": "ಪರವಾನಗಿ"
+    },
+    "insurance": {
+      "label": "ವಿಮೆ",
+      "shortLabel": "ವಿಮೆ"
+    },
+    "visa": {
+      "label": "ವೀಸಾ",
+      "shortLabel": "ವೀಸಾ"
+    },
+    "medical-record": {
+      "label": "ವೈದ್ಯಕೀಯ ದಾಖಲೆ",
+      "shortLabel": "ವೈದ್ಯಕೀಯ"
+    },
+    "certificate": {
+      "label": "ಪ್ರಮಾಣಪತ್ರ",
+      "shortLabel": "ಪ್ರಮಾಣ"
+    },
+    "contract": {
+      "label": "ಒಪ್ಪಂದ",
+      "shortLabel": "ಒಪ್ಪಂದ"
+    },
+    "warranty": {
+      "label": "ವಾರಂಟಿ",
+      "shortLabel": "ವಾರಂಟಿ"
+    },
+    "membership": {
+      "label": "ಸದಸ್ಯತ್ವ",
+      "shortLabel": "ಸದಸ್ಯ"
+    },
+    "subscription": {
+      "label": "ಚಂದಾದಾರಿಕೆ",
+      "shortLabel": "ಚಂದಾ"
+    },
+    "permit": {
+      "label": "ಪರವಾನಗಿ (ಪರ್ಮಿಟ್)",
+      "shortLabel": "ಪರ್ಮಿಟ್"
+    },
+    "other": {
+      "label": "ಇತರೆ",
+      "shortLabel": "ಇತರೆ"
+    }
+  }
+}
