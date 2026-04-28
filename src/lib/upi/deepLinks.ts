@@ -100,10 +100,7 @@ export function pickBillerForRenewal(categoryId: string, docTitle: string): Bill
   return 'GENERIC_INSURANCE';
 }
 
-export function renewalPaymentParams(
-  categoryId: string,
-  docTitle: string
-): UPILinkParams {
+export function renewalPaymentParams(categoryId: string, docTitle: string): UPILinkParams {
   const id = pickBillerForRenewal(categoryId, docTitle);
   const c = BILLER_CONFIG[id];
   return {

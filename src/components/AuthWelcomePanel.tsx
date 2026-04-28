@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FolderLock, Users, Download, ChevronRight, Sparkles } from 'lucide-react';
 import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
-import { useTheme, type AppTheme } from '@/context/ThemeContext';
 import { useTranslations } from 'next-intl';
+import { subscribeMatchMedia } from '@/lib/matchMediaSubscribe';
 
 interface AuthWelcomePanelProps {
   phase: 'setup' | 'login';
@@ -27,11 +27,7 @@ const slideTransitionFade = { duration: 0.2 };
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const fn = () => setReduced(mq.matches);
-    mq.addEventListener('change', fn);
-    return () => mq.removeEventListener('change', fn);
+    return subscribeMatchMedia('(prefers-reduced-motion: reduce)', setReduced);
   }, []);
   return reduced;
 }
@@ -86,15 +82,7 @@ function AmbientOrbs({
   );
 }
 
-function SlideVisual({
-  id,
-  reducedMotion,
-  theme,
-}: {
-  id: SlideId;
-  reducedMotion: boolean;
-  theme: AppTheme;
-}) {
+function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolean }) {
   switch (id) {
     case 'welcome':
       return (
@@ -131,7 +119,7 @@ function SlideVisual({
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 260, damping: 22 }}
           >
-            <VaultBrandIcon variant={theme} size={44} aria-label="" className="shrink-0" />
+            <VaultBrandIcon variant="neon" size={44} aria-label="" className="shrink-0" />
             {reducedMotion ? (
               <div className="absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-lg bg-vault-warm/20">
                 <Sparkles className="h-3.5 w-3.5 text-vault-warm" aria-hidden />
@@ -298,7 +286,6 @@ function SlideVisual({
 
 export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelProps) {
   const tw = useTranslations('welcome');
-  const { theme } = useTheme();
   const reducedMotion = usePrefersReducedMotion();
   const slides = useMemo((): SlideDef[] => {
     const welcomeBody = phase === 'setup' ? tw('bodySetup') : tw('bodyLogin');
@@ -383,7 +370,7 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
                 transition={reducedMotion ? slideTransitionFade : slideTransitionSpring}
                 className="flex h-full flex-col"
               >
-                <SlideVisual id={slide.id} reducedMotion={reducedMotion} theme={theme} />
+                <SlideVisual id={slide.id} reducedMotion={reducedMotion} />
                 <p className="mt-6 text-center text-[10px] font-700 uppercase tracking-[0.22em] text-vault-warm/90">
                   {slide.kicker}
                 </p>

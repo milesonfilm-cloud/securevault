@@ -14,7 +14,6 @@ function memberDocs(memberId: string, documents: Document[]): Document[] {
 
 /** Critical coverage slots (0–1 per member). */
 function criticalSlotFilled(slot: string, docs: Document[]): boolean {
-  const t = (d: Document) => `${d.title} ${JSON.stringify(d.fields)}`.toLowerCase();
   switch (slot) {
     case 'aadhaar':
       return docs.some(
@@ -49,16 +48,11 @@ function criticalSlotFilled(slot: string, docs: Document[]): boolean {
   }
 }
 
-const CRITICAL_SLOTS = [
-  'aadhaar',
-  'pan',
-  'passport',
-  'dl',
-  'health_insurance',
-  'bank',
-] as const;
+const CRITICAL_SLOTS = ['aadhaar', 'pan', 'passport', 'dl', 'health_insurance', 'bank'] as const;
 
-export function getMissingCriticalDocs(data: VaultData): { memberId: string; memberName: string; missing: string[] }[] {
+export function getMissingCriticalDocs(
+  data: VaultData
+): { memberId: string; memberName: string; missing: string[] }[] {
   const out: { memberId: string; memberName: string; missing: string[] }[] = [];
   for (const m of data.members) {
     const docs = memberDocs(m.id, data.documents);

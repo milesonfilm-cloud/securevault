@@ -3,10 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import type { HandoverPayload } from '@/lib/emergency/handoverPayload';
-import {
-  decryptJsonPayload,
-  importShareKeyMaterial,
-} from '@/lib/sharing/shareCrypto';
+import { decryptJsonPayload, importShareKeyMaterial } from '@/lib/sharing/shareCrypto';
 
 export default function HandoverPageClient() {
   const params = useParams();
@@ -68,24 +65,27 @@ export default function HandoverPageClient() {
           </p>
         )}
         {(error === 'decrypt_failed' || error === 'bad_payload') && (
-          <p className="text-sm text-red-300 text-center mt-6">Could not open this handover bundle.</p>
+          <p className="text-sm text-red-300 text-center mt-6">
+            Could not open this handover bundle.
+          </p>
         )}
 
         {payload && (
           <div className="mt-8 space-y-6">
             <p className="text-xs text-vault-faint text-center italic border border-border rounded-xl p-3 bg-vault-panel">
-              Shared by SecureVault — view only · generated {new Date(payload.generatedAt).toLocaleString()}
+              Shared by SecureVault — view only · generated{' '}
+              {new Date(payload.generatedAt).toLocaleString()}
             </p>
             {payload.documents.map((d, i) => (
               <div
                 key={`${d.title}-${i}`}
-                className="rounded-2xl border border-border bg-vault-panel p-5 shadow-vault"
+                className="rounded-2xl border border-border bg-vault-panel p-5 text-center shadow-vault"
               >
                 <p className="text-[10px] font-bold uppercase tracking-wider text-vault-warm">
                   {d.categoryId}
                 </p>
-                <h2 className="text-lg font-bold text-vault-text mt-1">{d.title}</h2>
-                <p className="text-xs text-vault-muted mt-0.5">{d.memberName}</p>
+                <h2 className="mt-1 text-balance text-lg font-bold text-vault-text">{d.title}</h2>
+                <p className="mt-0.5 text-xs text-vault-muted">{d.memberName}</p>
                 <table className="w-full text-sm mt-4">
                   <tbody>
                     {Object.entries(d.fields).map(([k, v]) => (

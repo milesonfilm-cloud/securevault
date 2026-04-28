@@ -130,7 +130,7 @@ export function mergePrefillWithSection(
   if (!sec) return prefill;
   const guess = prefill.categoryId;
   const categoryId =
-    guess && sec.categoryIds.includes(guess) ? guess : sec.categoryIds[0] ?? 'other';
+    guess && sec.categoryIds.includes(guess) ? guess : (sec.categoryIds[0] ?? 'other');
   const fields = buildFields(categoryId, ocrText);
   return {
     ...prefill,

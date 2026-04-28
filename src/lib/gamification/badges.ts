@@ -71,8 +71,7 @@ export const BADGE_DEFINITIONS: Array<{
     name: 'Perfect vault',
     description: 'Family completeness score reached 100%.',
     icon: '💎',
-    condition: (v) =>
-      v.members.length > 0 && calculateFamilyScore(v.members, v.documents) >= 100,
+    condition: (v) => v.members.length > 0 && calculateFamilyScore(v.members, v.documents) >= 100,
   },
   {
     id: 'streak_7',
@@ -87,13 +86,6 @@ export const BADGE_DEFINITIONS: Array<{
     description: '30-day open streak.',
     icon: '🏆',
     condition: () => getStreakCount() >= 30,
-  },
-  {
-    id: 'digilocker_connected',
-    name: 'DigiLocker linked',
-    description: 'Connected DigiLocker for verified imports.',
-    icon: '🪪',
-    condition: (v) => !!v.settings.digilockerConnectedAt,
   },
   {
     id: 'cloud_synced',

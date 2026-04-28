@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
 import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
-import { useTheme } from '@/context/ThemeContext';
 import { getStoredVerifier } from '@/lib/vaultSession';
 import { completeAuthIntroSession } from '@/lib/authIntroSession';
 
@@ -74,9 +73,6 @@ const FRAGMENTS = [
 
 function LandingHero({ onContinue }: { onContinue: () => void }) {
   const [showCta, setShowCta] = useState(false);
-  const { theme } = useTheme();
-  const calm = theme === 'wellness' || theme === 'pastel';
-
   useEffect(() => {
     const t = window.setTimeout(() => setShowCta(true), 2200);
     return () => window.clearTimeout(t);
@@ -105,9 +101,7 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
-            backgroundImage: calm
-              ? `radial-gradient(circle at 1px 1px, rgba(26,26,46,0.2) 1px, transparent 0)`
-              : `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.45) 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.45) 1px, transparent 0)`,
             backgroundSize: '28px 28px',
           }}
         />
@@ -156,14 +150,10 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-              className={
-                calm
-                  ? 'drop-shadow-[0_20px_48px_rgba(26,26,46,0.12)]'
-                  : 'drop-shadow-[0_24px_56px_rgba(0,0,0,0.55)]'
-              }
+              className="drop-shadow-[0_24px_56px_rgba(0,0,0,0.55)]"
             >
               <VaultBrandIcon
-                variant={theme}
+                variant="neon"
                 aria-label=""
                 size={64}
                 className="h-[min(220px,52vw)] w-[min(220px,52vw)] max-h-[260px] max-w-[260px]"

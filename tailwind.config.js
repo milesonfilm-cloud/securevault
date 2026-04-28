@@ -15,7 +15,6 @@ module.exports = {
         'wellness-sans': ['var(--font-wellness-sans)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
         'wellness-serif': ['var(--font-wellness-serif)', 'Georgia', 'serif'],
         'neon-stack': ['var(--font-neon-stack)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
-        pastel: ['var(--font-pastel)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
         400: '400',
@@ -108,7 +107,6 @@ module.exports = {
       boxShadow: {
         vault: 'var(--vault-shadow)',
         'wellness-card': '0 4px 20px rgba(0,0,0,0.06)',
-        'pastel-card': '0 12px 44px rgba(15, 23, 42, 0.09)',
       },
     },
   },

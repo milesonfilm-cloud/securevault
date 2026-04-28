@@ -8,6 +8,7 @@ import {
   setStoredAccessToken,
   uploadBackup,
 } from '@/lib/cloudSync/googleDriveSync';
+import { hasGoogleOAuthClientId } from '@/lib/envPublic';
 
 const GIS_SCRIPT = 'https://accounts.google.com/gsi/client';
 
@@ -58,9 +59,9 @@ export function useCloudSync(refreshVault?: () => Promise<void>) {
   }, [refreshMeta]);
 
   const connectGoogle = useCallback(async () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID?.trim();
     if (!clientId) {
-      setError('Set NEXT_PUBLIC_GOOGLE_CLIENT_ID in .env');
+      setError(null);
       return;
     }
     await loadGis();
@@ -149,6 +150,8 @@ export function useCloudSync(refreshVault?: () => Promise<void>) {
     statusLabel,
     lastSync,
     error,
+    /** False if this build has no NEXT_PUBLIC_GOOGLE_CLIENT_ID (configure at build/deploy). */
+    googleDriveOAuthReady: hasGoogleOAuthClientId(),
     connectGoogle,
     disconnect,
     syncNow,

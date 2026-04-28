@@ -14,10 +14,13 @@ function b64urlToBytes(s: string): Uint8Array {
 
 export async function importShareKeyMaterial(b64urlKey: string): Promise<CryptoKey> {
   const raw = b64urlToBytes(b64urlKey);
-  return crypto.subtle.importKey('raw', raw as BufferSource, { name: 'AES-GCM', length: 256 }, false, [
-    'encrypt',
-    'decrypt',
-  ]);
+  return crypto.subtle.importKey(
+    'raw',
+    raw as BufferSource,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
 }
 
 export type SharePayload = {

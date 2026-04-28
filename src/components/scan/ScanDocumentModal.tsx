@@ -9,9 +9,7 @@ import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
 import type { CategoryId } from '@/lib/storage';
 import { useDocumentScanner } from '@/hooks/useDocumentScanner';
 
-const SCAN_CATEGORIES = CATEGORIES.filter((c) =>
-  (AI_SCAN_CATEGORY_IDS as string[]).includes(c.id)
-);
+const SCAN_CATEGORIES = CATEGORIES.filter((c) => (AI_SCAN_CATEGORY_IDS as string[]).includes(c.id));
 
 export interface ScanDocumentModalProps {
   isOpen: boolean;
@@ -142,7 +140,8 @@ export default function ScanDocumentModal({ isOpen, onClose, onApply }: ScanDocu
             ))}
           </select>
           <p className="mt-1.5 text-[11px] text-vault-faint">
-            Aadhaar, PAN, passport, license, RC, insurance, bank docs, and similar use these categories.
+            Aadhaar, PAN, passport, license, RC, insurance, bank docs, and similar use these
+            categories.
           </p>
         </div>
 
@@ -184,30 +183,50 @@ export default function ScanDocumentModal({ isOpen, onClose, onApply }: ScanDocu
           </div>
         )}
 
-        {!busy && !showPreview && typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia && (
-          <div className="rounded-xl border border-[color:var(--color-border)] bg-vault-elevated/50 p-4">
-            <p className="text-xs font-semibold text-vault-muted mb-2">Live camera (optional)</p>
-            {!webcamOn ? (
-              <button type="button" onClick={startWebcam} className="btn-secondary text-sm py-2 px-4">
-                Start webcam
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <video ref={videoRef} className="w-full max-h-[220px] rounded-lg bg-black object-contain" muted playsInline />
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" onClick={captureFromWebcam} className="btn-primary text-sm py-2 px-4 inline-flex items-center gap-2">
-                    <ScanLine size={16} />
-                    Use frame
-                  </button>
-                  <button type="button" onClick={stopWebcam} className="btn-secondary text-sm py-2 px-4 inline-flex items-center gap-2">
-                    <StopCircle size={16} />
-                    Stop
-                  </button>
+        {!busy &&
+          !showPreview &&
+          typeof navigator !== 'undefined' &&
+          navigator.mediaDevices?.getUserMedia && (
+            <div className="rounded-xl border border-[color:var(--color-border)] bg-vault-elevated/50 p-4">
+              <p className="text-xs font-semibold text-vault-muted mb-2">Live camera (optional)</p>
+              {!webcamOn ? (
+                <button
+                  type="button"
+                  onClick={startWebcam}
+                  className="btn-secondary text-sm py-2 px-4"
+                >
+                  Start webcam
+                </button>
+              ) : (
+                <div className="space-y-3">
+                  <video
+                    ref={videoRef}
+                    className="w-full max-h-[220px] rounded-lg bg-black object-contain"
+                    muted
+                    playsInline
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={captureFromWebcam}
+                      className="btn-primary text-sm py-2 px-4 inline-flex items-center gap-2"
+                    >
+                      <ScanLine size={16} />
+                      Use frame
+                    </button>
+                    <button
+                      type="button"
+                      onClick={stopWebcam}
+                      className="btn-secondary text-sm py-2 px-4 inline-flex items-center gap-2"
+                    >
+                      <StopCircle size={16} />
+                      Stop
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
 
         {busy && (
           <div className="flex items-center gap-3 rounded-xl border border-[color:var(--color-border)] bg-vault-elevated/60 px-4 py-4">
@@ -247,7 +266,9 @@ export default function ScanDocumentModal({ isOpen, onClose, onApply }: ScanDocu
                   {Object.entries(result.fields).map(([key, val]) => (
                     <tr key={key} className="border-t border-[color:var(--color-border)]">
                       <td className="px-3 py-2 text-vault-muted align-top">{key}</td>
-                      <td className="px-3 py-2 text-vault-text align-top break-all">{val || '—'}</td>
+                      <td className="px-3 py-2 text-vault-text align-top break-all">
+                        {val || '—'}
+                      </td>
                       <td className="px-3 py-2 text-vault-faint align-top tabular-nums">
                         {Math.round((result.confidence[key] ?? 0) * 100)}%
                       </td>
@@ -257,7 +278,8 @@ export default function ScanDocumentModal({ isOpen, onClose, onApply }: ScanDocu
               </table>
             </div>
             <p className="text-[11px] text-vault-faint">
-              Values open in the add-document form with yellow “AI filled” badges. Edit anything before saving.
+              Values open in the add-document form with yellow “AI filled” badges. Edit anything
+              before saving.
             </p>
           </div>
         )}
@@ -267,7 +289,11 @@ export default function ScanDocumentModal({ isOpen, onClose, onApply }: ScanDocu
             Cancel
           </button>
           {showPreview ? (
-            <button type="button" onClick={handleApply} className="btn-primary min-w-[160px] justify-center">
+            <button
+              type="button"
+              onClick={handleApply}
+              className="btn-primary min-w-[160px] justify-center"
+            >
               Apply to form
             </button>
           ) : null}

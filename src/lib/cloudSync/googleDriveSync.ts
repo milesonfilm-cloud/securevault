@@ -83,9 +83,12 @@ export async function uploadBackup(accessToken: string): Promise<void> {
   ];
 
   const blob = recordToBlob(record);
-  const multipartBody = new Blob([...bodyParts.map((p) => new Blob([p])), blob, new Blob([close])], {
-    type: `multipart/related; boundary=${boundary}`,
-  });
+  const multipartBody = new Blob(
+    [...bodyParts.map((p) => new Blob([p])), blob, new Blob([close])],
+    {
+      type: `multipart/related; boundary=${boundary}`,
+    }
+  );
 
   const existingId = await findFileId(accessToken);
   if (existingId) {
@@ -119,7 +122,9 @@ export async function uploadBackup(accessToken: string): Promise<void> {
   setLastSyncTime(Date.now());
 }
 
-export async function downloadLatestBackup(accessToken: string): Promise<EncryptedVaultRecordV1 | null> {
+export async function downloadLatestBackup(
+  accessToken: string
+): Promise<EncryptedVaultRecordV1 | null> {
   const id = await findFileId(accessToken);
   if (!id) return null;
   const res = await fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {

@@ -4,9 +4,7 @@ import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import MobileNav from './MobileNav';
 import DocumentExpiryAlerts from './DocumentExpiryAlerts';
-import MemberSwitcher from '@/components/vault/MemberSwitcher';
 import GamificationCheckIn from '@/components/gamification/GamificationCheckIn';
-import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
@@ -16,21 +14,9 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, activePath }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { theme } = useTheme();
 
   return (
-    <div
-      className={cn(
-        'relative flex h-screen overflow-hidden',
-        theme === 'neon'
-          ? 'neon-vault-bg'
-          : theme === 'pastel'
-            ? 'pastel-vault-bg'
-            : theme === 'voyager'
-              ? 'voyager-vault-bg'
-              : 'neo-bg'
-      )}
-    >
+    <div className={cn('relative flex h-screen overflow-hidden', 'neon-vault-bg')}>
       <GamificationCheckIn />
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex flex-shrink-0">
@@ -43,10 +29,10 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex flex-shrink-0 items-center justify-end gap-3 border-b border-[color:var(--color-border)] bg-vault-panel/90 px-3 py-2 backdrop-blur-md lg:px-4">
-          <MemberSwitcher />
-        </header>
-        <main className="flex flex-1 flex-col overflow-y-auto pb-28 lg:pb-0">
+        <main
+          id="main-content"
+          className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden pb-28 lg:pb-0"
+        >
           {activePath !== '/document-vault' && <DocumentExpiryAlerts />}
           <div className="min-h-0 flex-1">{children}</div>
         </main>

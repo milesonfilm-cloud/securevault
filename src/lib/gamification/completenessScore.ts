@@ -52,7 +52,9 @@ export function calculateMemberScore(
   }
 
   const score =
-    critical.length === 0 ? 100 : Math.round(((critical.length - missing.length) / critical.length) * 100);
+    critical.length === 0
+      ? 100
+      : Math.round(((critical.length - missing.length) / critical.length) * 100);
 
   return { score, missing, docScores };
 }

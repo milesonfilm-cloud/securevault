@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { EmergencyNotifySchema } from '@/lib/apiSchemas';
+import { checkRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 
@@ -6,17 +8,29 @@ export const runtime = 'nodejs';
  * MVP: trusted contact notification. Set RESEND_API_KEY and EMERGENCY_FROM_EMAIL for real delivery.
  */
 export async function POST(req: Request) {
+  const rl = await checkRateLimit(req, 'emergency');
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter: rl.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } }
+    );
+  }
+
   try {
-    const body = (await req.json()) as {
-      to?: string;
-      name?: string;
-      subject?: string;
-      message?: string;
-      link?: string;
-    };
-    if (!body.to?.includes('@')) {
-      return NextResponse.json({ error: 'invalid_to' }, { status: 400 });
+    let raw: unknown;
+    try {
+      raw = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
     }
+    const parseResult = EmergencyNotifySchema.safeParse(raw);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'invalid_request', details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+    const body = parseResult.data;
 
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.EMERGENCY_FROM_EMAIL ?? 'onboarding@resend.dev';

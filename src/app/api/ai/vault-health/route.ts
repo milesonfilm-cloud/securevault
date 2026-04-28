@@ -1,22 +1,12 @@
 import { NextResponse } from 'next/server';
+import { AiHealthSchema } from '@/lib/apiSchemas';
+import { checkRateLimit } from '@/lib/rateLimit';
+import { requireAuth } from '@/lib/requireAuth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 const MODEL = 'claude-sonnet-4-20250514';
-
-type VaultHealthMetadata = {
-  members: { id: string; name: string; relationship: string }[];
-  documents: {
-    id: string;
-    memberId: string;
-    memberName: string;
-    title: string;
-    categoryId: string;
-    emptyFieldKeys: string[];
-    nearestExpiryDays: number | null;
-  }[];
-};
 
 function parseSuggestions(raw: string): string[] | null {
   let s = raw.trim();
@@ -25,17 +15,27 @@ function parseSuggestions(raw: string): string[] | null {
   try {
     const o = JSON.parse(s) as unknown;
     if (!Array.isArray(o)) return null;
-    return o.filter((x) => typeof x === 'string').map((x) => x.trim()).filter(Boolean).slice(0, 8);
+    return o
+      .filter((x) => typeof x === 'string')
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 8);
   } catch {
     return null;
   }
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey?.trim()) {
-    return NextResponse.json({ error: 'missing_anthropic_key' }, { status: 503 });
+  const rl = await checkRateLimit(req, 'ai-health');
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter: rl.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } }
+    );
   }
+
+  const auth = await requireAuth(req);
+  if (auth.ok === false) return auth.response;
 
   let body: unknown;
   try {
@@ -44,21 +44,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
 
-  const meta =
-    body && typeof body === 'object' && 'metadata' in body
-      ? (body as { metadata: unknown }).metadata
-      : null;
-
-  if (!meta || typeof meta !== 'object') {
-    return NextResponse.json({ error: 'invalid_metadata' }, { status: 400 });
+  const parseResult = AiHealthSchema.safeParse(body);
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: 'invalid_request', details: parseResult.error.flatten() },
+      { status: 400 }
+    );
   }
 
-  const str = JSON.stringify(meta);
+  const { metadata } = parseResult.data;
+  const str = JSON.stringify(metadata);
   if (str.length > 120_000) {
     return NextResponse.json({ error: 'metadata_too_large' }, { status: 400 });
   }
 
-  const metadata = meta as VaultHealthMetadata;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey?.trim()) {
+    return NextResponse.json({ error: 'missing_anthropic_key' }, { status: 503 });
+  }
 
   const userPrompt = `You are a helpful advisor for SecureVault, a family document vault in India.
 

@@ -30,16 +30,16 @@ export default function SharedDocumentView({ payload }: { payload: SharePayload 
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border bg-vault-panel p-5 shadow-vault">
+      <div className="rounded-2xl border border-border bg-vault-panel p-5 text-center shadow-vault">
         {cat && (
           <p
-            className="text-[10px] font-bold uppercase tracking-[1.5px] mb-1"
+            className="mb-1 text-[10px] font-bold uppercase tracking-[1.5px]"
             style={{ color: cat.color }}
           >
             {cat.shortLabel}
           </p>
         )}
-        <h1 className="text-xl font-bold text-vault-text">{payload.docTitle}</h1>
+        <h1 className="text-balance text-xl font-bold text-vault-text">{payload.docTitle}</h1>
         <p className="mt-3 text-xs text-vault-faint italic border-t border-border pt-3">
           Shared by SecureVault — View only
         </p>
@@ -56,7 +56,9 @@ export default function SharedDocumentView({ payload }: { payload: SharePayload 
                   <th className="text-left py-3 px-4 font-600 text-vault-muted w-[40%] align-top">
                     {label}
                   </th>
-                  <td className="py-3 px-4 text-vault-text break-words">{displayValue(key, val)}</td>
+                  <td className="py-3 px-4 text-vault-text break-words">
+                    {displayValue(key, val)}
+                  </td>
                 </tr>
               );
             })}

@@ -61,14 +61,18 @@ export default function RenewalCard({ item, memberName }: RenewalCardProps) {
               color: cat?.color ?? 'var(--vault-c-warm)',
             }}
           >
-            {cat ? ICON_MAP[cat.icon] ?? <FileText size={18} /> : <FileText size={18} />}
+            {cat ? (ICON_MAP[cat.icon] ?? <FileText size={18} />) : <FileText size={18} />}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-bold text-vault-text leading-snug truncate">{item.title}</p>
+            <p className="text-[15px] font-bold text-vault-text leading-snug truncate">
+              {item.title}
+            </p>
             <p className="text-xs text-vault-muted mt-0.5 truncate">
               {memberName} · {cat?.shortLabel ?? item.categoryId}
             </p>
-            <p className={`text-xs font-700 mt-2 ${u.label}`}>{formatExpirySummary(item.daysUntil)}</p>
+            <p className={`text-xs font-700 mt-2 ${u.label}`}>
+              {formatExpirySummary(item.daysUntil)}
+            </p>
             <p className="text-[11px] text-vault-faint mt-0.5">
               {item.fieldLabel}:{' '}
               {item.expiryDay.toLocaleDateString(undefined, {
@@ -90,11 +94,7 @@ export default function RenewalCard({ item, memberName }: RenewalCardProps) {
           </div>
         </div>
       </div>
-      <PaymentBottomSheet
-        isOpen={payOpen}
-        onClose={() => setPayOpen(false)}
-        params={payParams}
-      />
+      <PaymentBottomSheet isOpen={payOpen} onClose={() => setPayOpen(false)} params={payParams} />
     </>
   );
 }

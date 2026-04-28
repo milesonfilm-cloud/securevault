@@ -2,12 +2,11 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Link } from '@/i18n/navigation';
 import { Plus, Search, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { Document, VaultData, CategoryId, defaultPermissions } from '@/lib/storage';
+import { Document, VaultData } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useVaultPermissions } from '@/hooks/useVaultPermissions';
-import ShareWithMembersModal from '@/components/permissions/ShareWithMembersModal';
 import { idbDeletePhotosForDoc } from '@/lib/db';
 import CategoryCards from './CategoryCards';
 import DocumentList from './DocumentList';
@@ -16,8 +15,8 @@ import DocumentVaultNotificationStrip from './DocumentVaultNotificationStrip';
 import VaultDashboardStats from './VaultDashboardStats';
 import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
 import ConfirmModal from '@/components/ui/ConfirmModal';
-import { useTheme } from '@/context/ThemeContext';
-import { cn } from '@/lib/utils';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
+import { appendAuditEntry } from '@/lib/auditLog';
 import { documentMatchesStack, stackColorFromId } from '@/lib/documentStacks';
 
 export default function DocumentVaultContent() {
@@ -27,14 +26,6 @@ export default function DocumentVaultContent() {
 
   const { vaultData, loading, persistVaultData } = useVaultData();
   const readOnly = vaultData.settings.emergencyModeEnabled;
-  const {
-    visibleDocuments,
-    activeMemberId,
-    canEditDocumentForActive,
-    canDeleteDocumentForActive,
-    canShareDocumentForActive,
-  } = useVaultPermissions();
-  const [shareMembersDoc, setShareMembersDoc] = useState<Document | null>(null);
 
   useEffect(() => {
     if (readOnly) {
@@ -94,9 +85,9 @@ export default function DocumentVaultContent() {
   );
 
   const stackFilteredDocuments = useMemo(() => {
-    if (!activeStack) return visibleDocuments;
-    return visibleDocuments.filter((d) => documentMatchesStack(d, activeStack));
-  }, [visibleDocuments, activeStack]);
+    if (!activeStack) return vaultData.documents;
+    return vaultData.documents.filter((d) => documentMatchesStack(d, activeStack));
+  }, [vaultData.documents, activeStack]);
 
   const filteredDocuments = useMemo(() => {
     let docs = stackFilteredDocuments;
@@ -131,9 +122,15 @@ export default function DocumentVaultContent() {
         documents: vaultData.documents.map((d) => (d.id === editDoc.id ? updatedDoc : d)),
       };
       toast.success(`"${updatedDoc.title}" updated successfully`);
+      appendAuditEntry({
+        action: 'document_updated',
+        actorMemberId: updatedDoc.memberId,
+        targetId: updatedDoc.id,
+        targetTitle: updatedDoc.title,
+      });
     } else {
       const newDoc: Document = {
-        id: `doc-${Date.now()}`,
+        id: `doc-${crypto.randomUUID()}`,
         ...docData,
         createdAt: now,
         updatedAt: now,
@@ -143,6 +140,12 @@ export default function DocumentVaultContent() {
         documents: [...vaultData.documents, newDoc],
       };
       toast.success(`"${newDoc.title}" added to vault`);
+      appendAuditEntry({
+        action: 'document_created',
+        actorMemberId: newDoc.memberId,
+        targetId: newDoc.id,
+        targetTitle: newDoc.title,
+      });
     }
 
     await persistVaultData(updated);
@@ -150,42 +153,8 @@ export default function DocumentVaultContent() {
     setEditDoc(null);
   };
 
-  const handleDocumentPrivacyChange = async (doc: Document, isPrivate: boolean) => {
-    const now = new Date().toISOString();
-    const ownerId = doc.memberId;
-    const membersNext = vaultData.members.map((m) => {
-      if (m.id !== ownerId) return m;
-      const p = m.permissions ?? defaultPermissions('member');
-      const set = new Set(p.privateDocumentIds);
-      if (isPrivate) set.add(doc.id);
-      else set.delete(doc.id);
-      return {
-        ...m,
-        updatedAt: now,
-        permissions: { ...p, privateDocumentIds: [...set] },
-      };
-    });
-    const documentsNext = vaultData.documents.map((d) =>
-      d.id === doc.id ? { ...d, isPrivate, updatedAt: now } : d
-    );
-    await persistVaultData({ ...vaultData, members: membersNext, documents: documentsNext });
-  };
-
-  const handleShareMembersSave = async (docId: string, sharedWithMemberIds: string[]) => {
-    const now = new Date().toISOString();
-    const documentsNext = vaultData.documents.map((d) =>
-      d.id === docId ? { ...d, sharedWithMemberIds, updatedAt: now } : d
-    );
-    await persistVaultData({ ...vaultData, documents: documentsNext });
-  };
-
   const handleDeleteDocument = async () => {
     if (!deleteDoc) return;
-    if (!canDeleteDocumentForActive(deleteDoc)) {
-      toast.message('You can’t delete this document with the current profile.');
-      setDeleteDoc(null);
-      return;
-    }
     await idbDeletePhotosForDoc(deleteDoc.id);
     const updated: VaultData = {
       ...vaultData,
@@ -193,16 +162,14 @@ export default function DocumentVaultContent() {
     };
     await persistVaultData(updated);
     toast.success(`"${deleteDoc.title}" deleted from vault`);
+    appendAuditEntry({
+      action: 'document_deleted',
+      actorMemberId: deleteDoc.memberId,
+      targetId: deleteDoc.id,
+      targetTitle: deleteDoc.title,
+    });
     setDeleteDoc(null);
   };
-
-  const { theme } = useTheme();
-  const isVault =
-    theme === 'vault' ||
-    theme === 'wellness' ||
-    theme === 'neon' ||
-    theme === 'pastel' ||
-    theme === 'voyager';
 
   const activeFiltersCount = [activeCategory, activeMember, search, stackId].filter(Boolean).length;
 
@@ -239,9 +206,9 @@ export default function DocumentVaultContent() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-screen-2xl mx-auto space-y-6">
+      <div className="mx-auto max-w-screen-2xl space-y-6 p-4 lg:p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 rounded-[10px] w-48 bg-vault-elevated" />
+          <div className="mx-auto h-8 w-48 rounded-[10px] bg-vault-elevated" />
           <div className="h-12 rounded-[20px] bg-vault-panel" />
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={`skel-doc-${i}`} className="h-14 rounded-2xl bg-vault-panel" />
@@ -258,259 +225,254 @@ export default function DocumentVaultContent() {
 
   return (
     <div className="max-w-screen-2xl mx-auto p-4 lg:p-6 min-h-full bg-vault-bg">
-      {isVault ? (
-        <>
-          {readOnly && (
-            <div
-              className="mb-4 rounded-2xl border border-vault-coral/40 bg-vault-coral/10 px-4 py-3 text-sm text-vault-text"
-              role="status"
-            >
-              <span className="font-800">Emergency mode</span> — read-only view. Turn off in{' '}
-              <a href="/settings/emergency" className="text-vault-warm underline font-700">
-                Emergency settings
-              </a>
-              .
-            </div>
-          )}
-          <DocumentVaultNotificationStrip
-            documents={visibleDocuments}
-            onGoToDocument={handleVaultNotificationGoToDoc}
-            onInfoClick={scrollToDocumentList}
-          />
+      <>
+        {readOnly && (
+          <div
+            className="mb-4 rounded-2xl border border-vault-coral/40 bg-vault-coral/10 px-4 py-3 text-sm text-vault-text"
+            role="status"
+          >
+            <span className="font-800">Emergency mode</span> — read-only view. Turn off in{' '}
+            <Link href="/settings/emergency" className="text-vault-warm underline font-700">
+              Emergency settings
+            </Link>
+            .
+          </div>
+        )}
+        <DocumentVaultNotificationStrip
+          documents={vaultData.documents}
+          onGoToDocument={handleVaultNotificationGoToDoc}
+          onInfoClick={scrollToDocumentList}
+        />
 
-          {activeStack ? (
-            <div
-              className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-[var(--vault-shadow)]"
-              style={
-                theme === 'pastel'
-                  ? {
-                      borderColor: 'var(--color-border)',
-                      background: `linear-gradient(135deg, ${activeStackFolderColor}30, rgba(255,255,255,0.94))`,
-                    }
-                  : {
-                      borderColor: `${activeStackFolderColor}55`,
-                      background: `linear-gradient(135deg, ${activeStackFolderColor}14, rgba(18,18,18,0.85))`,
-                    }
-              }
-            >
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-vault-faint">
-                  Folder filter
-                </p>
-                <p className="text-sm font-semibold text-vault-text">{activeStack.name}</p>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => router.push('/document-vault')}
-                  className="rounded-xl bg-vault-warm px-3 py-1.5 text-xs font-bold text-vault-ink"
-                >
-                  Clear folder
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          <div className="flex items-start justify-between mb-5 gap-4">
+        {activeStack ? (
+          <div
+            className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-[var(--vault-shadow)]"
+            style={{
+              borderColor: `${activeStackFolderColor}55`,
+              background: `linear-gradient(135deg, ${activeStackFolderColor}14, rgba(18,18,18,0.85))`,
+            }}
+          >
             <div>
-              <p className="text-xs text-vault-faint font-medium">Documents</p>
-              <h1 className="text-[32px] font-bold text-vault-text tracking-tight leading-tight mt-0.5">
-                Vault
-              </h1>
-              <p className="text-[13px] text-vault-muted mt-2">
-                <span className="font-semibold tabular-nums text-vault-text">
-                  {visibleDocuments.length}
-                </span>{' '}
-                visible to you ·{' '}
-                <span className="font-semibold tabular-nums text-vault-text">
-                  {vaultData.members.length}
-                </span>{' '}
-                family members
+              <p className="text-[10px] font-bold uppercase tracking-wider text-vault-faint">
+                Folder filter
               </p>
-              {activeStack ? (
-                <p className="mt-1 text-[12px] text-vault-faint">
-                  Showing documents in this folder only:{' '}
-                  <span className="font-semibold tabular-nums text-vault-muted">
-                    {stackFilteredDocuments.length}
-                  </span>{' '}
-                  of {visibleDocuments.length} visible in vault
-                </p>
-              ) : null}
-              {activeMemberProfile ? (
-                <p className="mt-1.5 text-[12px] text-vault-faint">
-                  Showing documents for{' '}
-                  <span className="font-semibold text-vault-muted">{activeMemberProfile.name}</span>
-                  .{' '}
-                  <button
-                    type="button"
-                    onClick={() => setMemberFilter(null)}
-                    className="font-semibold text-vault-warm underline-offset-2 hover:underline"
-                  >
-                    Show all members
-                  </button>
-                </p>
-              ) : null}
+              <p className="text-sm font-semibold text-vault-text">{activeStack.name}</p>
             </div>
-            {!readOnly && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => router.push('/document-vault')}
+                className="rounded-xl bg-vault-warm px-3 py-1.5 text-xs font-bold text-vault-ink"
+              >
+                Clear folder
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <VaultPageHeading
+          className="mb-5"
+          eyebrow="Documents"
+          title="Vault"
+          description={
+            <>
+              <span className="font-semibold tabular-nums text-vault-text">
+                {vaultData.documents.length}
+              </span>{' '}
+              total documents ·{' '}
+              <span className="font-semibold tabular-nums text-vault-text">
+                {vaultData.members.length}
+              </span>{' '}
+              family members
+            </>
+          }
+          meta={
+            activeStack || activeMemberProfile ? (
+              <>
+                {activeStack ? (
+                  <p className="text-[12px] text-vault-faint">
+                    Showing documents in this folder only:{' '}
+                    <span className="font-semibold tabular-nums text-vault-muted">
+                      {stackFilteredDocuments.length}
+                    </span>{' '}
+                    of {vaultData.documents.length} total in vault
+                  </p>
+                ) : null}
+                {activeMemberProfile ? (
+                  <p className="text-[12px] text-vault-faint">
+                    Showing documents for{' '}
+                    <span className="font-semibold text-vault-muted">
+                      {activeMemberProfile.name}
+                    </span>
+                    .{' '}
+                    <button
+                      type="button"
+                      onClick={() => setMemberFilter(null)}
+                      className="font-semibold text-vault-warm underline-offset-2 hover:underline"
+                    >
+                      Show all members
+                    </button>
+                  </p>
+                ) : null}
+              </>
+            ) : undefined
+          }
+          actions={
+            !readOnly ? (
               <button
                 type="button"
                 onClick={openAdd}
-                className="flex-shrink-0 flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-semibold bg-vault-warm text-vault-ink transition-all active:scale-[0.98] shadow-vault"
+                className="flex flex-shrink-0 items-center gap-2 rounded-xl bg-vault-warm px-5 py-2.5 text-sm font-semibold text-vault-ink shadow-vault transition-all active:scale-[0.98]"
               >
                 <Plus size={18} strokeWidth={2.5} className="text-vault-ink" />
                 Add
               </button>
-            )}
-          </div>
+            ) : null
+          }
+        />
 
-          <VaultDashboardStats vaultData={vaultData} visibleDocuments={visibleDocuments} />
+        <VaultDashboardStats vaultData={vaultData} />
 
-          <div className="rounded-[20px] p-4 sm:p-5 mb-4 bg-vault-panel border border-[color:var(--color-border)] shadow-vault relative z-0">
-            <div className="relative z-[1] flex flex-col gap-3">
-              <div className="relative w-full">
-                <input
-                  id="vault-search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search documents, fields, tags..."
-                  className="w-full rounded-xl border-0 bg-vault-elevated text-vault-text text-sm placeholder:text-vault-faint py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-vault-warm/40 transition-shadow"
-                />
-                <Search
-                  size={17}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-vault-faint pointer-events-none"
-                />
-                {search ? (
-                  <button
-                    type="button"
-                    onClick={() => setSearch('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm p-1"
-                    aria-label="Clear search"
-                  >
-                    <X size={14} />
-                  </button>
+        <div className="rounded-[20px] p-4 sm:p-5 mb-4 bg-vault-panel border border-[color:var(--color-border)] shadow-vault relative z-0">
+          <div className="relative z-[1] flex flex-col gap-3">
+            <div className="relative w-full">
+              <input
+                id="vault-search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search documents, fields, tags..."
+                className="w-full rounded-xl border-0 bg-vault-elevated text-vault-text text-sm placeholder:text-vault-faint py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-vault-warm/40 transition-shadow"
+              />
+              <Search
+                size={17}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-vault-faint pointer-events-none"
+              />
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm p-1"
+                  aria-label="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              ) : null}
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+              <div className="flex gap-2 flex-wrap flex-1">
+                <button
+                  type="button"
+                  onClick={() => setMemberFilter(null)}
+                  className={`px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 ${
+                    activeMember === null
+                      ? 'bg-vault-warm text-vault-ink font-semibold'
+                      : 'bg-vault-elevated text-vault-muted border border-border hover:bg-vault-panel'
+                  }`}
+                >
+                  All
+                </button>
+                {vaultData.members.length === 0 ? (
+                  <p className="self-center text-xs text-vault-muted">
+                    No family members yet —{' '}
+                    <Link
+                      href="/family-management"
+                      className="font-700 text-vault-warm hover:underline"
+                    >
+                      add members
+                    </Link>{' '}
+                    to filter by person.
+                  </p>
                 ) : null}
+                {vaultData.members.map((m) => {
+                  const isMemberActive = activeMember === m.id;
+                  return (
+                    <button
+                      key={`filter-member-${m.id}`}
+                      type="button"
+                      onClick={() => setMemberFilter(isMemberActive ? null : m.id)}
+                      className={`inline-flex max-w-[200px] items-center gap-2 px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 border ${
+                        isMemberActive
+                          ? m.photoDataUrl
+                            ? 'bg-vault-elevated text-vault-warm border-vault-warm/50 shadow-vault ring-1 ring-vault-warm/35'
+                            : 'text-white border-transparent shadow-vault'
+                          : 'bg-vault-elevated text-vault-muted border border-border hover:bg-vault-panel'
+                      }`}
+                      style={
+                        isMemberActive && !m.photoDataUrl
+                          ? { backgroundColor: m.avatarColor }
+                          : undefined
+                      }
+                    >
+                      {m.photoDataUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={m.photoDataUrl}
+                          alt=""
+                          className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-white/20"
+                        />
+                      ) : null}
+                      <span className="truncate">{m.name.split(' ')[0]}</span>
+                    </button>
+                  );
+                })}
               </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
-                <div className="flex gap-2 flex-wrap flex-1">
-                  <button
-                    type="button"
-                    onClick={() => setMemberFilter(null)}
-                    className={`px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 ${
-                      activeMember === null
-                        ? 'bg-vault-warm text-vault-ink font-semibold'
-                        : 'bg-vault-elevated text-vault-muted border border-border hover:bg-vault-panel'
-                    }`}
-                  >
-                    All
-                  </button>
-                  {vaultData.members.map((m) => {
-                    const isMemberActive = activeMember === m.id;
-                    return (
-                      <button
-                        key={`filter-member-${m.id}`}
-                        type="button"
-                        onClick={() => setMemberFilter(isMemberActive ? null : m.id)}
-                        className={`inline-flex max-w-[200px] items-center gap-2 px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 border ${
-                          isMemberActive
-                            ? m.photoDataUrl
-                              ? 'bg-vault-elevated text-vault-warm border-vault-warm/50 shadow-vault ring-1 ring-vault-warm/35'
-                              : 'text-white border-transparent shadow-vault'
-                            : 'bg-vault-elevated text-vault-muted border border-border hover:bg-vault-panel'
-                        }`}
-                        style={
-                          isMemberActive && !m.photoDataUrl ? { backgroundColor: m.avatarColor } : undefined
-                        }
-                      >
-                        {m.photoDataUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={m.photoDataUrl}
-                            alt=""
-                            className="h-6 w-6 shrink-0 rounded-full object-cover ring-1 ring-white/20"
-                          />
-                        ) : null}
-                        <span className="truncate">{m.name.split(' ')[0]}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {activeFiltersCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveCategory(null);
-                      setSearch('');
-                      router.push('/document-vault');
-                    }}
-                    className="flex items-center gap-1.5 text-sm text-vault-muted hover:text-vault-warm px-2 transition-colors flex-shrink-0"
-                  >
-                    <RefreshCw size={13} />
-                    Clear
-                  </button>
-                )}
-              </div>
-
               {activeFiltersCount > 0 && (
-                <div className="flex items-center gap-2 pt-0.5">
-                  <span className="text-xs text-vault-muted">Showing</span>
-                  <span className="text-xs font-bold text-vault-text">
-                    {filteredDocuments.length}
-                  </span>
-                  <span className="text-xs text-vault-muted">
-                    of {stackFilteredDocuments.length} documents
-                  </span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(null);
+                    setSearch('');
+                    router.push('/document-vault');
+                  }}
+                  className="flex items-center gap-1.5 text-sm text-vault-muted hover:text-vault-warm px-2 transition-colors flex-shrink-0"
+                >
+                  <RefreshCw size={13} />
+                  Clear
+                </button>
               )}
             </div>
-          </div>
 
-          <DocumentList
-            documents={filteredDocuments}
-            members={vaultData.members}
-            filterAccentColor={activeMemberProfile?.avatarColor ?? null}
-            navigateTo={vaultListNav}
-            onNavigateToHandled={() => setVaultListNav(null)}
-            onEdit={(doc) => {
-              if (!canEditDocumentForActive(doc)) {
-                toast.message('You can’t edit this document with the current profile.');
-                return;
-              }
-              setFormPrefill(null);
-              setEditDoc(doc);
-              setShowAddModal(true);
-            }}
-            onDelete={(doc) => {
-              if (!canDeleteDocumentForActive(doc)) {
-                toast.message('You can’t delete this document with the current profile.');
-                return;
-              }
-              setDeleteDoc(doc);
-            }}
-            readOnly={readOnly}
-            canEditDoc={(doc) => canEditDocumentForActive(doc)}
-            canDeleteDoc={(doc) => canDeleteDocumentForActive(doc)}
-            canShareLinkDoc={(doc) => canShareDocumentForActive(doc)}
-            canOpenShareWithFamily={(doc) => canShareDocumentForActive(doc)}
-            onOpenShareWithFamily={(doc) => setShareMembersDoc(doc)}
-            onDocumentPrivacyChange={handleDocumentPrivacyChange}
-            canToggleDocumentPrivacy={(doc) =>
-              !readOnly && activeMemberId != null && doc.memberId === activeMemberId
-            }
+            {activeFiltersCount > 0 && (
+              <div className="flex items-center gap-2 pt-0.5">
+                <span className="text-xs text-vault-muted">Showing</span>
+                <span className="text-xs font-bold text-vault-text">
+                  {filteredDocuments.length}
+                </span>
+                <span className="text-xs text-vault-muted">
+                  of {stackFilteredDocuments.length} documents
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <DocumentList
+          documents={filteredDocuments}
+          members={vaultData.members}
+          filterAccentColor={activeMemberProfile?.avatarColor ?? null}
+          navigateTo={vaultListNav}
+          onNavigateToHandled={() => setVaultListNav(null)}
+          onEdit={(doc) => {
+            setFormPrefill(null);
+            setEditDoc(doc);
+            setShowAddModal(true);
+          }}
+          onDelete={(doc) => setDeleteDoc(doc)}
+          readOnly={readOnly}
+        />
+
+        <div className="mt-8 border-t border-[color:var(--color-border)] pt-6">
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-vault-muted">
+            Filter by category
+          </p>
+          <CategoryCards
+            documents={stackFilteredDocuments}
+            activeCategory={activeCategory}
+            onSelectCategory={setActiveCategory}
           />
-
-          <div className="mt-8 border-t border-[color:var(--color-border)] pt-6">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-vault-muted">
-              Filter by category
-            </p>
-            <CategoryCards
-              documents={stackFilteredDocuments}
-              activeCategory={activeCategory}
-              onSelectCategory={setActiveCategory}
-            />
-          </div>
-        </>
-      ) : null}
+        </div>
+      </>
 
       <DocumentFormModal
         isOpen={showAddModal && !readOnly}
@@ -524,16 +486,7 @@ export default function DocumentVaultContent() {
         members={vaultData.members}
         folders={sortedFolders}
         defaultStackId={editDoc ? undefined : defaultStackIdForForm}
-        defaultMemberId={activeMemberId}
         prefill={editDoc ? null : formPrefill}
-      />
-
-      <ShareWithMembersModal
-        isOpen={!!shareMembersDoc}
-        onClose={() => setShareMembersDoc(null)}
-        document={shareMembersDoc}
-        members={vaultData.members}
-        onSave={handleShareMembersSave}
       />
 
       <ConfirmModal

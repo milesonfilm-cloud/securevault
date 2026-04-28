@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
 import { useVaultData } from '@/context/VaultDataContext';
+import { appendAuditEntry } from '@/lib/auditLog';
 import type { HandoverPayload } from '@/lib/emergency/handoverPayload';
 import {
   encryptJsonPayload,
@@ -56,6 +57,12 @@ export default function VaultHandoverModal({ isOpen, onClose }: VaultHandoverMod
       const url = `${window.location.origin}/handover/${handoverId}#k=${keyMaterial}`;
       await navigator.clipboard.writeText(url);
       toast.success('Handover link copied — valid 72 hours; key is in the URL fragment');
+      appendAuditEntry({
+        action: 'handover_link_created',
+        actorMemberId: null,
+        targetId: handoverId,
+        targetTitle: 'Handover link',
+      });
       onClose();
     } catch {
       toast.error('Could not create handover link');

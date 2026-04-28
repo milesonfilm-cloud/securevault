@@ -58,15 +58,20 @@ export default function OnboardingChecklist({ vaultData, className }: Onboarding
     const hasMember = vaultData.members.length >= 1;
     const hasDoc = vaultData.documents.length >= 1;
     const backup =
-      vaultData.exportHistory.length >= 1 ||
-      vaultData.settings.cloudSyncEnabled === true;
+      vaultData.exportHistory.length >= 1 || vaultData.settings.cloudSyncEnabled === true;
     return [
       { id: 'member', label: 'Add a family member', done: hasMember },
       { id: 'document', label: 'Add your first document', done: hasDoc },
       { id: 'progress', label: 'Open the Progress page', done: persist.visitedProgress },
       { id: 'backup', label: 'Export once or enable cloud sync', done: backup },
     ];
-  }, [vaultData.members.length, vaultData.documents.length, vaultData.exportHistory.length, vaultData.settings.cloudSyncEnabled, persist.visitedProgress]);
+  }, [
+    vaultData.members.length,
+    vaultData.documents.length,
+    vaultData.exportHistory.length,
+    vaultData.settings.cloudSyncEnabled,
+    persist.visitedProgress,
+  ]);
 
   const allDone = steps.every((s) => s.done);
 
@@ -87,7 +92,9 @@ export default function OnboardingChecklist({ vaultData, className }: Onboarding
     >
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-800 uppercase tracking-wider text-vault-warm">Getting started</p>
+          <p className="text-[10px] font-800 uppercase tracking-wider text-vault-warm">
+            Getting started
+          </p>
           <h2 className="mt-0.5 text-base font-800 text-vault-text">Vault checklist</h2>
         </div>
         {allDone ? (
@@ -141,7 +148,11 @@ export default function OnboardingChecklist({ vaultData, className }: Onboarding
                       : 'border-border text-vault-faint'
                   )}
                 >
-                  {s.done ? <Check size={16} strokeWidth={2.5} /> : <span className="text-xs tabular-nums"> </span>}
+                  {s.done ? (
+                    <Check size={16} strokeWidth={2.5} />
+                  ) : (
+                    <span className="text-xs tabular-nums"> </span>
+                  )}
                 </span>
                 <span
                   className={cn(
@@ -157,7 +168,9 @@ export default function OnboardingChecklist({ vaultData, className }: Onboarding
         ))}
       </ul>
       {allDone ? (
-        <p className="mt-3 text-center text-xs text-vault-muted">You&apos;re all set — close this card anytime.</p>
+        <p className="mt-3 text-center text-xs text-vault-muted">
+          You&apos;re all set — close this card anytime.
+        </p>
       ) : null}
     </div>
   );

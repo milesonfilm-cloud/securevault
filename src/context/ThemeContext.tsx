@@ -2,50 +2,26 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export type AppTheme = 'vault' | 'wellness' | 'neon' | 'pastel' | 'voyager';
-
-export const THEME_ORDER: AppTheme[] = ['vault', 'wellness', 'neon', 'pastel', 'voyager'];
-
-export const THEME_LABEL: Record<AppTheme, string> = {
-  vault: 'Vault',
-  wellness: 'Calm',
-  neon: 'Neon',
-  pastel: 'Studio',
-  voyager: 'Voyager',
-};
+export type AppTheme = 'neon';
 
 const STORAGE_KEY = 'sv_ui_theme';
 
-export function getNextTheme(current: AppTheme): AppTheme {
-  const i = THEME_ORDER.indexOf(current);
-  return THEME_ORDER[(i + 1) % THEME_ORDER.length];
-}
-
 function parseStoredTheme(raw: string | null): AppTheme {
-  if (
-    raw === 'wellness' ||
-    raw === 'vault' ||
-    raw === 'neon' ||
-    raw === 'pastel' ||
-    raw === 'voyager'
-  )
-    return raw;
-  if (raw === 'cinema') return 'vault';
-  if (raw === 'spectrum') return 'vault';
-  return 'vault';
+  if (raw === 'neon') return 'neon';
+  /* Any other stored value (removed themes) → Neon */
+  return 'neon';
 }
 
 type ThemeContextValue = {
   theme: AppTheme;
   setTheme: (t: AppTheme) => void;
-  toggleTheme: () => void;
   mounted: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<AppTheme>('vault');
+  const [theme, setThemeState] = useState<AppTheme>('neon');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -54,9 +30,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       const next = parseStoredTheme(raw);
       setThemeState(next);
-      document.documentElement.dataset.theme = next;
+      if (raw && raw !== 'neon') {
+        localStorage.setItem(STORAGE_KEY, 'neon');
+      }
+      document.documentElement.dataset.theme = 'neon';
     } catch {
-      document.documentElement.dataset.theme = 'vault';
+      document.documentElement.dataset.theme = 'neon';
     }
   }, []);
 
@@ -75,15 +54,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.dataset.theme = theme;
   }, [theme, mounted]);
 
-  const toggleTheme = useCallback(() => {
-    const i = THEME_ORDER.indexOf(theme);
-    setTheme(THEME_ORDER[(i + 1) % THEME_ORDER.length]);
-  }, [theme, setTheme]);
-
   const value: ThemeContextValue = {
     theme,
     setTheme,
-    toggleTheme,
     mounted,
   };
 

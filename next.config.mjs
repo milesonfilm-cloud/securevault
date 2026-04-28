@@ -51,26 +51,44 @@ const nextConfig = {
 
   async headers() {
     const isProd = process.env.NODE_ENV === 'production';
-    const baseHeaders = [
-      { key: 'X-Content-Type-Options', value: 'nosniff' },
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https:",
+      "media-src 'self' blob:",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://www.googleapis.com https://oauth2.googleapis.com https://digilocker.gov.in https://meripehchaan.gov.in https://*.firebase.com https://*.firebaseapp.com https://api.resend.com https://cdn.jsdelivr.net https://unpkg.com",
+      "worker-src 'self' blob:",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ');
+
+    const securityHeaders = [
+      { key: 'X-DNS-Prefetch-Control', value: 'on' },
+      ...(isProd
+        ? [
+            {
+              key: 'Strict-Transport-Security',
+              value: 'max-age=63072000; includeSubDomains; preload',
+            },
+          ]
+        : []),
       { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       {
         key: 'Permissions-Policy',
-        value: 'camera=(self), microphone=(), geolocation=(), payment=(), usb=()',
+        value: 'camera=(self), microphone=(), geolocation=(), payment=(self), usb=()',
       },
-      { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
-      { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
+      { key: 'Content-Security-Policy', value: csp },
     ];
-
-    const hsts = isProd
-      ? [{ key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' }]
-      : [];
 
     return [
       {
         source: '/:path*',
-        headers: [...baseHeaders, ...hsts],
+        headers: securityHeaders,
       },
     ];
   },

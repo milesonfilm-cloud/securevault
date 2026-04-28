@@ -3,7 +3,13 @@ import { mergeMessages } from '@/i18n/mergeMessages';
 import { defaultLocale, locales, type AppLocale } from '@/i18n/routing';
 import type en from '../../messages/en.json';
 
-export { locales, defaultLocale, LOCALE_STORAGE_KEY, routing, type AppLocale } from '@/i18n/routing';
+export {
+  locales,
+  defaultLocale,
+  LOCALE_STORAGE_KEY,
+  routing,
+  type AppLocale,
+} from '@/i18n/routing';
 
 type Messages = typeof en;
 
@@ -13,19 +19,19 @@ async function loadMessages(locale: string): Promise<Messages> {
   let overlay: Partial<Messages> = {};
   switch (locale) {
     case 'hi':
-      overlay = (await import('../../messages/hi.json')).default;
+      overlay = (await import('../../messages/hi.json')).default as unknown as Partial<Messages>;
       break;
     case 'ta':
-      overlay = (await import('../../messages/ta.json')).default;
+      overlay = (await import('../../messages/ta.json')).default as unknown as Partial<Messages>;
       break;
     case 'te':
-      overlay = (await import('../../messages/te.json')).default;
+      overlay = (await import('../../messages/te.json')).default as unknown as Partial<Messages>;
       break;
     case 'kn':
-      overlay = (await import('../../messages/kn.json')).default;
+      overlay = (await import('../../messages/kn.json')).default as unknown as Partial<Messages>;
       break;
     case 'bn':
-      overlay = (await import('../../messages/bn.json')).default;
+      overlay = (await import('../../messages/bn.json')).default as unknown as Partial<Messages>;
       break;
     default:
       overlay = {};

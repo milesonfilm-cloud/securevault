@@ -1,23 +1,36 @@
 import { NextResponse } from 'next/server';
+import { EmergencyHandoverPublishSchema } from '@/lib/apiSchemas';
+import { checkRateLimit } from '@/lib/rateLimit';
 import { handoverStorePut } from '@/server/handoverStore';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
+  const rl = await checkRateLimit(req, 'emergency');
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter: rl.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } }
+    );
+  }
+
   try {
-    const body = (await req.json()) as {
-      id?: string;
-      cipherB64?: string;
-      expiresAt?: string;
-    };
-    if (!body.id || !body.cipherB64 || !body.expiresAt) {
-      return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
     }
-    const exp = Date.parse(body.expiresAt);
-    if (!Number.isFinite(exp)) {
-      return NextResponse.json({ error: 'invalid_expiry' }, { status: 400 });
+    const parseResult = EmergencyHandoverPublishSchema.safeParse(body);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: 'invalid_request', details: parseResult.error.flatten() },
+        { status: 400 }
+      );
     }
-    handoverStorePut(body.id, body.cipherB64, exp);
+    const { id, cipherB64, expiresAt } = parseResult.data;
+    const exp = Date.parse(expiresAt);
+    handoverStorePut(id, cipherB64, exp);
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: 'server_error' }, { status: 500 });

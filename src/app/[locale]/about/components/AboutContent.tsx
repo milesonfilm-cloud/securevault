@@ -1,21 +1,21 @@
 import React from 'react';
 import { Info, Shield, Scale, Lock } from 'lucide-react';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
 
 export default function AboutContent() {
   return (
     <div className="mx-auto min-h-full max-w-screen-lg bg-vault-bg p-4 lg:p-6">
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium text-vault-faint">SecureVault</p>
-          <h1 className="mt-0.5 text-[28px] font-bold leading-tight tracking-tight text-vault-text sm:text-[32px]">
-            About
-          </h1>
-          <p className="mt-2 text-[13px] text-vault-muted">What it does and what to expect</p>
-        </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-vault-elevated text-vault-warm">
-          <Info size={18} aria-hidden />
-        </div>
-      </div>
+      <VaultPageHeading
+        icon={
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-vault-elevated text-vault-warm">
+            <Info size={18} aria-hidden />
+          </div>
+        }
+        eyebrow="SecureVault"
+        title="About"
+        description="What it does and what to expect"
+        titleClassName="mt-0.5 text-[28px] font-bold leading-tight tracking-tight text-vault-text sm:text-[32px]"
+      />
 
       <section className="neo-card mb-5 rounded-2xl p-5 sm:p-6">
         <div className="mb-4 flex items-center gap-2.5">
@@ -33,8 +33,8 @@ export default function AboutContent() {
           </p>
           <p>
             If you <strong className="text-vault-text">forget your password</strong>, encrypted data
-            cannot be recovered. Keep a strong passphrase and maintain your own backups if you
-            need copies elsewhere.
+            cannot be recovered. Keep a strong passphrase and maintain your own backups if you need
+            copies elsewhere.
           </p>
         </div>
       </section>
@@ -77,8 +77,8 @@ export default function AboutContent() {
             SecureVault is provided <strong className="text-vault-text">&quot;as is&quot;</strong>{' '}
             and <strong className="text-vault-text">&quot;as available&quot;</strong>, without
             warranties to the fullest extent permitted by law. The developers and contributors are{' '}
-            <strong className="text-vault-text">not liable</strong> for loss or damage including data
-            loss, failed backups or restores, device or browser issues, forgotten passwords, or
+            <strong className="text-vault-text">not liable</strong> for loss or damage including
+            data loss, failed backups or restores, device or browser issues, forgotten passwords, or
             software errors. To the maximum extent permitted by law, there is no liability for
             indirect, consequential, or punitive damages.
           </p>

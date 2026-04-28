@@ -4,40 +4,10 @@ import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useVaultPermissions } from '@/hooks/useVaultPermissions';
 import { CATEGORIES } from '@/lib/categories';
-import { useTheme } from '@/context/ThemeContext';
-import type { AppTheme } from '@/context/ThemeContext';
 
-function chartAxisFill(theme: AppTheme): string {
-  switch (theme) {
-    case 'neon':
-      return '#a0a0a0';
-    case 'wellness':
-      return '#6b7a8c';
-    case 'pastel':
-      return '#5c6370';
-    case 'voyager':
-      return '#a3a3a3';
-    default:
-      return '#d4cced';
-  }
-}
-
-function chartCursorFill(theme: AppTheme): string {
-  switch (theme) {
-    case 'neon':
-      return 'rgba(0, 255, 65, 0.12)';
-    case 'wellness':
-      return 'rgba(26, 26, 46, 0.06)';
-    case 'pastel':
-      return 'rgba(26, 31, 46, 0.08)';
-    case 'voyager':
-      return 'rgba(255, 255, 255, 0.07)';
-    default:
-      return 'rgba(212, 204, 237, 0.14)';
-  }
-}
+const CHART_AXIS_FILL = '#a0a0a0';
+const CHART_CURSOR_FILL = 'rgba(0, 255, 65, 0.12)';
 
 interface ChartDataPoint {
   name: string;
@@ -63,21 +33,18 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
 export default function VaultStatsPanel() {
   const { vaultData } = useVaultData();
-  const { visibleDocuments } = useVaultPermissions();
-  const { theme } = useTheme();
-  const axisFill = chartAxisFill(theme);
-  const cursorFill = chartCursorFill(theme);
 
-  const totalDocs = visibleDocuments.length;
+  const documents = vaultData.documents;
+  const totalDocs = documents.length;
   const totalMembers = vaultData.members.length;
 
   const chartData = useMemo((): ChartDataPoint[] => {
     return CATEGORIES.map((cat) => ({
       name: cat.shortLabel,
-      count: visibleDocuments.filter((d) => d.categoryId === cat.id).length,
+      count: documents.filter((d) => d.categoryId === cat.id).length,
       color: cat.color,
     }));
-  }, [visibleDocuments]);
+  }, [documents]);
 
   return (
     <div className="neo-card rounded-2xl p-6">
@@ -111,17 +78,17 @@ export default function VaultStatsPanel() {
           >
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 10, fill: axisFill, fontFamily: 'system-ui, sans-serif' }}
+              tick={{ fontSize: 10, fill: CHART_AXIS_FILL, fontFamily: 'system-ui, sans-serif' }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: axisFill, fontFamily: 'system-ui, sans-serif' }}
+              tick={{ fontSize: 10, fill: CHART_AXIS_FILL, fontFamily: 'system-ui, sans-serif' }}
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: cursorFill }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: CHART_CURSOR_FILL }} />
             <Bar dataKey="count" radius={[6, 6, 0, 0]}>
               {chartData.map((entry, index) => (
                 <Cell key={`bar-cell-${index}`} fill={entry.color} fillOpacity={0.9} />

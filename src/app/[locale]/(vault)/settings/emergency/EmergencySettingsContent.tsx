@@ -7,6 +7,7 @@ import { useVaultData } from '@/context/VaultDataContext';
 import EmergencyContactSetup from '@/components/emergency/EmergencyContactSetup';
 import EmergencyPDFModal from '@/components/emergency/EmergencyPDFModal';
 import VaultHandoverModal from '@/components/emergency/VaultHandoverModal';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
 
 export default function EmergencySettingsContent() {
   const { vaultData, persistVaultData } = useVaultData();
@@ -31,17 +32,16 @@ export default function EmergencySettingsContent() {
         Back to settings
       </Link>
 
-      <div className="flex items-start gap-3">
-        <div className="w-12 h-12 rounded-2xl border border-border bg-vault-panel flex items-center justify-center text-vault-coral shrink-0">
-          <ShieldAlert size={24} />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-vault-text tracking-tight">Emergency access</h1>
-          <p className="text-[13px] text-vault-muted mt-2">
-            Trusted contact, encrypted exports, and time-limited read-only handover links.
-          </p>
-        </div>
-      </div>
+      <VaultPageHeading
+        icon={
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-vault-panel text-vault-coral">
+            <ShieldAlert size={24} aria-hidden />
+          </div>
+        }
+        title="Emergency access"
+        description="Trusted contact, encrypted exports, and time-limited read-only handover links."
+        titleClassName="mt-0.5 text-[28px] font-bold tracking-tight text-vault-text sm:text-[32px]"
+      />
 
       <label className="flex items-center gap-3 cursor-pointer neo-card rounded-2xl p-5">
         <input
@@ -68,7 +68,9 @@ export default function EmergencySettingsContent() {
         >
           <FileDown className="text-vault-warm mb-2" size={22} />
           <p className="text-sm font-800 text-vault-text">Emergency PDF bundle</p>
-          <p className="text-xs text-vault-muted mt-1">Select documents, optional AES-wrapped export.</p>
+          <p className="text-xs text-vault-muted mt-1">
+            Select documents, optional AES-wrapped export.
+          </p>
         </button>
         <button
           type="button"

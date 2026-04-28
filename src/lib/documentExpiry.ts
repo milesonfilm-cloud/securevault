@@ -131,10 +131,7 @@ export interface RenewalItem {
 }
 
 /** Documents with any expiry date up to `maxDaysAhead` days from today, or already expired. */
-export function collectRenewalItems(
-  documents: Document[],
-  maxDaysAhead: number
-): RenewalItem[] {
+export function collectRenewalItems(documents: Document[], maxDaysAhead: number): RenewalItem[] {
   const today = startOfLocalDay(new Date());
   const items: RenewalItem[] = [];
 

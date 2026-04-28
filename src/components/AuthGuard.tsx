@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-react';
 import BackupReminderBanner from '@/components/ui/BackupReminderBanner';
 import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
-import { useTheme } from '@/context/ThemeContext';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
 import {
   isBiometricSupported,
@@ -27,14 +26,17 @@ import {
 import { persistUnlockedVaultKey, tryRestoreVaultKeyFromPersist } from '@/lib/vaultKeyPersist';
 import {
   computePinVerifier,
+  decryptJson,
   deriveAesKeyFromPin,
   newKdfParams,
   timingSafeEqualVerifierB64,
 } from '@/lib/crypto/vaultCrypto';
+import { appendAuditEntry } from '@/lib/auditLog';
 import { resetVaultLocalOnly } from '@/lib/storage';
 import { VaultDataProvider } from '@/context/VaultDataContext';
-import { VaultPermissionsProvider } from '@/hooks/useVaultPermissions';
 import { AUTH_INTRO_SESSION_KEY, completeAuthIntroSession } from '@/lib/authIntroSession';
+import { verifyTotp } from '@/lib/totp';
+import { isTotpEnabled, loadTotpSecretEncrypted } from '@/lib/totpSettings';
 
 const SESSION_KEY = SESSION_UNLOCKED_KEY;
 
@@ -52,7 +54,6 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const t = useTranslations('auth');
-  const { theme } = useTheme();
   const [phase, setPhase] = useState<'loading' | 'setup' | 'login' | 'unlocked'>('loading');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -69,6 +70,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const [showIntro, setShowIntro] = useState(true);
   /** Shown on login after biometric gate — PIN still required to derive CryptoKey */
   const [loginHint, setLoginHint] = useState('');
+  const [totpGateActive, setTotpGateActive] = useState(false);
+  const [totpCode, setTotpCode] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -128,6 +131,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   };
 
   const unlockVault = useCallback(() => {
+    appendAuditEntry({
+      action: 'vault_unlocked',
+      actorMemberId: null,
+      targetId: null,
+      targetTitle: null,
+    });
     void (async () => {
       try {
         await persistUnlockedVaultKey(getVaultKey());
@@ -169,7 +178,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           setStoredVerifier(verifier);
         } catch (storageErr) {
           const name = storageErr instanceof DOMException ? storageErr.name : '';
-          if (name === 'QuotaExceededError' || (storageErr as Error)?.name === 'QuotaExceededError') {
+          if (
+            name === 'QuotaExceededError' ||
+            (storageErr as Error)?.name === 'QuotaExceededError'
+          ) {
             setError(t('storageFull'));
           } else {
             setError(t('storageSaveFailed'));
@@ -193,7 +205,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           msg.includes('out of memory')
         ) {
           setError(t('oom'));
-        } else if (msg.includes('hash-wasm') || msg.includes('failed to fetch') || msg.includes('loading')) {
+        } else if (
+          msg.includes('hash-wasm') ||
+          msg.includes('failed to fetch') ||
+          msg.includes('loading')
+        ) {
           setError(t('wasmLoadFailed'));
         } else {
           setError(t('createFailed'));
@@ -215,6 +231,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       const got = await computePinVerifier(key);
       if (!(await timingSafeEqualVerifierB64(got, verifier))) throw new Error('bad_pin');
       setVaultKey(key);
+      if (typeof window !== 'undefined' && isTotpEnabled() && loadTotpSecretEncrypted()) {
+        setTotpGateActive(true);
+        setTotpCode('');
+        setPin('');
+        return;
+      }
       unlockVault();
     })().catch(() => {
       setError(t('incorrectPwd'));
@@ -286,24 +308,105 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (phase === 'loading') {
     return (
-      <div className="min-h-screen auth-bg flex items-center justify-center">
+      <div className="min-h-[100dvh] auth-bg flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
       </div>
     );
   }
 
   if (phase === 'unlocked') {
+    return <VaultDataProvider>{children}</VaultDataProvider>;
+  }
+
+  if (totpGateActive && phase === 'login') {
     return (
-      <VaultDataProvider>
-        <VaultPermissionsProvider>{children}</VaultPermissionsProvider>
-      </VaultDataProvider>
+      <div className="min-h-[100dvh] auth-bg flex flex-col items-center justify-center p-4 py-10">
+        <div className="relative w-full max-w-lg auth-card animate-auth-in">
+          <div className="flex flex-col items-center mb-8">
+            <h1 className="text-center text-2xl font-800 tracking-tight text-vault-text">
+              Authenticator code
+            </h1>
+            <p className="text-sm text-vault-muted mt-1 text-center">
+              Enter the 6-digit code from your authenticator app.
+            </p>
+          </div>
+          <div className="space-y-4 px-6 pb-6">
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              value={totpCode}
+              onChange={(e) => {
+                setTotpCode(e.target.value.replace(/[^\d]/g, '').slice(0, 6));
+                setError('');
+              }}
+              className="auth-input w-full text-center font-mono text-xl tracking-[0.4em]"
+              placeholder="000000"
+              maxLength={6}
+              aria-label="Authenticator code"
+            />
+            {error ? (
+              <div
+                id="auth-totp-error"
+                role="alert"
+                className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2.5"
+              >
+                <p className="text-sm text-red-300">{error}</p>
+              </div>
+            ) : null}
+            <button
+              type="button"
+              className="auth-btn w-full"
+              onClick={() => {
+                setError('');
+                void (async () => {
+                  const key = getVaultKey();
+                  const enc = loadTotpSecretEncrypted();
+                  if (!key || !enc) {
+                    setError('2FA is not set up correctly.');
+                    return;
+                  }
+                  try {
+                    const { secret } = await decryptJson<{ secret: string }>(key, enc);
+                    if (!verifyTotp(secret, totpCode.replace(/\s/g, ''))) {
+                      setError('Invalid code. Try again.');
+                      triggerShake();
+                      setTotpCode('');
+                      return;
+                    }
+                    setTotpGateActive(false);
+                    setTotpCode('');
+                    unlockVault();
+                  } catch {
+                    setError('Could not verify 2FA.');
+                  }
+                })();
+              }}
+            >
+              Verify and unlock
+            </button>
+            <button
+              type="button"
+              className="w-full py-3 text-sm text-vault-muted hover:text-vault-warm transition-colors"
+              onClick={() => {
+                setTotpGateActive(false);
+                setTotpCode('');
+                setError('');
+                setPin('');
+              }}
+            >
+              Back to PIN
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   // Biometric setup offer screen (shown after password creation)
   if (biometricSetupOffer) {
     return (
-      <div className="min-h-screen auth-bg flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-[100dvh] auth-bg flex items-center justify-center p-4 relative overflow-hidden">
         <div className="relative w-full max-w-sm auth-card animate-auth-in">
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-4">
@@ -311,8 +414,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                 <Fingerprint size={36} className="text-vault-warm" />
               </div>
             </div>
-            <h1 className="text-2xl font-800 text-vault-text tracking-tight">{t('enableBiometrics')}</h1>
-            <p className="text-sm text-vault-muted mt-1 text-center">{t('biometricSetupSubtitle')}</p>
+            <h1 className="text-center text-2xl font-800 tracking-tight text-vault-text">
+              {t('enableBiometrics')}
+            </h1>
+            <p className="text-sm text-vault-muted mt-1 text-center">
+              {t('biometricSetupSubtitle')}
+            </p>
           </div>
 
           {/* Biometric type indicators */}
@@ -328,7 +435,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2.5 mb-4 animate-fade-in">
+            <div
+              id="auth-setup-error"
+              role="alert"
+              className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2.5 mb-4 animate-fade-in"
+            >
               <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
               <p className="text-sm text-red-300">{error}</p>
             </div>
@@ -365,7 +476,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (!introChecked) {
     return (
-      <div className="min-h-screen auth-bg flex items-center justify-center p-4">
+      <div className="min-h-[100dvh] auth-bg flex items-center justify-center p-4">
         <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
       </div>
     );
@@ -373,14 +484,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (showIntro) {
     return (
-      <div className="min-h-screen auth-bg flex flex-col items-center justify-center p-4 py-10 relative overflow-x-hidden">
+      <div className="min-h-[100dvh] auth-bg flex flex-col items-center justify-center p-4 py-10 relative overflow-x-hidden">
         <AuthWelcomePanel phase={phase} onFinish={completeAuthIntro} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen auth-bg flex flex-col items-center justify-center p-4 py-10 relative overflow-y-auto overflow-x-hidden">
+    <div className="min-h-[100dvh] auth-bg flex flex-col items-center justify-center p-4 py-10 relative overflow-y-auto overflow-x-hidden">
       {/* Card */}
       <div
         className={`relative w-full max-w-lg auth-card animate-auth-in ${shake ? 'animate-shake' : ''}`}
@@ -394,20 +505,16 @@ export default function AuthGuard({ children }: AuthGuardProps) {
               {success ? (
                 <CheckCircle2 size={36} className="text-vault-warm animate-scale-in" />
               ) : (
-                <VaultBrandIcon variant={theme} size={48} aria-label="SecureVault" />
+                <VaultBrandIcon variant="neon" size={48} aria-label="SecureVault" />
               )}
             </div>
           </div>
 
-          <h1 className="text-2xl font-800 text-vault-text tracking-tight">
+          <h1 className="text-center text-2xl font-800 tracking-tight text-vault-text">
             {success ? t('welcome') : phase === 'setup' ? t('createPassword') : t('unlockVault')}
           </h1>
           <p className="text-sm text-vault-muted mt-1 text-center">
-            {success
-              ? t('unlocking')
-              : phase === 'setup'
-                ? t('createPin')
-                : t('enterPin')}
+            {success ? t('unlocking') : phase === 'setup' ? t('createPin') : t('enterPin')}
           </p>
         </div>
 
@@ -474,11 +581,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                   placeholder={t('enterPasswordPlaceholder')}
                   className="auth-input pr-11"
                   autoComplete={phase === 'setup' ? 'new-password' : 'current-password'}
+                  id="auth-pin-input"
+                  aria-describedby={error ? 'auth-pin-error' : undefined}
+                  aria-invalid={!!error}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPin((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm transition-colors"
+                  aria-label={showPin ? 'Hide password' : 'Show password'}
                 >
                   {showPin ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -502,11 +613,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                     placeholder={t('confirmPasswordPlaceholder')}
                     className="auth-input pr-11"
                     autoComplete="new-password"
+                    id="auth-confirm-pin-input"
+                    aria-describedby={error ? 'auth-pin-error' : undefined}
+                    aria-invalid={!!error}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm transition-colors"
+                    aria-label={showConfirm ? 'Hide password' : 'Show password'}
                   >
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -523,7 +638,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
             {/* Error */}
             {error && (
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2.5 animate-fade-in">
+              <div
+                id="auth-pin-error"
+                role="alert"
+                className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2.5 animate-fade-in"
+              >
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
                 <p className="text-sm text-red-300">{error}</p>
               </div>
@@ -553,9 +672,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
         {/* Biometric setup hint (login phase, available but not registered) */}
         {!success && phase === 'login' && biometricAvailable && !biometricRegistered && (
-          <p className="mt-4 text-center text-xs text-vault-faint">
-            {t('biometricTip')}
-          </p>
+          <p className="mt-4 text-center text-xs text-vault-faint">{t('biometricTip')}</p>
         )}
 
         {/* Footer */}

@@ -3,6 +3,7 @@
 import { useCallback, useState } from 'react';
 import type { CategoryId } from '@/lib/storage';
 import { runTesseractOnImage } from '@/lib/ocr/tesseractHelper';
+import { getSupabaseAuthHeaders } from '@/lib/supabase/session';
 
 export type ScanPhase = 'idle' | 'ocr' | 'api' | 'done' | 'error';
 
@@ -60,9 +61,10 @@ export function useDocumentScanner() {
     setProgress({ status: 'Extracting fields with AI…', progress: 0.6 });
 
     try {
+      const auth = await getSupabaseAuthHeaders();
       const res = await fetch('/api/ai/scan-document', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify({ ocrText, categoryId }),
       });
       const data = (await res.json()) as ScanExtractResult & { error?: string; detail?: string };

@@ -7,17 +7,15 @@ import { FolderLock, Users, Settings, Info, LogOut, CalendarClock, Trophy } from
 import { lockVaultAndReload } from '@/lib/vaultKeyPersist';
 import { cn } from '@/lib/utils';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useVaultPermissions } from '@/hooks/useVaultPermissions';
 import { countRenewalBadgeDocuments } from '@/lib/notifications/reminderScheduler';
 import { DEFAULT_EXPIRY_WARN_DAYS } from '@/lib/documentExpiry';
 
 export default function MobileNav({ activePath }: { activePath: string }) {
   const t = useTranslations('nav');
-  const { loading } = useVaultData();
-  const { visibleDocuments } = useVaultPermissions();
+  const { vaultData, loading } = useVaultData();
   const badge = loading
     ? 0
-    : countRenewalBadgeDocuments(visibleDocuments, DEFAULT_EXPIRY_WARN_DAYS);
+    : countRenewalBadgeDocuments(vaultData.documents, DEFAULT_EXPIRY_WARN_DAYS);
 
   const MOBILE_LINKS = [
     { href: '/family-management', label: t('family'), icon: <Users size={20} />, badge: 0 },
@@ -29,16 +27,17 @@ export default function MobileNav({ activePath }: { activePath: string }) {
   ];
 
   return (
-    <nav className="border-t border-[color:var(--color-border)] bg-vault-panel pb-safe shadow-vault">
-      <div className="flex">
+    <nav className="border-t border-[color:var(--color-border)] bg-vault-panel pl-safe pr-safe pb-safe shadow-vault [touch-action:manipulation]">
+      <div className="flex min-h-[52px] items-stretch sm:min-h-0">
         {MOBILE_LINKS.map((item) => {
           const isActive = activePath === item.href;
           return (
             <Link
               key={`mobile-nav-${item.href}`}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex min-w-0 flex-1 flex-col items-center gap-1 py-3 transition-all duration-150',
+                'flex min-w-0 min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 sm:min-h-0 sm:gap-1 sm:py-3 transition-all duration-150',
                 isActive ? 'text-vault-warm' : 'text-vault-faint hover:text-vault-muted'
               )}
             >
@@ -70,7 +69,8 @@ export default function MobileNav({ activePath }: { activePath: string }) {
           type="button"
           onClick={lockVaultAndReload}
           title={t('lockVault')}
-          className="flex min-w-0 flex-1 flex-col items-center gap-1 py-3 text-vault-coral transition-colors hover:bg-vault-coral/10 active:opacity-90"
+          aria-label={t('lockVault')}
+          className="flex min-w-0 min-h-[52px] flex-1 flex-col items-center justify-center gap-0.5 py-2 sm:min-h-0 sm:gap-1 sm:py-3 text-vault-coral transition-colors hover:bg-vault-coral/10 active:opacity-90"
         >
           <span className="relative [&_svg]:stroke-[1.5]">
             <LogOut size={20} />

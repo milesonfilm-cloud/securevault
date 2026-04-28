@@ -274,7 +274,13 @@ export const CATEGORIES: CategoryConfig[] = [
     lightBg: 'bg-vault-panel',
     icon: 'BookOpen',
     fields: [
-      { key: 'Passport Number', label: 'Passport Number', type: 'text', required: true, sensitive: true },
+      {
+        key: 'Passport Number',
+        label: 'Passport Number',
+        type: 'text',
+        required: true,
+        sensitive: true,
+      },
       { key: 'Date of Issue', label: 'Date of Issue', type: 'date' },
       { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
       { key: 'Place of Issue', label: 'Place of Issue', type: 'text' },
@@ -292,7 +298,13 @@ export const CATEGORIES: CategoryConfig[] = [
     lightBg: 'bg-vault-panel',
     icon: 'IdCard',
     fields: [
-      { key: 'License Number', label: 'License Number', type: 'text', required: true, sensitive: true },
+      {
+        key: 'License Number',
+        label: 'License Number',
+        type: 'text',
+        required: true,
+        sensitive: true,
+      },
       { key: 'Date of Issue', label: 'Date of Issue', type: 'date' },
       { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
       { key: 'Issuing Authority', label: 'Issuing Authority', type: 'text' },
@@ -311,8 +323,19 @@ export const CATEGORIES: CategoryConfig[] = [
     icon: 'Shield',
     fields: [
       { key: 'Provider', label: 'Provider', type: 'text', required: true },
-      { key: 'Policy Number', label: 'Policy Number', type: 'text', required: true, sensitive: true },
-      { key: 'Type', label: 'Type', type: 'select', options: ['Health', 'Life', 'Vehicle', 'Travel', 'Home', 'Other'] },
+      {
+        key: 'Policy Number',
+        label: 'Policy Number',
+        type: 'text',
+        required: true,
+        sensitive: true,
+      },
+      {
+        key: 'Type',
+        label: 'Type',
+        type: 'select',
+        options: ['Health', 'Life', 'Vehicle', 'Travel', 'Home', 'Other'],
+      },
       { key: 'Start Date', label: 'Start Date', type: 'date' },
       { key: 'End Date', label: 'End Date / Expiry', type: 'date' },
       { key: 'Contact', label: 'Agent / Support Contact', type: 'tel' },
@@ -438,7 +461,12 @@ export const CATEGORIES: CategoryConfig[] = [
     fields: [
       { key: 'Service', label: 'Service', type: 'text', required: true },
       { key: 'Plan', label: 'Plan', type: 'text' },
-      { key: 'Billing Cycle', label: 'Billing Cycle', type: 'select', options: ['Monthly', 'Yearly', 'Weekly', 'Other'] },
+      {
+        key: 'Billing Cycle',
+        label: 'Billing Cycle',
+        type: 'select',
+        options: ['Monthly', 'Yearly', 'Weekly', 'Other'],
+      },
       { key: 'Renewal Date', label: 'Renewal Date', type: 'date' },
       { key: 'Account Email', label: 'Account Email', type: 'text', sensitive: true },
     ],

@@ -32,5 +32,13 @@ jest-test-results.json
 .vscode/
 .idea/
 
+# Android signing credentials — NEVER commit
+my-pwa/android.keystore
+my-pwa/*.keystore
+my-pwa/*.jks
+my-pwa/app-release*.apk
+my-pwa/app-release*.aab
+my-pwa/app-release*.idsig
+
 # Optional: if using TurboRepo or monorepo
 turbo/

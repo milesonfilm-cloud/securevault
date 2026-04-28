@@ -9,8 +9,9 @@ import {
   Inter,
 } from 'next/font/google';
 import '../styles/tailwind.css';
-import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/context/ThemeContext';
+import VaultToaster from '@/components/VaultToaster';
+import SupabaseSessionBootstrap from '@/components/SupabaseSessionBootstrap';
 import { cn } from '@/lib/utils';
 
 /** Bundled at build time — no runtime request to font CDNs (offline-capable after `next build`). */
@@ -55,7 +56,7 @@ const fontNeonStack = Roboto_Condensed({
   fallback: ['system-ui', 'sans-serif'],
 });
 
-/** Studio / pastel theme — Inter per design reference */
+/** Inter — Voyager demo gallery only (app themes use Plus Jakarta / DM Sans / Roboto Condensed). */
 const fontPastel = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
@@ -67,7 +68,8 @@ const fontPastel = Inter({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#312C51',
+  viewportFit: 'cover',
+  themeColor: '#09090b',
 };
 
 export const metadata: Metadata = {
@@ -103,23 +105,20 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         fontPastel.variable,
         'font-sans'
       )}
-      data-theme="vault"
+      data-theme="neon"
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-        <Toaster
-          position="bottom-right"
-          closeButton
-          duration={5000}
-          toastOptions={{
-            duration: 5000,
-            closeButton: true,
-            style: {
-              fontFamily: 'inherit',
-              fontSize: '14px',
-            },
-          }}
-        />
+      <body className="overflow-x-hidden antialiased [text-size-adjust:100%]">
+        <a
+          href="#main-content"
+          className="fixed left-4 top-0 z-[10000] block translate-y-[-120%] rounded-xl bg-vault-warm px-4 py-2 text-sm font-700 text-vault-ink shadow-lg transition-transform focus:translate-y-4 focus:outline-none focus:ring-2 focus:ring-white/50"
+        >
+          Skip to content
+        </a>
+        <ThemeProvider>
+          <SupabaseSessionBootstrap />
+          {children}
+        </ThemeProvider>
+        <VaultToaster />
       </body>
     </html>
   );

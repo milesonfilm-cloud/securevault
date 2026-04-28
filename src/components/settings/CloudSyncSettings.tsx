@@ -5,12 +5,22 @@ import { Cloud, Download, RefreshCw, Unplug } from 'lucide-react';
 import { useVaultData } from '@/context/VaultDataContext';
 import { useCloudSync } from '@/hooks/useCloudSync';
 import { cancelScheduledDriveSync } from '@/lib/cloudSync/syncManager';
+import { GOOGLE_DRIVE_BACKUP_SETUP_BLURB } from '@/lib/envPublic';
+import UpgradeGate from '@/components/UpgradeGate';
 
 export default function CloudSyncSettings() {
   const { vaultData, persistVaultData, refreshVaultData } = useVaultData();
   const cloudEnabled = vaultData.settings.cloudSyncEnabled;
-  const { connected, statusLabel, status, connectGoogle, disconnect, syncNow, restoreFromDrive } =
-    useCloudSync(refreshVaultData);
+  const {
+    connected,
+    statusLabel,
+    status,
+    connectGoogle,
+    disconnect,
+    syncNow,
+    restoreFromDrive,
+    googleDriveOAuthReady,
+  } = useCloudSync(refreshVaultData);
 
   const setEnabled = async (on: boolean) => {
     if (!on) cancelScheduledDriveSync();
@@ -27,30 +37,34 @@ export default function CloudSyncSettings() {
           <Cloud size={20} />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-800 text-vault-text">Encrypted Google Drive backup</h3>
+          <h3 className="text-sm font-800 text-vault-text">Google Drive backup</h3>
           <p className="text-xs text-vault-muted mt-1 leading-relaxed">
-            Uploads the same AES-encrypted vault blob already stored on this device to your Drive{' '}
-            <strong className="font-600 text-vault-text">app data</strong> folder (hidden from the
-            Drive UI). Your vault key never leaves this device.
+            Optional encrypted copy of your vault in your own Drive. Your key stays on this device.
           </p>
         </div>
       </div>
 
-      <label className="flex items-center gap-3 cursor-pointer mb-4">
-        <input
-          type="checkbox"
-          checked={cloudEnabled}
-          onChange={(e) => void setEnabled(e.target.checked)}
-          className="rounded border-border"
-        />
-        <span className="text-sm text-vault-text">
-          Enable automatic backup (debounced 30s after saves)
-        </span>
-      </label>
+      <UpgradeGate feature="cloudBackup" requiredPlan="Pro">
+        <label className="mb-4 flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            checked={cloudEnabled}
+            onChange={(e) => void setEnabled(e.target.checked)}
+            className="rounded border-border"
+          />
+          <span className="text-sm text-vault-text">
+            Enable automatic backup (debounced 30s after saves)
+          </span>
+        </label>
+      </UpgradeGate>
 
       <p
         className={`text-xs font-600 mb-4 ${
-          status === 'error' ? 'text-red-400' : status === 'syncing' ? 'text-vault-warm' : 'text-vault-faint'
+          status === 'error'
+            ? 'text-red-400'
+            : status === 'syncing'
+              ? 'text-vault-warm'
+              : 'text-vault-faint'
         }`}
       >
         {statusLabel}
@@ -58,7 +72,17 @@ export default function CloudSyncSettings() {
 
       <div className="flex flex-wrap gap-2">
         {!connected ? (
-          <button type="button" className="btn-primary text-sm py-2 px-4" onClick={() => void connectGoogle()}>
+          <button
+            type="button"
+            className="btn-primary text-sm py-2 px-4 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!googleDriveOAuthReady}
+            onClick={() => void connectGoogle()}
+            title={
+              googleDriveOAuthReady
+                ? undefined
+                : 'OAuth client ID was not set when this app was built'
+            }
+          >
             Connect Google Drive
           </button>
         ) : (
@@ -96,11 +120,16 @@ export default function CloudSyncSettings() {
         )}
       </div>
 
-      {!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-        <p className="text-[11px] text-amber-400/90 mt-3">
-          Add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your environment to use Drive backup.
-        </p>
-      )}
+      {!googleDriveOAuthReady ? (
+        <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/5 px-3 py-2.5 text-left">
+          <p className="text-[11px] font-600 text-amber-200/95">
+            Drive backup not configured for this build
+          </p>
+          <p className="text-[11px] text-vault-muted mt-1 leading-relaxed">
+            {GOOGLE_DRIVE_BACKUP_SETUP_BLURB}
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

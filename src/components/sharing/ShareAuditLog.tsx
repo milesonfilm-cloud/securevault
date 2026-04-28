@@ -80,7 +80,9 @@ export default function ShareAuditLog() {
     return (
       <div className="neo-card rounded-2xl p-6">
         <h3 className="text-sm font-800 text-vault-text mb-1">Shared links</h3>
-        <p className="text-xs text-vault-muted">No active share links. Share a document from the vault list.</p>
+        <p className="text-xs text-vault-muted">
+          No active share links. Share a document from the vault list.
+        </p>
       </div>
     );
   }

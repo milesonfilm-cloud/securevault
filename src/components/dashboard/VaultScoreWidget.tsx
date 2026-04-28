@@ -21,9 +21,7 @@ export default function VaultScoreWidget({ vaultData, className }: VaultScoreWid
 
   const missingLabels = useMemo(() => {
     const top = topMissingCategories(vaultData.members, vaultData.documents, 2);
-    return top
-      .map((id) => getCategoryById(id)?.shortLabel ?? id)
-      .filter(Boolean);
+    return top.map((id) => getCategoryById(id)?.shortLabel ?? id).filter(Boolean);
   }, [vaultData.members, vaultData.documents]);
 
   return (
@@ -40,7 +38,9 @@ export default function VaultScoreWidget({ vaultData, className }: VaultScoreWid
             <Sparkles size={20} strokeWidth={2} />
           </div>
           <div>
-            <p className="text-[10px] font-800 uppercase tracking-wider text-vault-muted">Vault completeness</p>
+            <p className="text-[10px] font-800 uppercase tracking-wider text-vault-muted">
+              Vault completeness
+            </p>
             <p className="text-2xl font-800 tabular-nums text-vault-text">{score}%</p>
           </div>
         </div>
@@ -55,9 +55,13 @@ export default function VaultScoreWidget({ vaultData, className }: VaultScoreWid
           {missingLabels.join(' · ')}
         </p>
       ) : vaultData.members.length === 0 ? (
-        <p className="mt-3 text-xs text-vault-muted">Add members to start your completeness score.</p>
+        <p className="mt-3 text-xs text-vault-muted">
+          Add members to start your completeness score.
+        </p>
       ) : (
-        <p className="mt-3 text-xs font-600 text-vault-warm">All critical categories covered — nice work.</p>
+        <p className="mt-3 text-xs font-600 text-vault-warm">
+          All critical categories covered — nice work.
+        </p>
       )}
     </Link>
   );

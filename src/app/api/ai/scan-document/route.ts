@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import { AiScanSchema } from '@/lib/apiSchemas';
 import { getCategoryById } from '@/lib/categories';
+import { checkRateLimit } from '@/lib/rateLimit';
+import { requireAuth } from '@/lib/requireAuth';
 import { isAiScanCategory } from '@/lib/scan/aiScanCategories';
 import type { CategoryId } from '@/lib/storage';
 
@@ -43,10 +46,16 @@ function parseClaudeJson(raw: string): {
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey?.trim()) {
-    return NextResponse.json({ error: 'missing_anthropic_key' }, { status: 503 });
+  const rl = await checkRateLimit(req, 'ai-scan');
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'rate_limited', retryAfter: rl.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } }
+    );
   }
+
+  const auth = await requireAuth(req);
+  if (auth.ok === false) return auth.response;
 
   let body: unknown;
   try {
@@ -55,21 +64,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'invalid_json' }, { status: 400 });
   }
 
-  const ocrText =
-    body && typeof body === 'object' && 'ocrText' in body ? (body as { ocrText: unknown }).ocrText : '';
-  const categoryIdRaw =
-    body && typeof body === 'object' && 'categoryId' in body
-      ? (body as { categoryId: unknown }).categoryId
-      : '';
+  const parseResult = AiScanSchema.safeParse(body);
+  if (!parseResult.success) {
+    return NextResponse.json(
+      { error: 'invalid_request', details: parseResult.error.flatten() },
+      { status: 400 }
+    );
+  }
 
-  if (typeof ocrText !== 'string' || ocrText.length === 0) {
-    return NextResponse.json({ error: 'invalid_ocr_text' }, { status: 400 });
-  }
-  if (ocrText.length > 120_000) {
-    return NextResponse.json({ error: 'ocr_text_too_large' }, { status: 400 });
-  }
-  if (typeof categoryIdRaw !== 'string' || !isAiScanCategory(categoryIdRaw as CategoryId)) {
+  const { ocrText, categoryId: categoryIdRaw } = parseResult.data;
+  if (!isAiScanCategory(categoryIdRaw as CategoryId)) {
     return NextResponse.json({ error: 'unsupported_category' }, { status: 400 });
+  }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey?.trim()) {
+    return NextResponse.json({ error: 'missing_anthropic_key' }, { status: 503 });
   }
 
   const categoryId = categoryIdRaw as CategoryId;
@@ -140,7 +150,10 @@ OCR_END`;
 
   const parsed = parseClaudeJson(raw);
   if (!parsed) {
-    return NextResponse.json({ error: 'ai_json_parse_failed', raw: raw.slice(0, 2000) }, { status: 502 });
+    return NextResponse.json(
+      { error: 'ai_json_parse_failed', raw: raw.slice(0, 2000) },
+      { status: 502 }
+    );
   }
 
   return NextResponse.json(parsed);

@@ -31,13 +31,9 @@ interface MemberFormData {
   avatarColor: string;
   /** Empty string when no photo (RHF + hidden input). */
   photoDataUrl: string;
-  /** Optional PIN for profile switcher; hashed before storage. */
-  switchPin: string;
 }
 
-export type MemberFormSavePayload = Omit<FamilyMember, 'id' | 'createdAt' | 'updatedAt'> & {
-  switchPin?: string;
-};
+export type MemberFormSavePayload = Omit<FamilyMember, 'id' | 'createdAt' | 'updatedAt'>;
 
 interface MemberFormModalProps {
   isOpen: boolean;
@@ -68,7 +64,6 @@ export default function MemberFormModal({
       dob: '',
       avatarColor: MEMBER_AVATAR_COLORS[0],
       photoDataUrl: '',
-      switchPin: '',
     },
   });
 
@@ -84,7 +79,6 @@ export default function MemberFormModal({
         dob: editMember.dob,
         avatarColor: editMember.avatarColor,
         photoDataUrl: editMember.photoDataUrl ?? '',
-        switchPin: '',
       });
     } else {
       reset({
@@ -93,20 +87,17 @@ export default function MemberFormModal({
         dob: '',
         avatarColor: MEMBER_AVATAR_COLORS[0],
         photoDataUrl: '',
-        switchPin: '',
       });
     }
   }, [editMember, isOpen, reset]);
 
   const onSubmit = (data: MemberFormData) => {
-    const { switchPin, ...rest } = data;
     onSave({
-      name: rest.name,
-      relationship: rest.relationship,
-      dob: rest.dob,
-      avatarColor: rest.avatarColor,
-      photoDataUrl: rest.photoDataUrl.trim() ? rest.photoDataUrl : null,
-      switchPin: switchPin.trim() ? switchPin.trim() : undefined,
+      name: data.name,
+      relationship: data.relationship,
+      dob: data.dob,
+      avatarColor: data.avatarColor,
+      photoDataUrl: data.photoDataUrl.trim() ? data.photoDataUrl : null,
     });
   };
 
@@ -206,25 +197,12 @@ export default function MemberFormModal({
 
         <input type="hidden" {...register('photoDataUrl')} />
 
-        <div>
-          <label className="label-text">Profile switch PIN (optional)</label>
-          <p className="mb-2 text-xs text-vault-faint">
-            Required to select this profile in the header switcher when set. Stored as a hash only.
-          </p>
-          <input
-            {...register('switchPin')}
-            type="password"
-            inputMode="numeric"
-            autoComplete="new-password"
-            placeholder={editMember?.pinHash ? 'New PIN to replace existing' : '4–12 digits recommended'}
-            className="input-field"
-          />
-        </div>
-
         {/* Avatar color */}
         <div>
           <label className="label-text">Profile Color</label>
-          <p className="mb-2 text-xs text-vault-faint">Used when no photo is set, and for document badges</p>
+          <p className="mb-2 text-xs text-vault-faint">
+            Used when no photo is set, and for document badges
+          </p>
           <div className="flex flex-wrap gap-2">
             {MEMBER_AVATAR_COLORS.map((color) => (
               <button

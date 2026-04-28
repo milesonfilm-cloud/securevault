@@ -29,7 +29,12 @@ export default function BadgeDisplay({ earnedIds, highlightIds, className }: Bad
       {BADGE_DEFINITIONS.map((def) => {
         const unlocked = earned.has(def.id);
         const pulse = highlightIds?.has(def.id);
-        const b: Badge = { id: def.id, name: def.name, description: def.description, icon: def.icon };
+        const b: Badge = {
+          id: def.id,
+          name: def.name,
+          description: def.description,
+          icon: def.icon,
+        };
         return (
           <div
             key={def.id}
@@ -50,12 +55,21 @@ export default function BadgeDisplay({ earnedIds, highlightIds, className }: Bad
             >
               <span className={cn(!unlocked && 'opacity-40')}>{b.icon}</span>
             </div>
-            <p className={cn('text-xs font-800 leading-tight', unlocked ? 'text-vault-text' : 'text-vault-muted')}>
+            <p
+              className={cn(
+                'text-xs font-800 leading-tight',
+                unlocked ? 'text-vault-text' : 'text-vault-muted'
+              )}
+            >
               {b.name}
             </p>
-            <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-vault-muted">{b.description}</p>
+            <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-vault-muted">
+              {b.description}
+            </p>
             {!unlocked ? (
-              <p className="mt-2 text-[9px] font-700 uppercase tracking-wider text-vault-faint">Locked</p>
+              <p className="mt-2 text-[9px] font-700 uppercase tracking-wider text-vault-faint">
+                Locked
+              </p>
             ) : null}
           </div>
         );

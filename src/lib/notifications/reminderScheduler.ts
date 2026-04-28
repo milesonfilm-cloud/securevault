@@ -115,8 +115,7 @@ async function postSchedulesToServiceWorker(entries: ScheduleEntry[]): Promise<v
   try {
     const reg = await navigator.serviceWorker.ready;
     for (const e of entries.slice(0, 24)) {
-      const days =
-        e.kind === '30' ? 30 : e.kind === '7' ? 7 : 1;
+      const days = e.kind === '30' ? 30 : e.kind === '7' ? 7 : 1;
       reg.active?.postMessage({
         type: 'SCHEDULE_NOTIFY',
         when: e.when,
@@ -188,10 +187,7 @@ export async function registerExpiryServiceWorker(): Promise<void> {
 }
 
 /** For nav badge: docs expired or expiring within 30 days. */
-export function countRenewalBadgeDocuments(
-  documents: Document[],
-  warnWithinDays: number
-): number {
+export function countRenewalBadgeDocuments(documents: Document[], warnWithinDays: number): number {
   const seen = new Set<string>();
   const today = startOfLocalDay(new Date());
   for (const doc of documents) {

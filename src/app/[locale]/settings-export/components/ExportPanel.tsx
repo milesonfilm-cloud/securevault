@@ -5,27 +5,22 @@ import { Download, FileJson, Sheet, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { VaultData, ExportRecord } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useVaultPermissions } from '@/hooks/useVaultPermissions';
 import { CATEGORIES } from '@/lib/categories';
+import { appendAuditEntry } from '@/lib/auditLog';
 
 type ExportFormat = 'json' | 'csv';
 
 export default function ExportPanel() {
   const { vaultData, persistVaultData } = useVaultData();
-  const { visibleDocuments, hasPermission } = useVaultPermissions();
   const [format, setFormat] = useState<ExportFormat>('json');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedMember, setSelectedMember] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
-    if (!hasPermission('export')) {
-      toast.error('Export is not allowed for the current profile.');
-      return;
-    }
     setIsExporting(true);
     try {
-      let docs = visibleDocuments;
+      let docs = vaultData.documents;
       if (selectedCategory !== 'all') docs = docs.filter((d) => d.categoryId === selectedCategory);
       if (selectedMember !== 'all') docs = docs.filter((d) => d.memberId === selectedMember);
 
@@ -88,7 +83,7 @@ export default function ExportPanel() {
 
       // Record export
       const record: ExportRecord = {
-        id: `export-${Date.now()}`,
+        id: `export-${crypto.randomUUID()}`,
         format: format.toUpperCase(),
         exportedAt: new Date().toISOString(),
         documentCount: docs.length,
@@ -100,6 +95,12 @@ export default function ExportPanel() {
       await persistVaultData(updated);
 
       toast.success(`Exported ${docs.length} documents as ${format.toUpperCase()}`);
+      appendAuditEntry({
+        action: 'vault_exported',
+        actorMemberId: null,
+        targetId: record.id,
+        targetTitle: `${format.toUpperCase()} · ${docs.length} docs`,
+      });
     } catch (_err) {
       toast.error('Export failed — check browser permissions and try again');
     } finally {
@@ -203,7 +204,7 @@ export default function ExportPanel() {
         <span className="text-sm text-vault-muted">Documents to export</span>
         <span className="text-sm font-700 text-vault-text tabular-nums">
           {
-            visibleDocuments.filter((d) => {
+            vaultData.documents.filter((d) => {
               const catOk = selectedCategory === 'all' || d.categoryId === selectedCategory;
               const memOk = selectedMember === 'all' || d.memberId === selectedMember;
               return catOk && memOk;

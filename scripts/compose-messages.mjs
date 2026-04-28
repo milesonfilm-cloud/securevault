@@ -105,18 +105,16 @@ const STATIC_EN = {
   settings: {
     title: 'Settings',
     backupAppTitle: 'Backup & App',
-    backupAppSubtitle: 'Manage your vault data, backups, and app settings',
+    backupAppSubtitle: 'Export, import, and device options',
     cloudSync: 'Cloud sync',
-    digilocker: 'DigiLocker',
     emergency: 'Emergency access',
     emergencySubtitle: 'Trusted contact, PDF bundle, handover links, read-only mode →',
     language: 'Language',
     languageSubtitle: 'Choose your preferred language. Saved on this device.',
     permissions: 'Permissions',
     logout: 'Log out',
-    privacyTitle: '100% Private — Zero Cloud Storage',
-    privacyBody:
-      'All your data is stored locally in this app on your device (app storage). SecureVault never transmits, syncs, or backs up vault data to any server. Encrypted exports save directly to your device when you choose.',
+    privacyTitle: 'Privacy',
+    privacyBody: 'Your vault is stored on this device.',
   },
   auth: {
     enterPin: 'Enter your password to continue',

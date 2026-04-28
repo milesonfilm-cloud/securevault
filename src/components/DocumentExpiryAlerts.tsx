@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { AlertTriangle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useVaultPermissions } from '@/hooks/useVaultPermissions';
 import {
   collectExpiryAlerts,
   DEFAULT_EXPIRY_WARN_DAYS,
@@ -23,7 +22,6 @@ function localDayKey(): string {
 
 export default function DocumentExpiryAlerts() {
   const { vaultData } = useVaultData();
-  const { visibleDocuments } = useVaultPermissions();
   const [dismissedToday, setDismissedToday] = useState(false);
 
   useEffect(() => {
@@ -45,8 +43,8 @@ export default function DocumentExpiryAlerts() {
   );
 
   const alerts: DocumentExpiryAlert[] = useMemo(
-    () => collectExpiryAlerts(visibleDocuments, DEFAULT_EXPIRY_WARN_DAYS),
-    [visibleDocuments]
+    () => collectExpiryAlerts(vaultData.documents, DEFAULT_EXPIRY_WARN_DAYS),
+    [vaultData.documents]
   );
 
   useEffect(() => {
@@ -86,10 +84,7 @@ export default function DocumentExpiryAlerts() {
   const upcomingCount = alerts.length - expiredCount;
 
   return (
-    <div
-      className="shrink-0 border-b border-border bg-amber-500/12 px-4 py-3 lg:px-6"
-      role="alert"
-    >
+    <div className="shrink-0 border-b border-border bg-amber-500/12 px-4 py-3 lg:px-6" role="alert">
       <div className="max-w-screen-2xl mx-auto flex gap-3">
         <AlertTriangle
           className={`mt-0.5 flex-shrink-0 ${expiredCount > 0 ? 'text-red-400' : 'text-amber-300'}`}

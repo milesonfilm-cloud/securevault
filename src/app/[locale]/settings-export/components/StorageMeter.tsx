@@ -20,7 +20,11 @@ export default function StorageMeter() {
   const isWarning = storageInfo.percent > 70;
   const isDanger = storageInfo.percent > 90;
 
-  const barColor = isDanger ? '#EF4444' : isWarning ? 'var(--vault-c-coral)' : 'var(--vault-c-warm)';
+  const barColor = isDanger
+    ? '#EF4444'
+    : isWarning
+      ? 'var(--vault-c-coral)'
+      : 'var(--vault-c-warm)';
 
   return (
     <div className="neo-card rounded-2xl p-6">

@@ -88,7 +88,10 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (loading) return;
     try {
-      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(GAMIFICATION_HYDRATE_SESSION)) {
+      if (
+        typeof sessionStorage !== 'undefined' &&
+        sessionStorage.getItem(GAMIFICATION_HYDRATE_SESSION)
+      ) {
         return;
       }
       if (typeof sessionStorage !== 'undefined') {
@@ -100,7 +103,10 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
     checkInStreak();
     const unlocked = checkBadgeUnlocks(vaultData);
     if (unlocked.length === 0) return;
-    const toSave = mergeUnlockedBadges(vaultData, unlocked.map((b) => b.id));
+    const toSave = mergeUnlockedBadges(
+      vaultData,
+      unlocked.map((b) => b.id)
+    );
     void (async () => {
       await saveVaultDataAsync(toSave);
       setVaultData(toSave);
@@ -114,7 +120,12 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
     checkInStreak();
     const unlocked = checkBadgeUnlocks(data);
     const toSave =
-      unlocked.length > 0 ? mergeUnlockedBadges(data, unlocked.map((b) => b.id)) : data;
+      unlocked.length > 0
+        ? mergeUnlockedBadges(
+            data,
+            unlocked.map((b) => b.id)
+          )
+        : data;
     await saveVaultDataAsync(toSave);
     setVaultData(toSave);
     scheduleDriveSyncDebounced(toSave.settings.cloudSyncEnabled);

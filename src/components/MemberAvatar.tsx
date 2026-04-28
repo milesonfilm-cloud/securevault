@@ -30,12 +30,7 @@ export default function MemberAvatar({
     return (
       <div className={cn('relative overflow-hidden shadow-inner', className)}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photoDataUrl}
-          alt=""
-          className="h-full w-full object-cover"
-          draggable={false}
-        />
+        <img src={photoDataUrl} alt="" className="h-full w-full object-cover" draggable={false} />
       </div>
     );
   }

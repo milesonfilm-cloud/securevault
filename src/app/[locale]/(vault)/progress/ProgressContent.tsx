@@ -2,13 +2,22 @@
 
 import React, { useEffect, useMemo } from 'react';
 import { useVaultData } from '@/context/VaultDataContext';
-import { calculateFamilyScore, calculateMemberScore, criticalCategoriesForMember } from '@/lib/gamification/completenessScore';
+import {
+  calculateFamilyScore,
+  calculateMemberScore,
+  criticalCategoriesForMember,
+} from '@/lib/gamification/completenessScore';
 import { getCategoryById } from '@/lib/categories';
 import CompletenessRing from '@/components/gamification/CompletenessRing';
 import BadgeDisplay from '@/components/gamification/BadgeDisplay';
 import StreakWidget from '@/components/gamification/StreakWidget';
-import { markProgressChecklistVisited } from '@/components/gamification/OnboardingChecklist';
+import OnboardingChecklist, {
+  markProgressChecklistVisited,
+} from '@/components/gamification/OnboardingChecklist';
 import { getStreakData } from '@/lib/gamification/streaks';
+import VaultScoreWidget from '@/components/dashboard/VaultScoreWidget';
+import VaultHealthCard from '@/components/dashboard/VaultHealthCard';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
 
 export default function ProgressContent() {
   const { vaultData, loading } = useVaultData();
@@ -36,7 +45,7 @@ export default function ProgressContent() {
   if (loading) {
     return (
       <div className="mx-auto max-w-screen-xl animate-pulse space-y-6 p-4 lg:p-6">
-        <div className="h-10 w-64 rounded-xl bg-vault-elevated" />
+        <div className="mx-auto h-10 w-64 rounded-xl bg-vault-elevated" />
         <div className="h-40 rounded-2xl bg-vault-panel" />
       </div>
     );
@@ -44,25 +53,36 @@ export default function ProgressContent() {
 
   return (
     <div className="mx-auto min-h-full max-w-screen-xl bg-vault-bg p-4 lg:p-6">
-      <div className="mb-8">
-        <p className="text-xs font-medium text-vault-faint">Gamification</p>
-        <h1 className="mt-0.5 text-[32px] font-bold tracking-tight text-vault-text">Progress</h1>
-        <p className="mt-2 max-w-xl text-[13px] text-vault-muted">
-          Completeness scores use critical document categories per member (adults vs children). Badges unlock as you
-          use the vault.
-        </p>
+      <VaultPageHeading
+        className="mb-8"
+        eyebrow="Gamification"
+        title="Progress"
+        description="Completeness scores use critical document categories per member (adults vs children). Badges unlock as you use the vault."
+      />
+
+      <div className="mb-8 grid gap-4 lg:grid-cols-2">
+        <VaultScoreWidget vaultData={vaultData} />
+        <OnboardingChecklist vaultData={vaultData} />
+      </div>
+
+      <div className="mb-10">
+        <VaultHealthCard vaultData={vaultData} loading={loading} />
       </div>
 
       <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-[color:var(--color-border)] bg-vault-panel p-5 shadow-vault sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-800 uppercase tracking-wider text-vault-muted">Family completeness</p>
+          <p className="text-[10px] font-800 uppercase tracking-wider text-vault-muted">
+            Family completeness
+          </p>
           <p className="mt-1 text-5xl font-800 tabular-nums text-vault-text">{familyScore}%</p>
         </div>
         <StreakWidget className="sm:max-w-xs sm:flex-1" />
       </div>
 
       <section className="mb-10">
-        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">Per member</h2>
+        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">
+          Per member
+        </h2>
         {memberRows.length === 0 ? (
           <p className="text-sm text-vault-muted">Add family members to see individual rings.</p>
         ) : (
@@ -101,7 +121,9 @@ export default function ProgressContent() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">Streak stats</h2>
+        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">
+          Streak stats
+        </h2>
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-border bg-vault-elevated/40 px-4 py-3">
             <p className="text-[10px] font-700 uppercase text-vault-faint">Current</p>

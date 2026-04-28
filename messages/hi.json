@@ -86,17 +86,16 @@
   "settings": {
     "title": "सेटिंग्स",
     "backupAppTitle": "बैकअप और ऐप",
-    "backupAppSubtitle": "वॉल्ट डेटा, बैकअप और ऐप सेटिंग्स प्रबंधित करें",
+    "backupAppSubtitle": "निर्यात, आयात और डिवाइस विकल्प",
     "cloudSync": "क्लाउड सिंक",
-    "digilocker": "डिजिलॉकर",
     "emergency": "आपातकालीन पहुँच",
     "emergencySubtitle": "विश्वसनीय संपर्क, PDF, हैंडओवर लिंक →",
     "language": "भाषा",
     "languageSubtitle": "पसंदीदा भाषा चुनें। इस डिवाइस पर सहेजी जाती है।",
     "permissions": "अनुमतियाँ",
     "logout": "लॉग आउट",
-    "privacyTitle": "100% निजी — कोई क्लाउड स्टोरेज नहीं",
-    "privacyBody": "आपका सारा डेटा इस ऐप में स्थानीय रूप से रहता है। SecureVault आपके वॉल्ट डेटा को किसी सर्वर पर नहीं भेजता।"
+    "privacyTitle": "गोपनीयता",
+    "privacyBody": "आपका वॉल्ट इस डिवाइस पर संग्रहीत है।"
   },
   "auth": {
     "enterPin": "जारी रखने के लिए अपना पासवर्ड दर्ज करें",

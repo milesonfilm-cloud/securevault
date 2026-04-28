@@ -24,14 +24,16 @@ export default function StreakWidget({ className, compact = false }: StreakWidge
       )}
     >
       <div className="flex items-center gap-3">
-        <span
-          className="motion-safe:animate-pulse text-3xl leading-none"
-          aria-hidden
-        >
+        <span className="motion-safe:animate-pulse text-3xl leading-none" aria-hidden>
           🔥
         </span>
         <div>
-          <p className={cn('font-800 tabular-nums text-vault-text', compact ? 'text-2xl' : 'text-3xl')}>
+          <p
+            className={cn(
+              'font-800 tabular-nums text-vault-text',
+              compact ? 'text-2xl' : 'text-3xl'
+            )}
+          >
             {streak.currentStreak}
           </p>
           <p className="text-xs font-600 text-vault-muted">day streak</p>

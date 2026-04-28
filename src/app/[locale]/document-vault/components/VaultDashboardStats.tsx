@@ -1,36 +1,19 @@
 'use client';
 
 import React from 'react';
-import { Document, VaultData } from '@/lib/storage';
-import { getPastelLedgerTile, type LedgerTileTheme } from '@/lib/pastelLedgerPalette';
-import { useTheme } from '@/context/ThemeContext';
+import { VaultData } from '@/lib/storage';
+import { getPastelLedgerTile } from '@/lib/pastelLedgerPalette';
 
 export interface VaultDashboardStatsProps {
   vaultData: VaultData;
-  /** When set, document metrics use this slice (e.g. permission-visible docs). */
-  visibleDocuments?: Document[];
 }
 
 /**
  * Overview tiles: total members, documents, member with most docs, category breadth.
  * Lives on the Document Vault page (moved from Family Members).
  */
-export default function VaultDashboardStats({
-  vaultData,
-  visibleDocuments: visibleDocsProp,
-}: VaultDashboardStatsProps) {
-  const docSource = visibleDocsProp ?? vaultData.documents;
-  const { theme } = useTheme();
-  const ledgerTheme: LedgerTileTheme =
-    theme === 'pastel'
-      ? 'pastel'
-      : theme === 'wellness'
-        ? 'wellness'
-        : theme === 'voyager'
-          ? 'voyager'
-          : theme === 'neon'
-            ? 'neon'
-            : 'vault';
+export default function VaultDashboardStats({ vaultData }: VaultDashboardStatsProps) {
+  const docSource = vaultData.documents;
 
   const stats = [
     { label: 'Total Members', value: vaultData.members.length },
@@ -54,7 +37,7 @@ export default function VaultDashboardStats({
   return (
     <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
       {stats.map((stat, i) => {
-        const tile = getPastelLedgerTile(i, ledgerTheme);
+        const tile = getPastelLedgerTile(i);
         return (
           <div
             key={`vault-dash-stat-${i}`}

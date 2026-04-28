@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import type { Document } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useVaultPermissions } from '@/hooks/useVaultPermissions';
+import { appendAuditEntry } from '@/lib/auditLog';
 import {
   downloadBlob,
   encryptPdfBytesWithPassword,
@@ -20,7 +20,7 @@ interface EmergencyPDFModalProps {
 
 export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModalProps) {
   const { vaultData } = useVaultData();
-  const { visibleDocuments } = useVaultPermissions();
+  const documents = vaultData.documents;
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -34,17 +34,17 @@ export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModal
 
   const selectAll = () => {
     const next: Record<string, boolean> = {};
-    for (const d of visibleDocuments) next[d.id] = true;
+    for (const d of documents) next[d.id] = true;
     setSelected(next);
   };
 
   const handleDownload = async () => {
-    const ids = visibleDocuments.filter((d) => selected[d.id]).map((d) => d.id);
+    const ids = documents.filter((d) => selected[d.id]).map((d) => d.id);
     if (ids.length === 0) return;
     setBusy(true);
     try {
       const rows: EmergencyPdfRow[] = ids
-        .map((id) => visibleDocuments.find((d) => d.id === id))
+        .map((id) => documents.find((d) => d.id === id))
         .filter((d): d is Document => !!d)
         .map((d) => ({
           doc: d,
@@ -62,6 +62,12 @@ export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModal
         const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
         downloadBlob(blob, `SecureVault_Emergency_${stamp}.pdf`);
       }
+      appendAuditEntry({
+        action: 'emergency_pdf_generated',
+        actorMemberId: null,
+        targetId: null,
+        targetTitle: `${ids.length} documents`,
+      });
       onClose();
     } finally {
       setBusy(false);
@@ -90,7 +96,7 @@ export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModal
           </button>
         </div>
         <ul className="space-y-2">
-          {visibleDocuments.map((d) => (
+          {documents.map((d) => (
             <li key={d.id}>
               <label className="flex items-center gap-3 cursor-pointer text-sm text-vault-text">
                 <input
@@ -124,7 +130,12 @@ export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModal
           <button type="button" className="btn-secondary" onClick={onClose} disabled={busy}>
             Cancel
           </button>
-          <button type="button" className="btn-primary" onClick={() => void handleDownload()} disabled={busy}>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => void handleDownload()}
+            disabled={busy}
+          >
             {busy ? 'Building…' : 'Download'}
           </button>
         </div>

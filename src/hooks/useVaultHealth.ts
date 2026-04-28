@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { VaultData } from '@/lib/storage';
 import { idbGetPhotosForDoc } from '@/lib/db';
 import { buildVaultHealthMetadata } from '@/lib/vaultHealth/metadataSerializer';
-import { calculateVaultHealthScore, type VaultHealthScoreResult } from '@/lib/vaultHealth/scoreCalculator';
+import { getSupabaseAuthHeaders } from '@/lib/supabase/session';
+import {
+  calculateVaultHealthScore,
+  type VaultHealthScoreResult,
+} from '@/lib/vaultHealth/scoreCalculator';
 
 const CACHE_KEY = 'sv_vault_health_ai_v1';
 const TTL_MS = 60 * 60 * 1000;
@@ -90,9 +94,10 @@ export function useVaultHealth(vaultData: VaultData, loading: boolean) {
       setAiError(null);
       try {
         const metadata = buildVaultHealthMetadata(vaultData);
+        const auth = await getSupabaseAuthHeaders();
         const res = await fetch('/api/ai/vault-health', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...auth },
           body: JSON.stringify({ metadata }),
         });
         if (!res.ok) {

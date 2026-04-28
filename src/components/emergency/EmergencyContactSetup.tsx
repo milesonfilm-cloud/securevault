@@ -61,7 +61,9 @@ export default function EmergencyContactSetup() {
       });
       if (!res.ok) throw new Error('notify_failed');
       const j = (await res.json()) as { dev?: boolean };
-      toast.success(j.dev ? 'Logged in dev mode (configure RESEND_API_KEY to send email)' : 'Email sent');
+      toast.success(
+        j.dev ? 'Logged in dev mode (configure RESEND_API_KEY to send email)' : 'Email sent'
+      );
     } catch {
       toast.error('Could not send test email');
     } finally {
@@ -103,7 +105,9 @@ export default function EmergencyContactSetup() {
       </div>
 
       <div>
-        <span className="text-[11px] font-700 text-vault-faint uppercase">Inactivity before alert</span>
+        <span className="text-[11px] font-700 text-vault-faint uppercase">
+          Inactivity before alert
+        </span>
         <div className="flex flex-wrap gap-2 mt-2">
           {DAYS_OPTIONS.map((d) => (
             <button
@@ -133,9 +137,7 @@ export default function EmergencyContactSetup() {
           </p>
           <p className="text-vault-faint mt-1">
             Last check-in:{' '}
-            {existing.lastCheckInAt
-              ? new Date(existing.lastCheckInAt).toLocaleString()
-              : 'Never'}
+            {existing.lastCheckInAt ? new Date(existing.lastCheckInAt).toLocaleString() : 'Never'}
           </p>
         </div>
       )}
@@ -144,7 +146,11 @@ export default function EmergencyContactSetup() {
         <button type="button" className="btn-primary text-sm py-2 px-4" onClick={() => void save()}>
           Save contact
         </button>
-        <button type="button" className="btn-secondary text-sm py-2 px-4" onClick={() => void doCheckIn()}>
+        <button
+          type="button"
+          className="btn-secondary text-sm py-2 px-4"
+          onClick={() => void doCheckIn()}
+        >
           Check in now
         </button>
         <button

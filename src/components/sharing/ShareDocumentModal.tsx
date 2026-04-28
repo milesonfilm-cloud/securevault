@@ -18,10 +18,7 @@ const EXPIRY_OPTIONS = [
   { label: '30 days', ms: 30 * 24 * 60 * 60 * 1000 },
 ] as const;
 
-function buildSensitiveKeys(
-  categoryId: CategoryId,
-  includedKeys: Set<string>
-): string[] {
+function buildSensitiveKeys(categoryId: CategoryId, includedKeys: Set<string>): string[] {
   const cat = getCategoryById(categoryId);
   if (!cat) return [];
   const keys: string[] = [];
@@ -130,9 +127,7 @@ export default function ShareDocumentModal({ doc, isOpen, onClose }: ShareDocume
     <Modal isOpen={isOpen} onClose={onClose} title="Share document" subtitle={doc.title} size="md">
       <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
         <div>
-          <p className="text-xs font-700 text-vault-muted uppercase tracking-wider mb-2">
-            Expires
-          </p>
+          <p className="text-xs font-700 text-vault-muted uppercase tracking-wider mb-2">Expires</p>
           <div className="flex flex-wrap gap-2">
             {EXPIRY_OPTIONS.map((opt, i) => (
               <button

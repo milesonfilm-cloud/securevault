@@ -4,8 +4,8 @@
   "description": "Private offline document storage for families",
   "start_url": "/family-management",
   "display": "standalone",
-  "background_color": "#312C51",
-  "theme_color": "#312C51",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "orientation": "portrait-primary",
   "icons": [
     {
