@@ -1,12 +1,6 @@
 'use client';
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useLayoutEffect, useState } from 'react';
 
 const STORAGE_KEY = 'sv_pastel_accent_member_id';
 

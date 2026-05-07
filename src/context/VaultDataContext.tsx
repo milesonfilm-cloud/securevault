@@ -11,6 +11,7 @@ import {
 import { checkBadgeUnlocks } from '@/lib/gamification/badges';
 import { checkInStreak } from '@/lib/gamification/streaks';
 import { scheduleDriveSyncDebounced } from '@/lib/cloudSync/syncManager';
+import { setStoredTier } from '@/lib/featureFlags';
 import { toast } from 'sonner';
 import {
   rescheduleExpiryReminders,
@@ -65,6 +66,7 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     loadVaultDataAsync().then((data) => {
       if (!cancelled) {
+        setStoredTier(data.settings.plan ?? 'free');
         setVaultData(data);
         setLoading(false);
       }
@@ -126,6 +128,7 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
             unlocked.map((b) => b.id)
           )
         : data;
+    setStoredTier(toSave.settings.plan ?? 'free');
     await saveVaultDataAsync(toSave);
     setVaultData(toSave);
     scheduleDriveSyncDebounced(toSave.settings.cloudSyncEnabled);

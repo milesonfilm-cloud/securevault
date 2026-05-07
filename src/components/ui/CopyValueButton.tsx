@@ -14,7 +14,11 @@ type CopyValueButtonProps = {
   compact?: boolean;
 };
 
-export default function CopyValueButton({ value, className, compact = false }: CopyValueButtonProps) {
+export default function CopyValueButton({
+  value,
+  className,
+  compact = false,
+}: CopyValueButtonProps) {
   const t = useTranslations('common');
   const [showCheck, setShowCheck] = useState(false);
 

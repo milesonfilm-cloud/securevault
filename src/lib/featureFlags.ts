@@ -50,6 +50,19 @@ export function getCurrentTier(): PlanTier {
   return 'free';
 }
 
+/**
+ * Mirror the active plan into the legacy `sv_plan_tier` localStorage slot so
+ * `UpgradeGate` / `canUseFeature` (which read this key) stay in sync with
+ * `vaultData.settings.plan` (the source of truth).
+ */
+export function setStoredTier(tier: PlanTier): void {
+  try {
+    localStorage.setItem(TIER_KEY, tier);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function getPlanLimits(): PlanLimits {
   return PLAN_LIMITS[getCurrentTier()];
 }

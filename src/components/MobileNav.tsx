@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import { Crown, FolderLock, Users, Settings, Info, LogOut, CalendarClock, Trophy } from 'lucide-react';
+import { Crown, FolderLock, Users, Settings, LogOut, CalendarClock, Trophy } from 'lucide-react';
 import { lockVaultAndReload } from '@/lib/vaultKeyPersist';
 import { cn } from '@/lib/utils';
 import { useVaultData } from '@/context/VaultDataContext';
@@ -71,7 +71,9 @@ export default function MobileNav({ activePath }: { activePath: string }) {
               {pastel && isActive ? (
                 <span
                   className="absolute left-1/2 top-0 h-[3px] w-8 -translate-x-1/2 rounded-full"
-                  style={{ background: isUpgrade ? '#4338C9' : 'var(--pastel-member-ink, #212121)' }}
+                  style={{
+                    background: isUpgrade ? '#4338C9' : 'var(--pastel-member-ink, #212121)',
+                  }}
                   aria-hidden
                 />
               ) : null}
@@ -98,9 +100,7 @@ export default function MobileNav({ activePath }: { activePath: string }) {
                 ) : null}
                 {/* Pro sparkle for upgrade tab when free */}
                 {isUpgrade && !('isPro' in item && item.isPro) && (
-                  <span
-                    className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#4338C9] text-[7px] font-extrabold text-yellow-300 shadow"
-                  >
+                  <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#4338C9] text-[7px] font-extrabold text-yellow-300 shadow">
                     ✦
                   </span>
                 )}
@@ -109,7 +109,9 @@ export default function MobileNav({ activePath }: { activePath: string }) {
                 className={cn(
                   'max-w-full truncate px-0.5 text-center text-[11px] sm:text-xs',
                   isUpgrade
-                    ? isActive ? 'font-extrabold' : 'font-bold'
+                    ? isActive
+                      ? 'font-extrabold'
+                      : 'font-bold'
                     : pastel
                       ? isActive
                         ? 'font-bold text-[color:var(--pastel-member-ink,#212121)]'

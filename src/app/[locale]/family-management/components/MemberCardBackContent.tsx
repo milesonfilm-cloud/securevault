@@ -128,7 +128,9 @@ export default function MemberCardBackContent({
 
       <div
         className={cn(
-          watch ? cn('relative', compact ? 'mb-2' : 'mb-4') : 'mb-4 flex items-start justify-between'
+          watch
+            ? cn('relative', compact ? 'mb-2' : 'mb-4')
+            : 'mb-4 flex items-start justify-between'
         )}
       >
         {watch ? (
@@ -164,7 +166,9 @@ export default function MemberCardBackContent({
                 </button>
               </div>
             ) : null}
-            <div className={cn('flex flex-col items-center text-center', compact ? 'px-4' : 'px-6')}>
+            <div
+              className={cn('flex flex-col items-center text-center', compact ? 'px-4' : 'px-6')}
+            >
               <MemberAvatar
                 name={member.name}
                 avatarColor={member.avatarColor}
@@ -221,7 +225,10 @@ export default function MemberCardBackContent({
             </div>
 
             {!demo ? (
-              <div className="flex shrink-0 items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+              <div
+                className="flex shrink-0 items-center gap-0.5"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
                   type="button"
                   onClick={onEdit}

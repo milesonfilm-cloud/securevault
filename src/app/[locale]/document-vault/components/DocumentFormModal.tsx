@@ -68,7 +68,9 @@ function applyFormat(raw: string, format: FieldFormat): string {
   }
 }
 
-function getInputMode(format: FieldFormat | undefined): React.HTMLAttributes<HTMLInputElement>['inputMode'] {
+function getInputMode(
+  format: FieldFormat | undefined
+): React.HTMLAttributes<HTMLInputElement>['inputMode'] {
   if (!format) return undefined;
   if (['date-dmy', 'card-number', 'expiry-mmyyyy', 'account-number', 'aadhaar'].includes(format))
     return 'numeric';

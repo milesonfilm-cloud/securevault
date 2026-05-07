@@ -117,7 +117,11 @@ export default function DocumentVaultContent() {
   const handleSaveDocument = async (docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>) => {
     // Enforce free-plan limit: 1 document per category
     if (!editDoc && !isPro(vaultData.settings)) {
-      const blocked = getBlockedCategory(vaultData.documents, docData.categoryId, vaultData.settings);
+      const blocked = getBlockedCategory(
+        vaultData.documents,
+        docData.categoryId,
+        vaultData.settings
+      );
       if (blocked) {
         setShowAddModal(false);
         const cat = getCategoryById(blocked as Parameters<typeof getCategoryById>[0]);

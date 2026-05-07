@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Crown, ExternalLink, Infinity, Lock, X } from 'lucide-react';
+import { Crown, ExternalLink, Infinity as InfinityIcon, Lock, X } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { PLAY_STORE_URL } from '@/lib/subscription';
 
@@ -85,7 +85,7 @@ export default function ProUpgradeModal({
                 {HIGHLIGHTS.map((feat) => (
                   <div key={feat} className="flex items-center gap-3">
                     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#4338C9]/12">
-                      <Infinity className="h-3.5 w-3.5 text-[#4338C9]" strokeWidth={2.5} />
+                      <InfinityIcon className="h-3.5 w-3.5 text-[#4338C9]" strokeWidth={2.5} />
                     </div>
                     <p className="text-[13px] font-semibold text-[#212121]">{feat}</p>
                   </div>

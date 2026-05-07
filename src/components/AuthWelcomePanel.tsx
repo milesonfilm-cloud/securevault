@@ -78,7 +78,10 @@ function DriftingSpecks({ reducedMotion }: { reducedMotion: boolean }) {
     { left: '14%', top: '68%', size: 5, duration: 12, delay: 0.6 },
   ];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[24px]" aria-hidden>
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-[24px]"
+      aria-hidden
+    >
       {specks.map((s, i) => (
         <motion.span
           key={i}
@@ -175,7 +178,10 @@ function WelcomeFeatureCards({
   const containerVars = {
     hidden: {},
     show: {
-      transition: { staggerChildren: reducedMotion ? 0 : 0.085, delayChildren: reducedMotion ? 0 : 0.08 },
+      transition: {
+        staggerChildren: reducedMotion ? 0 : 0.085,
+        delayChildren: reducedMotion ? 0 : 0.08,
+      },
     },
   };
   const itemVars = reducedMotion
@@ -216,7 +222,11 @@ function WelcomeFeatureCards({
                   animate={{ scale: [1, 1.06, 1], rotate: [0, 2, -2, 0] }}
                   transition={{ duration: 4 + i * 0.35, repeat: Infinity, ease: 'easeInOut' }}
                 >
-                  <Icon className="h-[18px] w-[18px] text-[#4338C9]" strokeWidth={1.75} aria-hidden />
+                  <Icon
+                    className="h-[18px] w-[18px] text-[#4338C9]"
+                    strokeWidth={1.75}
+                    aria-hidden
+                  />
                 </motion.div>
               ) : (
                 <Icon className="h-[18px] w-[18px] text-[#4338C9]" strokeWidth={1.75} aria-hidden />
@@ -511,7 +521,11 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
                 transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
                 aria-hidden
               />
-              <Download className="relative z-10 h-8 w-8 text-[#0891b2]" strokeWidth={1.5} aria-hidden />
+              <Download
+                className="relative z-10 h-8 w-8 text-[#0891b2]"
+                strokeWidth={1.5}
+                aria-hidden
+              />
             </motion.div>
           )}
           <div className="flex flex-col items-center gap-1">
@@ -668,8 +682,7 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
                     className="block h-1.5 rounded-full bg-neutral-200/90"
                     animate={{
                       width: i === index ? 22 : 6,
-                      backgroundColor:
-                        i === index ? WELCOME_ACCENT_SOFT : 'rgba(33, 33, 33, 0.12)',
+                      backgroundColor: i === index ? WELCOME_ACCENT_SOFT : 'rgba(33, 33, 33, 0.12)',
                     }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />

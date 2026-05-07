@@ -133,7 +133,8 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
                 marginLeft: -22,
                 marginTop: -22,
                 borderColor: i % 2 === 0 ? 'rgba(123, 111, 212, 0.35)' : 'rgba(52, 211, 153, 0.4)',
-                backgroundColor: i % 2 === 0 ? 'rgba(123, 111, 212, 0.08)' : 'rgba(167, 243, 208, 0.2)',
+                backgroundColor:
+                  i % 2 === 0 ? 'rgba(123, 111, 212, 0.08)' : 'rgba(167, 243, 208, 0.2)',
               }}
               initial={{ x: f.fromX, y: f.fromY, opacity: 0, rotate: 0, scale: 0.3 }}
               animate={{ x: f.toX, y: f.toY, opacity: 0.92, rotate: f.rotate, scale: 1 }}

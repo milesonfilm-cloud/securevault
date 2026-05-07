@@ -28,7 +28,10 @@ import { FamilyMember, Document } from '@/lib/storage';
 import { CATEGORIES, getCategoryById } from '@/lib/categories';
 import CopyValueButton from '@/components/ui/CopyValueButton';
 import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
-import { pastelPaletteFromAvatarColor, PASTEL_ACCENT_PLACEHOLDER_PALETTE } from '@/lib/memberPastelPalettes';
+import {
+  pastelPaletteFromAvatarColor,
+  PASTEL_ACCENT_PLACEHOLDER_PALETTE,
+} from '@/lib/memberPastelPalettes';
 import { lockVaultAndReload } from '@/lib/vaultKeyPersist';
 import { isDemoMemberId } from '@/lib/demoFamilyMembers';
 import MemberAvatar from '@/components/MemberAvatar';
@@ -60,7 +63,6 @@ function formatMonthYear(iso: string): string {
   }
 }
 
-
 function pastelRipple(e: React.MouseEvent<HTMLElement>) {
   const el = e.currentTarget;
   if (getComputedStyle(el).position === 'static') {
@@ -75,7 +77,6 @@ function pastelRipple(e: React.MouseEvent<HTMLElement>) {
   el.appendChild(dot);
   window.setTimeout(() => dot.remove(), 720);
 }
-
 
 function usePastelCountUp(target: number, enabled: boolean) {
   const [v, setV] = useState(0);
@@ -298,9 +299,7 @@ function InlineDocDetail({
             <div className="flex items-start justify-between gap-2">
               <div className="flex min-w-0 flex-1 items-start gap-2">
                 <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#212121]/40" />
-                <p className="min-w-0 text-[12px] leading-relaxed text-[#212121]/65">
-                  {doc.notes}
-                </p>
+                <p className="min-w-0 text-[12px] leading-relaxed text-[#212121]/65">{doc.notes}</p>
               </div>
               <CopyValueButton value={doc.notes} compact />
             </div>
@@ -311,7 +310,9 @@ function InlineDocDetail({
         {doc.tags.length > 0 && (
           <div className="mt-2.5">
             <div className="mb-1.5 flex items-center justify-between gap-2">
-              <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#212121]/45">Tags</p>
+              <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#212121]/45">
+                Tags
+              </p>
               <CopyValueButton value={doc.tags.join(', ')} compact />
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -373,7 +374,10 @@ function MemberCategorySection({
 
   // Per-category alert counts (expired + soon-to-expire)
   const alertsByCat = useMemo(() => {
-    const map = new Map<string, { count: number; firstDocId: string | null; urgency: 'expired' | 'soon' | null }>();
+    const map = new Map<
+      string,
+      { count: number; firstDocId: string | null; urgency: 'expired' | 'soon' | null }
+    >();
     for (const { cat, catDocs } of categoryGroups) {
       let count = 0;
       let firstDocId: string | null = null;
@@ -457,7 +461,11 @@ function MemberCategorySection({
           const alertCount = alerts?.count ?? 0;
           const alertUrgency = alerts?.urgency ?? null;
           const badgeColor =
-            alertUrgency === 'expired' ? '#ef4444' : alertUrgency === 'soon' ? '#f97316' : cat.color;
+            alertUrgency === 'expired'
+              ? '#ef4444'
+              : alertUrgency === 'soon'
+                ? '#f97316'
+                : cat.color;
 
           return (
             <button
@@ -564,7 +572,9 @@ function MemberCategorySection({
                       />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[13px] font-bold text-[#212121]">{selectedGroup.cat.label}</p>
+                      <p className="text-[13px] font-bold text-[#212121]">
+                        {selectedGroup.cat.label}
+                      </p>
                       <p className="text-[11px] text-[#212121]/50">
                         {selectedGroup.catDocs.length}{' '}
                         {selectedGroup.catDocs.length === 1 ? 'document' : 'documents'}
@@ -601,7 +611,9 @@ function MemberCategorySection({
                             />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-semibold text-[#212121]">{doc.title}</p>
+                            <p className="truncate text-[13px] font-semibold text-[#212121]">
+                              {doc.title}
+                            </p>
                             {urgency ? (
                               <p
                                 className="text-[11px] font-medium"
@@ -901,7 +913,6 @@ export default function FamilyPastelHome({
   const [navDir, setNavDir] = useState(1);
   const touchRef = useRef<{ x: number } | null>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
- 
 
   useEffect(() => {
     if (n === 0) return;
@@ -930,10 +941,7 @@ export default function FamilyPastelHome({
 
   const member = n > 0 ? displayMembers[activeIndex] : null;
 
-  const memberIdsKey = useMemo(
-    () => displayMembers.map((m) => m.id).join('\0'),
-    [displayMembers]
-  );
+  const memberIdsKey = useMemo(() => displayMembers.map((m) => m.id).join('\0'), [displayMembers]);
 
   useEffect(() => {
     if (n === 0 || !accentHydrated) return;
@@ -966,8 +974,8 @@ export default function FamilyPastelHome({
     if (n < 2) {
       return { paletteGhostFar: null, paletteGhostMid: null };
     }
-    const idxMid = ((activeIndex - 1) % n + n) % n;
-    let idxFar = ((activeIndex - 2) % n + n) % n;
+    const idxMid = (((activeIndex - 1) % n) + n) % n;
+    let idxFar = (((activeIndex - 2) % n) + n) % n;
     if (idxFar === activeIndex) idxFar = idxMid;
     return {
       paletteGhostFar: pastelPaletteFromAvatarColor(displayMembers[idxFar].avatarColor),
@@ -1269,7 +1277,12 @@ export default function FamilyPastelHome({
                                   key={`count-${member.id}`}
                                   initial={{ scale: 0.72, opacity: 0 }}
                                   animate={{ scale: 1, opacity: 1 }}
-                                  transition={{ type: 'spring', stiffness: 340, damping: 22, delay: 0.06 }}
+                                  transition={{
+                                    type: 'spring',
+                                    stiffness: 340,
+                                    damping: 22,
+                                    delay: 0.06,
+                                  }}
                                   className="mt-0.5 text-[30px] font-bold tabular-nums leading-none tracking-tight text-white drop-shadow-sm"
                                 >
                                   {animatedDocCount}
@@ -1358,8 +1371,7 @@ export default function FamilyPastelHome({
                           i === activeIndex ? 'w-8' : 'w-2 hover:opacity-80'
                         )}
                         style={{
-                          background:
-                            i === activeIndex ? dotInk : 'rgba(33,33,33,0.28)',
+                          background: i === activeIndex ? dotInk : 'rgba(33,33,33,0.28)',
                         }}
                         onClick={() => navigateTo(i)}
                       />
@@ -1370,11 +1382,7 @@ export default function FamilyPastelHome({
             </div>
 
             {member && (
-              <MemberCategorySection
-                member={member}
-                docs={docs}
-                memberPalette={palette}
-              />
+              <MemberCategorySection member={member} docs={docs} memberPalette={palette} />
             )}
 
             <section className="pastel-enter mt-8" style={{ animationDelay: '380ms' }}>
@@ -1385,7 +1393,6 @@ export default function FamilyPastelHome({
                 barHeights={categoryHistogram}
               />
             </section>
-
           </>
         )}
       </div>

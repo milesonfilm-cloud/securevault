@@ -44,7 +44,8 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
             style={
               theme === 'pastel'
                 ? {
-                    borderBottomColor: 'color-mix(in srgb, var(--pastel-member-ink) 24%, transparent)',
+                    borderBottomColor:
+                      'color-mix(in srgb, var(--pastel-member-ink) 24%, transparent)',
                   }
                 : undefined
             }

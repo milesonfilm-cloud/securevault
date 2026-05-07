@@ -95,9 +95,7 @@ export const metadata: Metadata = {
       },
       { url: '/brand/vault-mark.svg', type: 'image/svg+xml', sizes: 'any' },
     ],
-    apple: [
-      { url: '/brand/securevault-app-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: '/brand/securevault-app-icon.png', sizes: '180x180', type: 'image/png' }],
     shortcut: [{ url: '/brand/securevault-app-icon.png', type: 'image/png', sizes: '192x192' }],
   },
   appleWebApp: {

@@ -4,7 +4,6 @@ import React from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
-import AppLogo from './ui/AppLogo';
 import {
   Crown,
   FolderLock,
@@ -31,7 +30,11 @@ interface NavItem {
   badge?: number;
 }
 
-function buildNavItems(renewalBadge: number, t: (k: string) => string, plan: 'free' | 'pro'): NavItem[] {
+function buildNavItems(
+  renewalBadge: number,
+  t: (k: string) => string,
+  plan: 'free' | 'pro'
+): NavItem[] {
   return [
     {
       href: '/family-management',
@@ -162,9 +165,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               className={
                 isUpgrade
                   ? `sidebar-item mt-1 ${collapsed ? 'justify-center px-0' : ''} ${
-                      isActive
-                        ? 'text-white'
-                        : 'text-white hover:brightness-110'
+                      isActive ? 'text-white' : 'text-white hover:brightness-110'
                     }`
                   : navItemClasses(isActive, collapsed, pastel)
               }
@@ -173,8 +174,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                   ? isActive
                     ? { background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%)' }
                     : plan === 'pro'
-                      ? { background: 'linear-gradient(135deg, rgba(67,56,201,0.18) 0%, rgba(124,58,237,0.18) 100%)', color: '#4338C9' }
-                      : { background: 'linear-gradient(135deg, #4338C9 0%, #6d28d9 50%, #7c3aed 100%)' }
+                      ? {
+                          background:
+                            'linear-gradient(135deg, rgba(67,56,201,0.18) 0%, rgba(124,58,237,0.18) 100%)',
+                          color: '#4338C9',
+                        }
+                      : {
+                          background:
+                            'linear-gradient(135deg, #4338C9 0%, #6d28d9 50%, #7c3aed 100%)',
+                        }
                   : undefined
               }
             >
@@ -197,7 +205,9 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               {!collapsed && (
                 <span
                   className={isUpgrade ? 'truncate font-bold' : 'truncate'}
-                  style={isUpgrade && plan === 'pro' && !isActive ? { color: '#4338C9' } : undefined}
+                  style={
+                    isUpgrade && plan === 'pro' && !isActive ? { color: '#4338C9' } : undefined
+                  }
                 >
                   {item.label}
                 </span>
@@ -209,9 +219,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               ) : null}
               {/* FREE badge for free users */}
               {isUpgrade && !collapsed && plan === 'free' && (
-                <span
-                  className="ml-auto rounded-full bg-yellow-300 px-1.5 py-0.5 text-[9px] font-extrabold text-[#4338C9]"
-                >
+                <span className="ml-auto rounded-full bg-yellow-300 px-1.5 py-0.5 text-[9px] font-extrabold text-[#4338C9]">
                   FREE
                 </span>
               )}

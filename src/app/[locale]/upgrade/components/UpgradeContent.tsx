@@ -12,19 +12,18 @@ import {
   Download,
   ExternalLink,
   HeadphonesIcon,
-  Infinity,
+  Infinity as InfinityIcon,
   Scan,
   Share2,
   Sparkles,
-  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useVaultData } from '@/context/VaultDataContext';
-import { isPro, PRO_FEATURES, FREE_FEATURES, PLAY_STORE_URL } from '@/lib/subscription';
+import { isPro, PRO_FEATURES, PLAY_STORE_URL } from '@/lib/subscription';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
-  Infinity: <Infinity size={20} />,
+  Infinity: <InfinityIcon size={20} />,
   CloudUpload: <CloudUpload size={20} />,
   Share2: <Share2 size={20} />,
   Download: <Download size={20} />,
@@ -35,8 +34,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 };
 
 const PASTEL_CARD_COLORS = [
-  '#e8d5f7', '#d5eaf7', '#d5f7e8', '#f7f0d5',
-  '#f7d5e8', '#d5d5f7', '#f7e8d5', '#d5f7f7',
+  '#e8d5f7',
+  '#d5eaf7',
+  '#d5f7e8',
+  '#f7f0d5',
+  '#f7d5e8',
+  '#d5d5f7',
+  '#f7e8d5',
+  '#d5f7f7',
 ];
 
 export default function UpgradeContent() {
@@ -116,7 +121,8 @@ export default function UpgradeContent() {
                 Unlock the full <span className="text-yellow-300">SecureVault</span>
               </h1>
               <p className="mt-2 text-[14px] text-white/75">
-                Everything you need to manage your family&rsquo;s documents — unlimited, secure, and always at hand.
+                Everything you need to manage your family&rsquo;s documents — unlimited, secure, and
+                always at hand.
               </p>
             </>
           )}
@@ -172,7 +178,9 @@ export default function UpgradeContent() {
               </div>
               <div>
                 <p className="font-bold text-[#212121]">Pro is Active</p>
-                <p className="text-[12px] text-[#212121]/50">All features unlocked via Google Play</p>
+                <p className="text-[12px] text-[#212121]/50">
+                  All features unlocked via Google Play
+                </p>
               </div>
               <CheckCircle2 className="ml-auto h-6 w-6 text-emerald-500" />
             </div>
@@ -209,9 +217,15 @@ export default function UpgradeContent() {
         <div className="overflow-hidden rounded-[20px] bg-white shadow-[0_4px_20px_rgba(33,33,33,0.08)]">
           {/* Header row */}
           <div className="grid grid-cols-3 border-b border-[#212121]/06 px-4 py-3">
-            <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">Feature</p>
-            <p className="text-center text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">Free</p>
-            <p className="text-center text-[11px] font-extrabold uppercase tracking-[1.5px] text-[#4338C9]">Pro</p>
+            <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">
+              Feature
+            </p>
+            <p className="text-center text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">
+              Free
+            </p>
+            <p className="text-center text-[11px] font-extrabold uppercase tracking-[1.5px] text-[#4338C9]">
+              Pro
+            </p>
           </div>
           {[
             ['Documents per category', '1', 'Unlimited'],

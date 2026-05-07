@@ -4,8 +4,7 @@ import type { VaultSettings } from './storage';
 export const FREE_DOCS_PER_CATEGORY = 1;
 
 /** Play Store listing URL — update with real package ID when published. */
-export const PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=com.securevault.app';
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.securevault.app';
 
 export type Plan = 'free' | 'pro';
 
