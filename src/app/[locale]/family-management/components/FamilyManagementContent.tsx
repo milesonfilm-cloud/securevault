@@ -257,8 +257,8 @@ export default function FamilyManagementContent() {
               <div>
                 <p className="text-sm font-700 text-vault-text">No members yet</p>
                 <p className="mt-0.5 max-w-md text-xs text-vault-muted">
-                  Sample cards below show how profiles look — add your own with{' '}
-                  <span className="font-600 text-vault-text">{tc('add')}</span>.
+                  Tap <span className="font-600 text-vault-text">{tc('add')}</span> to create your
+                  first family profile.
                 </p>
               </div>
             </div>
