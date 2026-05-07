@@ -5,13 +5,76 @@ import { useForm } from 'react-hook-form';
 import { Camera } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/Modal';
+import CopyValueButton from '@/components/ui/CopyValueButton';
 import ScanDocumentModal from '@/components/scan/ScanDocumentModal';
 import UpgradeGate from '@/components/UpgradeGate';
-import { CATEGORIES, getCategoryById } from '@/lib/categories';
+import { CATEGORIES, getCategoryById, type FieldFormat } from '@/lib/categories';
 import { categoryFieldMsgKey } from '@/lib/categoryI18n';
 import { Document, DocumentStack, FamilyMember } from '@/lib/storage';
 import { CategoryId } from '@/lib/storage';
 import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
+
+// ─── Input formatters ────────────────────────────────────────────────────────
+
+function applyFormat(raw: string, format: FieldFormat): string {
+  const digits = raw.replace(/\D/g, '');
+  switch (format) {
+    case 'date-dmy': {
+      // Allow only digits, auto-insert hyphens: DD-MM-YYYY
+      const d = digits.slice(0, 8);
+      if (d.length <= 2) return d;
+      if (d.length <= 4) return `${d.slice(0, 2)}-${d.slice(2)}`;
+      return `${d.slice(0, 2)}-${d.slice(2, 4)}-${d.slice(4)}`;
+    }
+    case 'card-number': {
+      // xxxx-xxxx-xxxx-xxxx
+      const c = digits.slice(0, 16);
+      const parts: string[] = [];
+      for (let i = 0; i < c.length; i += 4) parts.push(c.slice(i, i + 4));
+      return parts.join('-');
+    }
+    case 'expiry-mmyyyy': {
+      // MM/YYYY
+      const e = digits.slice(0, 6);
+      if (e.length <= 2) return e;
+      return `${e.slice(0, 2)}/${e.slice(2)}`;
+    }
+    case 'account-number': {
+      // group in 4s with spaces
+      const a = digits.slice(0, 20);
+      const parts: string[] = [];
+      for (let i = 0; i < a.length; i += 4) parts.push(a.slice(i, i + 4));
+      return parts.join(' ');
+    }
+    case 'aadhaar': {
+      const a = digits.slice(0, 12);
+      const parts: string[] = [];
+      for (let i = 0; i < a.length; i += 4) parts.push(a.slice(i, i + 4));
+      return parts.join(' ');
+    }
+    case 'phone': {
+      // keep + prefix, strip non-digits after
+      const ph = raw.replace(/[^\d+\s\-()]/g, '');
+      return ph.slice(0, 18);
+    }
+    case 'ifsc':
+      return raw.toUpperCase().slice(0, 11);
+    case 'pan':
+      return raw.toUpperCase().slice(0, 10);
+    case 'alpha-upper':
+      return raw.toUpperCase();
+    default:
+      return raw;
+  }
+}
+
+function getInputMode(format: FieldFormat | undefined): React.HTMLAttributes<HTMLInputElement>['inputMode'] {
+  if (!format) return undefined;
+  if (['date-dmy', 'card-number', 'expiry-mmyyyy', 'account-number', 'aadhaar'].includes(format))
+    return 'numeric';
+  if (format === 'phone') return 'tel';
+  return undefined;
+}
 
 interface DocumentFormData {
   memberId: string;
@@ -72,6 +135,12 @@ export default function DocumentFormModal({
 
   const selectedCategoryId = watch('categoryId') as CategoryId;
   const categoryConfig = getCategoryById(selectedCategoryId);
+  const watchedMemberId = watch('memberId');
+  const memberSummaryForCopy = useMemo(() => {
+    const m = members.find((x) => x.id === watchedMemberId);
+    return m ? `${m.name} (${m.relationship})` : '';
+  }, [members, watchedMemberId]);
+
   const isPasswordCategory = selectedCategoryId === 'password-vault';
 
   const categoryTitle = categoryConfig
@@ -205,10 +274,13 @@ export default function DocumentFormModal({
           {/* Basic info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label-text">{td('familyMemberLabel')}</label>
+              <div className="flex items-start justify-between gap-2">
+                <label className="label-text !mb-0 flex-1">{td('familyMemberLabel')}</label>
+                <CopyValueButton value={memberSummaryForCopy} compact />
+              </div>
               <select
                 {...register('memberId', { required: td('selectFamilyMember') })}
-                className="input-field"
+                className="input-field mt-1"
               >
                 {members.map((m) => (
                   <option key={`form-member-${m.id}`} value={m.id}>
@@ -222,10 +294,13 @@ export default function DocumentFormModal({
             </div>
 
             <div>
-              <label className="label-text">{td('categoryLabel')}</label>
+              <div className="flex items-start justify-between gap-2">
+                <label className="label-text !mb-0 flex-1">{td('categoryLabel')}</label>
+                <CopyValueButton value={categoryTitle} compact />
+              </div>
               <select
                 {...register('categoryId', { required: td('selectCategory') })}
-                className="input-field"
+                className="input-field mt-1"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={`form-cat-${cat.id}`} value={cat.id}>
@@ -238,7 +313,13 @@ export default function DocumentFormModal({
 
           {/* Optional folder — at most one */}
           <div className="rounded-xl border border-[color:var(--color-border)] bg-vault-elevated/40 px-4 py-3">
-            <label className="label-text mb-1">{td('folderLabel')}</label>
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <label className="label-text !mb-0 flex-1">{td('folderLabel')}</label>
+              <CopyValueButton
+                value={folders.find((f) => f.id === selectedStackId)?.name ?? ''}
+                compact
+              />
+            </div>
             <p className="text-xs text-vault-faint mb-3">{td('folderHint')}</p>
             {folders.length === 0 ? (
               <p className="text-sm text-vault-muted">{td('noFolders')}</p>
@@ -259,8 +340,13 @@ export default function DocumentFormModal({
           </div>
 
           <div>
-            <label className="label-text">{td('titleLabel')}</label>
-            <p className="text-xs text-vault-faint mb-1.5">{td('titleHint')}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <label className="label-text">{td('titleLabel')}</label>
+                <p className="text-xs text-vault-faint mb-1.5">{td('titleHint')}</p>
+              </div>
+              <CopyValueButton value={watch('title') ?? ''} compact className="mt-0.5" />
+            </div>
             <input
               {...register('title', { required: td('titleRequired') })}
               placeholder={td('titlePlaceholder')}
@@ -297,29 +383,36 @@ export default function DocumentFormModal({
                   );
                   return (
                     <div key={`form-field-${field.key}`}>
-                      <label className="label-text inline-flex flex-wrap items-center gap-x-1.5 gap-y-1">
-                        <span>
-                          {fieldLabel}
-                          {field.required && <span className="text-red-400 ml-0.5">*</span>}
-                          {field.sensitive && (
-                            <span className="ml-1.5 text-xs text-vault-coral font-400">
-                              {td('sensitiveTag')}
-                            </span>
-                          )}
-                        </span>
-                        {!editDoc && aiMeta.aiFilledFieldKeys.includes(field.key) ? (
-                          <span
-                            title={
-                              aiMeta.aiConfidence[field.key] != null
-                                ? `AI confidence ~${Math.round((aiMeta.aiConfidence[field.key] ?? 0) * 100)}%`
-                                : 'Filled by AI scan'
-                            }
-                            className="rounded-md bg-amber-400 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-950"
-                          >
-                            {td('aiFilledBadge')}
+                      <div className="flex items-start justify-between gap-2">
+                        <label className="label-text !mb-0 inline-flex flex-1 flex-wrap items-center gap-x-1.5 gap-y-1">
+                          <span>
+                            {fieldLabel}
+                            {field.required && <span className="text-red-400 ml-0.5">*</span>}
+                            {field.sensitive && (
+                              <span className="ml-1.5 text-xs text-vault-coral font-400">
+                                {td('sensitiveTag')}
+                              </span>
+                            )}
                           </span>
-                        ) : null}
-                      </label>
+                          {!editDoc && aiMeta.aiFilledFieldKeys.includes(field.key) ? (
+                            <span
+                              title={
+                                aiMeta.aiConfidence[field.key] != null
+                                  ? `AI confidence ~${Math.round((aiMeta.aiConfidence[field.key] ?? 0) * 100)}%`
+                                  : 'Filled by AI scan'
+                              }
+                              className="rounded-md bg-amber-400 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-950"
+                            >
+                              {td('aiFilledBadge')}
+                            </span>
+                          ) : null}
+                        </label>
+                        <CopyValueButton
+                          value={watch(field.key) ?? ''}
+                          compact
+                          className="mt-0.5"
+                        />
+                      </div>
                       {field.type === 'select' && field.options ? (
                         <select
                           {...register(field.key, {
@@ -327,7 +420,7 @@ export default function DocumentFormModal({
                               ? tcom('fieldRequired', { field: fieldLabel })
                               : false,
                           })}
-                          className="input-field"
+                          className="input-field mt-1"
                         >
                           <option value="">{td('selectPlaceholder')}</option>
                           {field.options.map((opt) => (
@@ -337,20 +430,26 @@ export default function DocumentFormModal({
                           ))}
                         </select>
                       ) : (
-                        <div className="relative">
+                        <div className="relative mt-1">
                           <input
                             {...register(field.key, {
                               required: field.required
                                 ? tcom('fieldRequired', { field: fieldLabel })
                                 : false,
+                              onChange: field.format
+                                ? (e: React.ChangeEvent<HTMLInputElement>) => {
+                                    e.target.value = applyFormat(e.target.value, field.format!);
+                                  }
+                                : undefined,
                             })}
                             type={
                               isPasswordCategory && field.key === passwordFieldKey
                                 ? showPassword
                                   ? 'text'
                                   : 'password'
-                                : field.type
+                                : 'text'
                             }
+                            inputMode={getInputMode(field.format)}
                             placeholder={
                               field.placeholder || td('fieldPlaceholder', { field: fieldLabel })
                             }
@@ -428,8 +527,13 @@ export default function DocumentFormModal({
 
           {/* Notes */}
           <div>
-            <label className="label-text">{td('notesLabel')}</label>
-            <p className="text-xs text-vault-faint mb-1.5">{td('notesHint')}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <label className="label-text">{td('notesLabel')}</label>
+                <p className="text-xs text-vault-faint mb-1.5">{td('notesHint')}</p>
+              </div>
+              <CopyValueButton value={watch('notes') ?? ''} compact className="mt-0.5" />
+            </div>
             <textarea
               {...register('notes')}
               rows={2}
@@ -440,8 +544,13 @@ export default function DocumentFormModal({
 
           {/* Tags */}
           <div>
-            <label className="label-text">{td('tagsLabel')}</label>
-            <p className="text-xs text-vault-faint mb-1.5">{td('tagsHint')}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <label className="label-text">{td('tagsLabel')}</label>
+                <p className="text-xs text-vault-faint mb-1.5">{td('tagsHint')}</p>
+              </div>
+              <CopyValueButton value={watch('tags') ?? ''} compact className="mt-0.5" />
+            </div>
             <input
               {...register('tags')}
               placeholder={td('tagsPlaceholder')}

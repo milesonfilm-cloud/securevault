@@ -37,19 +37,19 @@ const COVERFLOW_MAP_MEMBERS: Record<
 };
 
 /**
- * Narrow (mobile): side cards at **40%** opacity, with milder 3D than before so
- * neighbors show enough face to read as “there are more cards” (tight Z + scale
- * was reading as a ~5–10% sliver even at higher opacity).
+ * Narrow (mobile): one shared scale for all peeking cards (|offset| ≥ 1) so the
+ * stack does not read as three different physical sizes; depth comes from
+ * translateZ / opacity / mild rotateY only.
  */
 const COVERFLOW_MAP_MEMBERS_NARROW: Record<
   MapKey,
   { ry: string; tx: string; tz: string; s: number; opacity: number }
 > = {
   0: { ry: '0deg', tx: '0px', tz: '10px', s: 1, opacity: 1 },
-  1: { ry: '-9deg', tx: '40px', tz: '-20px', s: 0.92, opacity: 0.4 },
-  [-1]: { ry: '9deg', tx: '-40px', tz: '-20px', s: 0.92, opacity: 0.4 },
-  2: { ry: '-12deg', tx: '64px', tz: '-44px', s: 0.78, opacity: 0.4 },
-  [-2]: { ry: '12deg', tx: '-64px', tz: '-44px', s: 0.78, opacity: 0.4 },
+  1: { ry: '-9deg', tx: '40px', tz: '-20px', s: 0.9, opacity: 0.42 },
+  [-1]: { ry: '9deg', tx: '-40px', tz: '-20px', s: 0.9, opacity: 0.42 },
+  2: { ry: '-12deg', tx: '64px', tz: '-44px', s: 0.9, opacity: 0.36 },
+  [-2]: { ry: '12deg', tx: '-64px', tz: '-44px', s: 0.9, opacity: 0.36 },
 };
 
 export type CoverflowPreset = 'default' | 'members' | 'membersNarrow';
@@ -78,19 +78,19 @@ export function coverflowWrapperShadow(
 ): string {
   if (Math.abs(offset) > 2) return 'none';
   if (offset === 0) {
-    return '0 36px 72px rgba(0,0,0,0.72), 0 16px 32px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04)';
+    return '0 36px 62px rgba(0,0,0,0.72), 0 16px 22px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.04)';
   }
   /** Lighter than default — heavy black shadow + 0.4 opacity was reading as ~5–10% visible. */
   if (preset === 'membersNarrow') {
     if (Math.abs(offset) === 1) {
-      return '0 10px 26px rgba(0,0,0,0.32), 0 3px 10px rgba(0,0,0,0.22)';
+      return '0 10px 16px rgba(0,0,0,0.32), 0 3px 4px rgba(0,0,0,0.22)';
     }
-    return '0 8px 20px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.2)';
+    return '0 8px 10px rgba(0,0,0,0.28), 0 2px 2px rgba(0,0,0,0.2)';
   }
   if (Math.abs(offset) === 1) {
-    return '0 28px 48px rgba(0,0,0,0.55), 0 12px 24px rgba(0,0,0,0.45)';
+    return '0 28px 38px rgba(0,0,0,0.55), 0 12px 14px rgba(0,0,0,0.45)';
   }
-  return '0 20px 36px rgba(0,0,0,0.5), 0 8px 16px rgba(0,0,0,0.4)';
+  return '0 20px 26px rgba(0,0,0,0.5), 0 8px 6px rgba(0,0,0,0.4)';
 }
 
 /** Card transforms only — parent supplies perspective. */

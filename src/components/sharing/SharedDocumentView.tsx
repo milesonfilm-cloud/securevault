@@ -5,6 +5,7 @@ import { getCategoryById } from '@/lib/categories';
 import type { CategoryId } from '@/lib/storage';
 import type { SharePayload } from '@/lib/sharing/shareCrypto';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import CopyValueButton from '@/components/ui/CopyValueButton';
 
 function isPasswordFieldKey(key: string): boolean {
   return key.trim().toLowerCase() === 'password';
@@ -39,7 +40,10 @@ export default function SharedDocumentView({ payload }: { payload: SharePayload 
             {cat.shortLabel}
           </p>
         )}
-        <h1 className="text-balance text-xl font-bold text-vault-text">{payload.docTitle}</h1>
+        <div className="mb-2 flex items-start justify-center gap-2">
+          <h1 className="text-balance text-xl font-bold text-vault-text">{payload.docTitle}</h1>
+          <CopyValueButton value={payload.docTitle} compact className="mt-0.5" />
+        </div>
         <p className="mt-3 text-xs text-vault-faint italic border-t border-border pt-3">
           Shared by SecureVault — View only
         </p>
@@ -57,7 +61,10 @@ export default function SharedDocumentView({ payload }: { payload: SharePayload 
                     {label}
                   </th>
                   <td className="py-3 px-4 text-vault-text break-words">
-                    {displayValue(key, val)}
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="min-w-0">{displayValue(key, val)}</span>
+                      <CopyValueButton value={val} compact className="shrink-0" />
+                    </div>
                   </td>
                 </tr>
               );

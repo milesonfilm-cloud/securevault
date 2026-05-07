@@ -11,4 +11,4 @@ export function hasGoogleOAuthClientId(): boolean {
 
 /** Shown when Drive backup UI is visible but OAuth was not configured at build time. */
 export const GOOGLE_DRIVE_BACKUP_SETUP_BLURB =
-  'Drive backup needs a Google OAuth client ID in the project environment before the app is built (see .env.example). Rebuild and redeploy — the web app and mobile shell use the same bundle, so this is not set per device.';
+  'Drive backup needs a Google OAuth client ID in the project environment before the app is built (see .env.example). Rebuild and redeploy — the app and mobile shell use the same bundle, so this is not set per device.';

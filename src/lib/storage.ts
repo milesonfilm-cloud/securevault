@@ -93,6 +93,8 @@ export interface VaultSettings {
   theme: 'neon';
   /** Read-only vault UI for owner; pair with handover link for trusted access. */
   emergencyModeEnabled: boolean;
+  /** Subscription plan. Free = 1 document per category. */
+  plan: 'free' | 'pro';
 }
 
 export interface StreakData {
@@ -133,6 +135,7 @@ export function defaultVaultSettings(): VaultSettings {
     expiryWarnDays: 30,
     theme: 'neon',
     emergencyModeEnabled: false,
+    plan: 'free',
   };
 }
 

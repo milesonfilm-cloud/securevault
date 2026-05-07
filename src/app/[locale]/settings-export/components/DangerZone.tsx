@@ -112,9 +112,17 @@ export default function DangerZone() {
         onClose={() => setShowClearDocs(false)}
         onConfirm={handleClearDocuments}
         title="Clear All Documents"
-        description="This will permanently delete all documents and their attached photos. Family member profiles will be kept. This cannot be undone."
+        description="This action is permanent and cannot be undone."
         confirmLabel="Clear Documents"
         isDanger
+        isLoading={isClearing}
+        requiredTypedText="CLEAR"
+        details={[
+          'Deletes every document stored in this vault.',
+          'Removes all photos attached to those documents from this device.',
+          'Keeps your family member profiles intact.',
+          'Keeps your settings, export history, and emergency contact.',
+        ]}
       />
 
       <ConfirmModal
@@ -122,9 +130,18 @@ export default function DangerZone() {
         onClose={() => setShowClearAll(false)}
         onConfirm={handleClearAll}
         title="Wipe Entire Vault"
-        description="This will permanently delete all vault data — members, documents, photos, and export history. This cannot be undone."
+        description="This action is permanent and cannot be undone."
         confirmLabel="Wipe Everything"
         isDanger
+        isLoading={isClearing}
+        requiredTypedText="WIPE"
+        details={[
+          'Deletes all family members and their profiles.',
+          'Deletes every document and every attached photo.',
+          'Clears export history, share links, and emergency contact.',
+          'Resets all vault settings and your streak data.',
+          'Export a backup first if you might need any of this later.',
+        ]}
       />
     </div>
   );

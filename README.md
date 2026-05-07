@@ -62,7 +62,7 @@ npm run test:e2e
 
 ## Localization
 
-Supported languages: English, Hindi, Bengali, Kannada, Tamil, Telugu.
+Supported languages: English, Hindi, Tamil, Telugu, Kannada, Malayalam.
 
 To add a language: copy `messages/en.json`, translate all values, save as `messages/{locale}.json`,
 and add the locale to the `locales` array in `src/i18n/routing.ts`.

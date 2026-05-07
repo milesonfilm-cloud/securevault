@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { contrastingInitialsHex } from '@/lib/memberAvatarColors';
 
 export interface MemberAvatarProps {
   name: string;
@@ -38,11 +39,11 @@ export default function MemberAvatar({
   return (
     <div
       className={cn(
-        'flex items-center justify-center font-800 text-white shadow-inner',
+        'flex items-center justify-center font-800 shadow-inner',
         textClassName,
         className
       )}
-      style={{ backgroundColor: avatarColor }}
+      style={{ backgroundColor: avatarColor, color: contrastingInitialsHex(avatarColor) }}
     >
       {initials || '?'}
     </div>

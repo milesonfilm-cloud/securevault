@@ -13,6 +13,29 @@ export interface CategoryConfig {
   fields: FieldConfig[];
 }
 
+/**
+ * input masking / formatting hint consumed by DocumentFormModal.
+ * - 'date-dmy'      →  DD-MM-YYYY
+ * - 'card-number'   →  xxxx-xxxx-xxxx-xxxx
+ * - 'expiry-mmyyyy' →  MM/YYYY
+ * - 'account-number'→  spaces every 4 digits
+ * - 'phone'         →  +XX XXXXX-XXXXX
+ * - 'ifsc'          →  upper-case, XXXX0XXXXXX pattern hint
+ * - 'aadhaar'       →  XXXX XXXX XXXX
+ * - 'pan'           →  AAAAA9999A
+ * - 'alpha-upper'   →  convert to upper-case
+ */
+export type FieldFormat =
+  | 'date-dmy'
+  | 'card-number'
+  | 'expiry-mmyyyy'
+  | 'account-number'
+  | 'phone'
+  | 'ifsc'
+  | 'aadhaar'
+  | 'pan'
+  | 'alpha-upper';
+
 export interface FieldConfig {
   key: string;
   label: string;
@@ -21,6 +44,8 @@ export interface FieldConfig {
   options?: string[];
   placeholder?: string;
   sensitive?: boolean;
+  /** Masking / auto-format applied in the document form input. */
+  format?: FieldFormat;
 }
 
 export const CATEGORIES: CategoryConfig[] = [
@@ -105,9 +130,10 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'text',
         required: true,
         sensitive: true,
+        placeholder: 'e.g. XXXX XXXX XXXX or AAAAA9999A',
       },
-      { key: 'Date of Issue', label: 'Date of Issue', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Date of Issue', label: 'Date of Issue', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Issuing Authority', label: 'Issuing Authority', type: 'text' },
       { key: 'Address on Document', label: 'Address on Document', type: 'text' },
     ],
@@ -130,8 +156,10 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'text',
         required: true,
         sensitive: true,
+        format: 'account-number',
+        placeholder: 'XXXX XXXX XXXX XXXX',
       },
-      { key: 'IFSC Code', label: 'IFSC / SWIFT Code', type: 'text' },
+      { key: 'IFSC Code', label: 'IFSC / SWIFT Code', type: 'text', format: 'ifsc', placeholder: 'e.g. SBIN0001234' },
       {
         key: 'Account Type',
         label: 'Account Type',
@@ -157,10 +185,12 @@ export const CATEGORIES: CategoryConfig[] = [
       { key: 'Card Name', label: 'Card Name / Type', type: 'text', required: true },
       {
         key: 'Card Number (Last 4)',
-        label: 'Last 4 Digits',
+        label: 'Card Number',
         type: 'text',
         required: true,
         sensitive: true,
+        format: 'card-number',
+        placeholder: 'xxxx-xxxx-xxxx-xxxx',
       },
       {
         key: 'Card Network',
@@ -168,10 +198,10 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'select',
         options: ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Diners'],
       },
-      { key: 'Expiry', label: 'Expiry (MM/YYYY)', type: 'text' },
+      { key: 'Expiry', label: 'Expiry (MM/YYYY)', type: 'text', format: 'expiry-mmyyyy', placeholder: 'MM/YYYY' },
       { key: 'Credit Limit', label: 'Credit Limit', type: 'text' },
-      { key: 'Billing Cycle', label: 'Billing Cycle Date', type: 'text' },
-      { key: 'Customer Care', label: 'Customer Care Number', type: 'tel' },
+      { key: 'Billing Cycle', label: 'Billing Cycle Date', type: 'text', placeholder: 'e.g. 5th of every month' },
+      { key: 'Customer Care', label: 'Customer Care Number', type: 'tel', format: 'phone' },
     ],
   },
   {
@@ -208,10 +238,10 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'text',
         sensitive: true,
       },
-      { key: 'Start Date', label: 'Start / Issue Date', type: 'date' },
-      { key: 'End / Maturity Date', label: 'End / Maturity Date', type: 'date' },
+      { key: 'Start Date', label: 'Start / Issue Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'End / Maturity Date', label: 'End / Maturity Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Amount / Value', label: 'Amount / Sum', type: 'text' },
-      { key: 'Contact Number', label: 'Contact / Agent Number', type: 'tel' },
+      { key: 'Contact Number', label: 'Contact / Agent Number', type: 'tel', format: 'phone' },
     ],
   },
   {
@@ -235,8 +265,8 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'select',
         options: ['Petrol', 'Diesel', 'CNG', 'Electric', 'Hybrid'],
       },
-      { key: 'Insurance Expiry', label: 'Insurance Expiry', type: 'date' },
-      { key: 'PUC Expiry', label: 'PUC / Emission Expiry', type: 'date' },
+      { key: 'Insurance Expiry', label: 'Insurance Expiry', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'PUC Expiry', label: 'PUC / Emission Expiry', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
     ],
   },
   {
@@ -252,14 +282,14 @@ export const CATEGORIES: CategoryConfig[] = [
     fields: [
       { key: 'Full Name', label: 'Full Name', type: 'text', required: true },
       { key: 'Relationship', label: 'Relationship', type: 'text' },
-      { key: 'Date of Birth', label: 'Date of Birth', type: 'date' },
+      { key: 'Date of Birth', label: 'Date of Birth', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       {
         key: 'Blood Group',
         label: 'Blood Group',
         type: 'select',
         options: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'],
       },
-      { key: 'Emergency Contact', label: 'Emergency Contact', type: 'tel' },
+      { key: 'Emergency Contact', label: 'Emergency Contact', type: 'tel', format: 'phone' },
       { key: 'Medical Conditions', label: 'Medical Conditions / Allergies', type: 'text' },
     ],
   },
@@ -281,8 +311,8 @@ export const CATEGORIES: CategoryConfig[] = [
         required: true,
         sensitive: true,
       },
-      { key: 'Date of Issue', label: 'Date of Issue', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Date of Issue', label: 'Date of Issue', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Place of Issue', label: 'Place of Issue', type: 'text' },
       { key: 'File Number', label: 'File Number', type: 'text', sensitive: true },
     ],
@@ -305,8 +335,8 @@ export const CATEGORIES: CategoryConfig[] = [
         required: true,
         sensitive: true,
       },
-      { key: 'Date of Issue', label: 'Date of Issue', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Date of Issue', label: 'Date of Issue', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Issuing Authority', label: 'Issuing Authority', type: 'text' },
       { key: 'Vehicle Class', label: 'Vehicle Class', type: 'text' },
     ],
@@ -336,9 +366,9 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'select',
         options: ['Health', 'Life', 'Vehicle', 'Travel', 'Home', 'Other'],
       },
-      { key: 'Start Date', label: 'Start Date', type: 'date' },
-      { key: 'End Date', label: 'End Date / Expiry', type: 'date' },
-      { key: 'Contact', label: 'Agent / Support Contact', type: 'tel' },
+      { key: 'Start Date', label: 'Start Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'End Date', label: 'End Date / Expiry', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Contact', label: 'Agent / Support Contact', type: 'tel', format: 'phone' },
     ],
   },
   {
@@ -355,8 +385,8 @@ export const CATEGORIES: CategoryConfig[] = [
       { key: 'Country', label: 'Country', type: 'text', required: true },
       { key: 'Visa Type', label: 'Visa Type', type: 'text' },
       { key: 'Visa Number', label: 'Visa Number', type: 'text', sensitive: true },
-      { key: 'Issue Date', label: 'Issue Date', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Issue Date', label: 'Issue Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
     ],
   },
   {
@@ -373,7 +403,7 @@ export const CATEGORIES: CategoryConfig[] = [
       { key: 'Hospital / Clinic', label: 'Hospital / Clinic', type: 'text' },
       { key: 'Doctor', label: 'Doctor', type: 'text' },
       { key: 'Record ID', label: 'Record ID', type: 'text', sensitive: true },
-      { key: 'Date', label: 'Date', type: 'date' },
+      { key: 'Date', label: 'Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Notes', label: 'Notes', type: 'text' },
     ],
   },
@@ -391,8 +421,8 @@ export const CATEGORIES: CategoryConfig[] = [
       { key: 'Certificate Name', label: 'Certificate Name', type: 'text', required: true },
       { key: 'Issuer', label: 'Issuer', type: 'text' },
       { key: 'Certificate ID', label: 'Certificate ID', type: 'text', sensitive: true },
-      { key: 'Issue Date', label: 'Issue Date', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Issue Date', label: 'Issue Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
     ],
   },
   {
@@ -408,8 +438,8 @@ export const CATEGORIES: CategoryConfig[] = [
     fields: [
       { key: 'Party', label: 'Party / Vendor', type: 'text', required: true },
       { key: 'Contract ID', label: 'Contract ID', type: 'text', sensitive: true },
-      { key: 'Start Date', label: 'Start Date', type: 'date' },
-      { key: 'End Date', label: 'End Date', type: 'date' },
+      { key: 'Start Date', label: 'Start Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'End Date', label: 'End Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Notes', label: 'Notes', type: 'text' },
     ],
   },
@@ -427,8 +457,8 @@ export const CATEGORIES: CategoryConfig[] = [
       { key: 'Product', label: 'Product', type: 'text', required: true },
       { key: 'Brand', label: 'Brand', type: 'text' },
       { key: 'Serial Number', label: 'Serial Number', type: 'text', sensitive: true },
-      { key: 'Purchase Date', label: 'Purchase Date', type: 'date' },
-      { key: 'Warranty Expiry', label: 'Warranty Expiry', type: 'date' },
+      { key: 'Purchase Date', label: 'Purchase Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Warranty Expiry', label: 'Warranty Expiry', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
     ],
   },
   {
@@ -444,8 +474,8 @@ export const CATEGORIES: CategoryConfig[] = [
     fields: [
       { key: 'Organization', label: 'Organization', type: 'text', required: true },
       { key: 'Member ID', label: 'Member ID', type: 'text', sensitive: true },
-      { key: 'Start Date', label: 'Start Date', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Start Date', label: 'Start Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
     ],
   },
   {
@@ -467,7 +497,7 @@ export const CATEGORIES: CategoryConfig[] = [
         type: 'select',
         options: ['Monthly', 'Yearly', 'Weekly', 'Other'],
       },
-      { key: 'Renewal Date', label: 'Renewal Date', type: 'date' },
+      { key: 'Renewal Date', label: 'Renewal Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Account Email', label: 'Account Email', type: 'text', sensitive: true },
     ],
   },
@@ -484,8 +514,8 @@ export const CATEGORIES: CategoryConfig[] = [
     fields: [
       { key: 'Permit Type', label: 'Permit Type', type: 'text', required: true },
       { key: 'Permit Number', label: 'Permit Number', type: 'text', sensitive: true },
-      { key: 'Issue Date', label: 'Issue Date', type: 'date' },
-      { key: 'Expiry Date', label: 'Expiry Date', type: 'date' },
+      { key: 'Issue Date', label: 'Issue Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
+      { key: 'Expiry Date', label: 'Expiry Date', type: 'text', format: 'date-dmy', placeholder: 'DD-MM-YYYY' },
       { key: 'Authority', label: 'Authority', type: 'text' },
     ],
   },

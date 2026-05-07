@@ -30,8 +30,8 @@ async function loadMessages(locale: string): Promise<Messages> {
     case 'kn':
       overlay = (await import('../../messages/kn.json')).default as unknown as Partial<Messages>;
       break;
-    case 'bn':
-      overlay = (await import('../../messages/bn.json')).default as unknown as Partial<Messages>;
+    case 'ml':
+      overlay = (await import('../../messages/ml.json')).default as unknown as Partial<Messages>;
       break;
     default:
       overlay = {};

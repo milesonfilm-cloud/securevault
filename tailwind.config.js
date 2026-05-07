@@ -15,6 +15,7 @@ module.exports = {
         'wellness-sans': ['var(--font-wellness-sans)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
         'wellness-serif': ['var(--font-wellness-serif)', 'Georgia', 'serif'],
         'neon-stack': ['var(--font-neon-stack)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
+        urbanist: ['var(--font-urbanist)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
         400: '400',

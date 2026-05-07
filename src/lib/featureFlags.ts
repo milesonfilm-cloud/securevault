@@ -1,4 +1,4 @@
-export type PlanTier = 'free' | 'pro' | 'elite';
+export type PlanTier = 'free' | 'pro';
 
 export interface PlanLimits {
   maxMembers: number;
@@ -25,17 +25,6 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     customCategories: false,
   },
   pro: {
-    maxMembers: 6,
-    maxDocuments: Infinity,
-    aiScansPerMonth: 30,
-    cloudBackup: true,
-    allThemes: true,
-    emergencyHandover: true,
-    auditLog: false,
-    totp2fa: false,
-    customCategories: false,
-  },
-  elite: {
     maxMembers: Infinity,
     maxDocuments: Infinity,
     aiScansPerMonth: Infinity,
@@ -52,8 +41,9 @@ const TIER_KEY = 'sv_plan_tier';
 
 export function getCurrentTier(): PlanTier {
   try {
-    const stored = localStorage.getItem(TIER_KEY) as PlanTier | null;
-    if (stored && stored in PLAN_LIMITS) return stored;
+    const stored = localStorage.getItem(TIER_KEY);
+    if (stored === 'pro' || stored === 'elite') return 'pro';
+    if (stored === 'free') return 'free';
   } catch {
     /* ignore */
   }

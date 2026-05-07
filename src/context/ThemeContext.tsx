@@ -1,14 +1,20 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react';
 
-export type AppTheme = 'neon';
+export type AppTheme = 'neon' | 'pastel';
 
 const STORAGE_KEY = 'sv_ui_theme';
 
 function parseStoredTheme(raw: string | null): AppTheme {
-  if (raw === 'neon') return 'neon';
-  /* Any other stored value (removed themes) → Neon */
+  if (raw === 'pastel') return 'pastel';
   return 'neon';
 }
 
@@ -24,19 +30,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<AppTheme>('neon');
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
+  useLayoutEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const next = parseStoredTheme(raw);
       setThemeState(next);
-      if (raw && raw !== 'neon') {
-        localStorage.setItem(STORAGE_KEY, 'neon');
-      }
-      document.documentElement.dataset.theme = 'neon';
+      document.documentElement.dataset.theme = next;
     } catch {
       document.documentElement.dataset.theme = 'neon';
     }
+    setMounted(true);
   }, []);
 
   const setTheme = useCallback((t: AppTheme) => {

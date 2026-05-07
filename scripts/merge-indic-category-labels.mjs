@@ -1,5 +1,6 @@
 /**
- * Partial overlays for ta, te, kn, bn: category label + shortLabel only (fields fall back to English from en).
+ * Partial overlays for ta, te, kn, ml: category label + shortLabel only (fields fall back to English from en).
+ * This script MERGES into existing JSON — it does not overwrite the rest of the i18n payload.
  */
 import fs from 'fs';
 import path from 'path';
@@ -72,35 +73,58 @@ const LABELS = {
     permit: { label: 'ಪರವಾನಗಿ (ಪರ್ಮಿಟ್)', shortLabel: 'ಪರ್ಮಿಟ್' },
     other: { label: 'ಇತರೆ', shortLabel: 'ಇತರೆ' },
   },
-  bn: {
-    'password-vault': { label: 'পাসওয়ার্ড', shortLabel: 'পাসওয়ার্ড' },
-    'government-ids': { label: 'সরকারি পরিচয়পত্র', shortLabel: 'গভ. আইডি' },
-    'bank-accounts': { label: 'ব্যাংক অ্যাকাউন্ট', shortLabel: 'ব্যাংক' },
-    'credit-debit-cards': { label: 'ক্রেডিট / ডেবিট কার্ড', shortLabel: 'কার্ড' },
-    'institutional-docs': { label: 'প্রাতিষ্ঠানিক নথি', shortLabel: 'প্রতিষ্ঠান' },
-    'vehicle-documents': { label: 'যানবাহন নথি', shortLabel: 'যান' },
-    'family-profiles': { label: 'পরিবারের সদস্য প্রোফাইল', shortLabel: 'প্রোফাইল' },
-    passport: { label: 'পাসপোর্ট', shortLabel: 'পাসপোর্ট' },
-    'drivers-license': { label: 'ড্রাইভিং লাইসেন্স', shortLabel: 'লাইসেন্স' },
-    insurance: { label: 'বীমা', shortLabel: 'বীমা' },
-    visa: { label: 'ভিসা', shortLabel: 'ভিসা' },
-    'medical-record': { label: 'চিকিৎসা রেকর্ড', shortLabel: 'চিকিৎসা' },
-    certificate: { label: 'সার্টিফিকেট', shortLabel: 'সার্টি.' },
-    contract: { label: 'চুক্তি', shortLabel: 'চুক্তি' },
-    warranty: { label: 'ওয়ারেন্টি', shortLabel: 'ওয়ারেন্টি' },
-    membership: { label: 'সদস্যতা', shortLabel: 'সদস্য' },
-    subscription: { label: 'সাবস্ক্রিপশন', shortLabel: 'সাবস্' },
-    permit: { label: 'পারমিট', shortLabel: 'পারমিট' },
-    other: { label: 'অন্যান্য', shortLabel: 'অন্যান্য' },
+  ml: {
+    'password-vault': { label: 'പാസ്‌വേഡുകൾ', shortLabel: 'പാസ്‌വേഡ്' },
+    'government-ids': { label: 'ഗവൺമെന്റ് ഐഡികൾ', shortLabel: 'സർക്കാർ ഐഡി' },
+    'bank-accounts': { label: 'ബാങ്ക് അക്കൗണ്ടുകൾ', shortLabel: 'ബാങ്ക്' },
+    'credit-debit-cards': { label: 'ക്രെഡിറ്റ് / ഡെബിറ്റ് കാർഡുകൾ', shortLabel: 'കാർഡുകൾ' },
+    'institutional-docs': { label: 'സ്ഥാപന രേഖകൾ', shortLabel: 'സ്ഥാപനം' },
+    'vehicle-documents': { label: 'വാഹന രേഖകൾ', shortLabel: 'വാഹനങ്ങൾ' },
+    'family-profiles': { label: 'കുടുംബാംഗ പ്രൊഫൈലുകൾ', shortLabel: 'പ്രൊഫൈൽ' },
+    passport: { label: 'പാസ്‌പോർട്ട്', shortLabel: 'പാസ്‌പോർട്ട്' },
+    'drivers-license': { label: 'ഡ്രൈവിംഗ് ലൈസൻസ്', shortLabel: 'ലൈസൻസ്' },
+    insurance: { label: 'ഇൻഷുറൻസ്', shortLabel: 'ഇൻഷുറൻസ്' },
+    visa: { label: 'വിസ', shortLabel: 'വിസ' },
+    'medical-record': { label: 'വൈദ്യ രേഖ', shortLabel: 'വൈദ്യം' },
+    certificate: { label: 'സർട്ടിഫിക്കറ്റ്', shortLabel: 'സർട്ടി.' },
+    contract: { label: 'കരാർ', shortLabel: 'കരാർ' },
+    warranty: { label: 'വാറന്റി', shortLabel: 'വാറന്റി' },
+    membership: { label: 'അംഗത്വം', shortLabel: 'അംഗം' },
+    subscription: { label: 'സബ്സ്ക്രിപ്ഷൻ', shortLabel: 'സബ്സ്' },
+    permit: { label: 'പെർമിറ്റ്', shortLabel: 'പെർമിറ്റ്' },
+    other: { label: 'മറ്റുള്ളവ', shortLabel: 'മറ്റുള്ളവ' },
   },
 };
 
-for (const loc of ['ta', 'te', 'kn', 'bn']) {
+function deepMerge(base, overlay) {
+  if (!overlay || typeof overlay !== 'object') return base;
+  if (!base || typeof base !== 'object') return overlay;
+  const out = Array.isArray(base) ? [...base] : { ...base };
+  for (const [k, v] of Object.entries(overlay)) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      out[k] = deepMerge(base[k], v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+
+for (const loc of ['ta', 'te', 'kn', 'ml']) {
   const categories = {};
   for (const [id, v] of Object.entries(LABELS[loc])) {
     categories[id] = { label: v.label, shortLabel: v.shortLabel };
   }
-  const out = { categories };
-  fs.writeFileSync(path.join(root, 'messages', `${loc}.json`), JSON.stringify(out, null, 2));
-  console.log('Wrote messages/', loc + '.json', 'category labels');
+  const file = path.join(root, 'messages', `${loc}.json`);
+  let existing = {};
+  if (fs.existsSync(file)) {
+    try {
+      existing = JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch {
+      existing = {};
+    }
+  }
+  const out = deepMerge(existing, { categories });
+  fs.writeFileSync(file, JSON.stringify(out, null, 2));
+  console.log('Merged category labels into messages/' + loc + '.json');
 }

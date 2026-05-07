@@ -1,80 +1,495 @@
 {
+  "nav": {
+    "home": "ಮುಖಪುಟ",
+    "documents": "ದಾಖಲೆಗಳು",
+    "renewals": "ನವೀಕರಣಗಳು",
+    "progress": "ಪ್ರಗತಿ",
+    "settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "members": "ಸದಸ್ಯರು",
+    "familyMembers": "ಕುಟುಂಬ ಸದಸ್ಯರು",
+    "documentVault": "ದಾಖಲೆ ತಿಜೋರಿ",
+    "settingsExport": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಮತ್ತು ರಫ್ತು",
+    "about": "ಬಗ್ಗೆ",
+    "navigation": "ನ್ಯಾವಿಗೇಷನ್",
+    "lock": "ಲಾಕ್",
+    "lockVault": "ತಿಜೋರಿ ಲಾಕ್ ಮಾಡಿ",
+    "private": "ಖಾಸಗಿ",
+    "renew": "ನವೀಕರಿಸಿ",
+    "vault": "ತಿಜೋರಿ",
+    "family": "ಕುಟುಂಬ",
+    "offlineTitle": "100% ಆಫ್‌ಲೈನ್",
+    "offlineSubtitle": "ಡೇಟಾ ಈ ಸಾಧನವನ್ನು ಬಿಟ್ಟು ಹೊರಗೆ ಹೋಗುವುದಿಲ್ಲ",
+    "lockVaultButton": "ತಿಜೋರಿ ಲಾಕ್ ಮಾಡಿ",
+    "collapse": "ಸಂಕುಚಿಸಿ",
+    "expandSidebar": "ಸೈಡ್‌ಬಾರ್ ವಿಸ್ತರಿಸಿ"
+  },
+  "familyManagement": {
+    "heroTitle": "ಕುಟುಂಬ ಸದಸ್ಯರು",
+    "addMemberFab": "ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+    "statsLine": "{memberCount, plural, one {# ಸದಸ್ಯ} other {# ಸದಸ್ಯರು}} · {docCount, plural, one {# ದಾಖಲೆ} other {# ದಾಖಲೆಗಳು}} ಸಂಗ್ರಹಿತ",
+    "viewCarousel": "ಕ್ಯಾರೋಸೆಲ್",
+    "viewGrid": "ಗ್ರಿಡ್",
+    "switchToGrid": "ಗ್ರಿಡ್ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಿ",
+    "switchToCarousel": "ಕ್ಯಾರೋಸೆಲ್ ವೀಕ್ಷಣೆಗೆ ಬದಲಾಯಿಸಿ"
+  },
+  "pastelHome": {
+    "title": "Family Vault",
+    "subtitle": "ನನ್ನ ಸದಸ್ಯರು ಮತ್ತು ದಾಖಲೆಗಳು",
+    "totalDocuments": "ಒಟ್ಟು ದಾಖಲೆಗಳು",
+    "docsSuffix": " ದಾಖ.",
+    "vaultWordmark": "VAULT",
+    "since": "{date} ರಿಂದ",
+    "addDocument": "ದಾಖಲೆ ಸೇರಿಸಿ",
+    "quickAccess": "ತ್ವರಿತ ಪ್ರವೇಶ",
+    "seeAll": "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
+    "addAvatar": "ಸೇರಿಸಿ",
+    "membersLabel": "ಸದಸ್ಯರು",
+    "membersSub": "ಸಕ್ರಿಯ ಪ್ರೊಫೈಲ್‌ಗಳು",
+    "viewAll": "ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ",
+    "documentsLabel": "ದಾಖಲೆಗಳು",
+    "documentsSub": "ಸುರಕ್ಷಿತವಾಗಿ ಸಂಗ್ರಹಿಸಲಾಗಿದೆ",
+    "browse": "ಬ್ರೌಸ್ ಮಾಡಿ",
+    "categoriesLabel": "ವರ್ಗಗಳು",
+    "categoriesSub": "ಎಲ್ಲ ಸದಸ್ಯರಲ್ಲಿ",
+    "recentActivity": "ಇತ್ತೀಚಿನ ಚಟುವಟಿಕೆ",
+    "seeMore": "ಇನ್ನಷ್ಟು ನೋಡಿ",
+    "noActivity": "ಇನ್ನೂ ಚಟುವಟಿಕೆ ಇಲ್ಲ.",
+    "emptyTitle": "ಇನ್ನೂ ಕುಟುಂಬ ಸದಸ್ಯರಿಲ್ಲ",
+    "emptyBody": "ಕಾರ್ಡ್ ಸ್ಟಾಕ್ ಮತ್ತು ತ್ವರಿತ ಪ್ರವೇಶ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನೋಡಲು ಯಾರನ್ನಾದರೂ ಸೇರಿಸಿ.",
+    "addMember": "ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+    "privacy": "ಗೌಪ್ಯತೆ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "openVault": "ದಾಖಲೆ ತಿಜೋರಿ ತೆರೆಯಿರಿ",
+    "refreshDocumentCounts": "ದಾಖಲೆ ಎಣಿಕೆಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ",
+    "viewMemberDocuments": "ಈ ಸದಸ್ಯರ ದಾಖಲೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+    "rescan": "ತಿಜೋರಿ"
+  },
+  "common": {
+    "add": "ಸೇರಿಸಿ",
+    "edit": "ಸಂಪಾದಿಸಿ",
+    "delete": "ಅಳಿಸಿ",
+    "save": "ಉಳಿಸಿ",
+    "cancel": "ರದ್ದು",
+    "search": "ಹುಡುಕಿ",
+    "back": "ಹಿಂದೆ",
+    "next": "ಮುಂದೆ",
+    "loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+    "error": "ದೋಷ",
+    "close": "ಮುಚ್ಚಿ",
+    "continue": "ಮುಂದುವರಿಸಿ",
+    "yes": "ಹೌದು",
+    "no": "ಇಲ್ಲ",
+    "fieldRequired": "{field} ಅಗತ್ಯವಿದೆ",
+    "copy": "ನಕಲಿಸಿ",
+    "copied": "ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ನಕಲಿಸಲಾಗಿದೆ",
+    "nothingToCopy": "ನಕಲಿಸಲು ಏನೂ ಇಲ್ಲ",
+    "copyFailed": "ನಕಲಿಸಲಾಗಲಿಲ್ಲ"
+  },
+  "documents": {
+    "addDocument": "ದಾಖಲೆ ಸೇರಿಸಿ",
+    "editDocument": "ದಾಖಲೆಯನ್ನು ಸಂಪಾದಿಸಿ",
+    "noDocuments": "ಇನ್ನೂ ದಾಖಲೆಗಳಿಲ್ಲ",
+    "scanDocument": "ದಾಖಲೆಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
+    "shareDocument": "ದಾಖಲೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
+    "modalAddTitle": "ಹೊಸ ದಾಖಲೆಯನ್ನು ಸೇರಿಸಿ",
+    "modalEditTitle": "ದಾಖಲೆಯನ್ನು ಸಂಪಾದಿಸಿ",
+    "fieldsHeading": "{category} ಫೀಲ್ಡ್‌ಗಳು",
+    "fieldPlaceholder": "{field} ಅನ್ನು ನಮೂದಿಸಿ",
+    "saveLocalSubtitle": "ಎಲ್ಲಾ ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಸ್ಥಳೀಯವಾಗಿ ಉಳಿಸಲಾಗುತ್ತದೆ",
+    "scanTitle": "ಕ್ಯಾಮೆರಾ ಬಳಸಿ ದಾಖಲೆಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಮತ್ತು ಫೀಲ್ಡ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಭರ್ತಿ ಮಾಡಿ",
+    "familyMemberLabel": "ಕುಟುಂಬ ಸದಸ್ಯ *",
+    "selectFamilyMember": "ಒಬ್ಬ ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "categoryLabel": "ವರ್ಗ *",
+    "selectCategory": "ಒಂದು ವರ್ಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+    "folderLabel": "ಫೋಲ್ಡರ್",
+    "folderHint": "ಐಚ್ಛಿಕ — ಈ ದಾಖಲೆಯನ್ನು ಒಂದು ಫೋಲ್ಡರ್‌ಗೆ ನಿಯೋಜಿಸಿ, ಅಥವಾ \"ಫೋಲ್ಡರ್ ಇಲ್ಲ\" ಎಂದು ಬಿಡಿ.",
+    "noFolders": "ನಿಮ್ಮ ತಿಜೋರಿಯಲ್ಲಿ ಇನ್ನೂ ಫೋಲ್ಡರ್‌ಗಳಿಲ್ಲ.",
+    "titleLabel": "ದಾಖಲೆ ಶೀರ್ಷಿಕೆ *",
+    "titleHint": "ನೆನಪಿಡಬಹುದಾದ ಹೆಸರು — ಉದಾ. \"ಆಧಾರ್ ಕಾರ್ಡ್\"",
+    "titleRequired": "ದಾಖಲೆ ಶೀರ್ಷಿಕೆ ಅಗತ್ಯವಿದೆ",
+    "titlePlaceholder": "ಉದಾ. ಆಧಾರ್ ಕಾರ್ಡ್",
+    "reviewOcrTitle": "ಹೊರತೆಗೆದ ಫೀಲ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ",
+    "reviewOcrBody": "ಪಠ್ಯವನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಗುರುತಿಸಲಾಗಿದೆ. ಉಳಿಸುವ ಮೊದಲು ID ಗಳು ಮತ್ತು ದಿನಾಂಕಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "aiVerifyTitle": "AI ತುಂಬಿದ ಫೀಲ್ಡ್‌ಗಳು — ದಯವಿಟ್ಟು ಪರಿಶೀಲಿಸಿ",
+    "aiVerifyBody": "OCR ಸಾಧನದಲ್ಲಿ ಚಲಾಯಿಸಲಾಗಿದೆ; ಫೀಲ್ಡ್ ಮ್ಯಾಪಿಂಗ್‌ಗೆ AI ಬಳಸಲಾಗಿದೆ.",
+    "sensitiveTag": "(ಸಂವೇದನಶೀಲ)",
+    "aiFilledBadge": "AI ಭರ್ತಿ",
+    "selectPlaceholder": "ಆಯ್ಕೆಮಾಡಿ…",
+    "noFolderOption": "ಫೋಲ್ಡರ್ ಇಲ್ಲ",
+    "showPassword": "ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ",
+    "hidePassword": "ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ",
+    "notesLabel": "ಟಿಪ್ಪಣಿಗಳು",
+    "notesHint": "ಐಚ್ಛಿಕ — ಜ್ಞಾಪನೆಗಳು, ಸಂಪರ್ಕಗಳು ಇತ್ಯಾದಿ.",
+    "notesPlaceholder": "ಉದಾ. ಮೊಬೈಲ್‌ಗೆ ಲಿಂಕ್ ಮಾಡಲಾಗಿದೆ",
+    "tagsLabel": "ಟ್ಯಾಗ್‌ಗಳು",
+    "tagsHint": "ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಲಾಗಿದೆ — ಉದಾ. primary, kyc",
+    "tagsPlaceholder": "primary, kyc, travel",
+    "saving": "ಉಳಿಸಲಾಗುತ್ತಿದೆ…",
+    "saveChanges": "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ",
+    "addDocumentCta": "ದಾಖಲೆ ಸೇರಿಸಿ"
+  },
+  "settings": {
+    "title": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    "backupAppTitle": "ಬ್ಯಾಕಪ್ ಮತ್ತು ಆಪ್",
+    "backupAppSubtitle": "ರಫ್ತು, ಆಮದು ಮತ್ತು ಸಾಧನ ಆಯ್ಕೆಗಳು",
+    "cloudSync": "ಕ್ಲೌಡ್ ಸಿಂಕ್",
+    "emergency": "ತುರ್ತು ಪ್ರವೇಶ",
+    "emergencySubtitle": "ವಿಶ್ವಾಸಾರ್ಹ ಸಂಪರ್ಕ, PDF ಬಂಡಲ್, ಹಸ್ತಾಂತರ ಲಿಂಕ್‌ಗಳು →",
+    "language": "ಭಾಷೆ",
+    "languageSubtitle": "ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.",
+    "appearance": "ರೂಪ",
+    "appearanceSubtitle": "ಲೈಟ್ ಪಾಸ್ಟಲ್ ಹೋಮ್ ಅಥವಾ ನಿಯಾನ್ ತಿಜೋರಿ ಶೈಲಿ. ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.",
+    "themeNeon": "ನಿಯಾನ್ ತಿಜೋರಿ",
+    "themePastel": "ಪಾಸ್ಟಲ್ ಕುಟುಂಬ",
+    "permissions": "ಅನುಮತಿಗಳು",
+    "logout": "ಲಾಗ್ ಔಟ್",
+    "privacyTitle": "ಗೌಪ್ಯತೆ",
+    "privacyBody": "ನಿಮ್ಮ ತಿಜೋರಿ ಈ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹವಾಗಿದೆ."
+  },
+  "auth": {
+    "enterPin": "ಮುಂದುವರಿಯಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+    "createPin": "ನಿಮ್ಮ ತಿಜೋರಿಯನ್ನು ರಕ್ಷಿಸಲು ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಸಿ",
+    "unlockVault": "ತಿಜೋರಿ ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
+    "biometric": "ಬಯೊಮೆಟ್ರಿಕ್ಸ್ ಬಳಸಿ",
+    "welcome": "ಸ್ವಾಗತ!",
+    "createPassword": "ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ",
+    "unlocking": "ನಿಮ್ಮ ತಿಜೋರಿಯನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ…",
+    "authenticating": "ದೃಢೀಕರಿಸಲಾಗುತ್ತಿದೆ…",
+    "usePassword": "ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ",
+    "fingerprintOrFace": "ಬೆರಳಚ್ಚು ಅಥವಾ ಫೇಸ್ ID",
+    "enableBiometrics": "ಬಯೊಮೆಟ್ರಿಕ್ಸ್ ಸಕ್ರಿಯಗೊಳಿಸಿ",
+    "enableBiometricLogin": "ಬಯೊಮೆಟ್ರಿಕ್ ಲಾಗಿನ್ ಸಕ್ರಿಯಗೊಳಿಸಿ",
+    "settingUp": "ಹೊಂದಿಸಲಾಗುತ್ತಿದೆ…",
+    "fingerprint": "ಬೆರಳಚ್ಚು",
+    "faceId": "ಫೇಸ್ ID",
+    "offlineNote": "100% ಆಫ್‌ಲೈನ್ · ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ",
+    "identityVerifiedHint": "ಗುರುತು ದೃಢೀಕರಿಸಲಾಗಿದೆ. ತಿಜೋರಿಯನ್ನು ಡಿಕ್ರಿಪ್ಟ್ ಮಾಡಲು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ.",
+    "pwdMin": "ಪಾಸ್‌ವರ್ಡ್ ಕನಿಷ್ಠ 4 ಅಕ್ಷರಗಳಿರಬೇಕು",
+    "pwdMismatch": "ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ",
+    "incorrectPwd": "ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+    "bioFailed": "ಬಯೊಮೆಟ್ರಿಕ್ ವಿಫಲ. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ.",
+    "bioUnavailable": "ಬಯೊಮೆಟ್ರಿಕ್ ಲಭ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ.",
+    "bioSetupLater": "ಬಯೊಮೆಟ್ರಿಕ್ ಸೆಟಪ್ ವಿಫಲ. ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಕ್ರಿಯಗೊಳಿಸಬಹುದು.",
+    "bioSetupFailed": "ಬಯೊಮೆಟ್ರಿಕ್ ಸೆಟಪ್ ವಿಫಲ.",
+    "secureContext": "ಸುರಕ್ಷಿತ ಎನ್‌ಕ್ರಿಪ್ಷನ್ ಲಭ್ಯವಿಲ್ಲ. https ಅಥವಾ localhost ಬಳಸಿ.",
+    "storageFull": "ಬ್ರೌಸರ್ ಸಂಗ್ರಹಣೆ ಭರ್ತಿಯಾಗಿದೆ. ಸ್ವಲ್ಪ ಜಾಗವನ್ನು ಮುಕ್ತಗೊಳಿಸಿ.",
+    "storageSaveFailed": "ನಿಮ್ಮ ತಿಜೋರಿ ಕೀಗಳನ್ನು ಉಳಿಸಲಾಗಲಿಲ್ಲ. ಬ್ರೌಸರ್ ಅನುಮತಿಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "oom": "ಮೆಮೊರಿ ಮುಗಿದಿದೆ. ಇತರ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ.",
+    "wasmLoadFailed": "ಭದ್ರತಾ ಮಾಡ್ಯೂಲ್ ಲೋಡ್ ಆಗಲಿಲ್ಲ. ಪುಟವನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ.",
+    "createFailed": "ತಿಜೋರಿ ರಚಿಸಲಾಗಲಿಲ್ಲ. ಸುರಕ್ಷಿತ ಪುಟದಲ್ಲಿ ತೆರೆಯಿರಿ.",
+    "resetConfirm": "ರೀಸೆಟ್ ಮಾಡುವುದರಿಂದ ಈ ಸಾಧನದ ಸ್ಥಳೀಯ ತಿಜೋರಿ ಡೇಟಾ ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲ್ಪಡುತ್ತದೆ.\n\nಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ ಬ್ಯಾಕಪ್ ಫೈಲ್ ಇದ್ದರೆ, ಮರುಸ್ಥಾಪಿಸಬಹುದು.\n\nಮುಂದುವರಿಯಬೇಕೇ?",
+    "biometricSetupSubtitle": "ತ್ವರಿತ, ಸುರಕ್ಷಿತ ಪ್ರವೇಶಕ್ಕಾಗಿ ಬೆರಳಚ್ಚು ಅಥವಾ ಫೇಸ್ ID ಬಳಸಿ",
+    "skipForNow": "ಸದ್ಯಕ್ಕೆ ಬಿಟ್ಟುಬಿಡಿ",
+    "newPasswordLabel": "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್",
+    "passwordLabel": "ಪಾಸ್‌ವರ್ಡ್",
+    "enterPasswordPlaceholder": "ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+    "confirmPasswordLabel": "ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
+    "confirmPasswordPlaceholder": "ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
+    "createVaultPassword": "ತಿಜೋರಿ ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ",
+    "submitUnlock": "ತಿಜೋರಿ ಅನ್‌ಲಾಕ್ ಮಾಡಿ",
+    "forgotReset": "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ? ತಿಜೋರಿ ರೀಸೆಟ್ (ಬ್ಯಾಕಪ್ ಇಲ್ಲದೆ ಡೇಟಾ ನಷ್ಟವಾಗುತ್ತದೆ)",
+    "biometricTip": "ಸಲಹೆ: ಅನ್‌ಲಾಕ್ ನಂತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಮೂಲಕ ಬಯೊಮೆಟ್ರಿಕ್ ಸಕ್ರಿಯಗೊಳಿಸಿ"
+  },
+  "welcome": {
+    "kickerWelcome": "ಸ್ವಾಗತ",
+    "kickerYourData": "ನಿಮ್ಮ ಡೇಟಾ",
+    "kickerOrganize": "ಸಂಘಟಿಸಿ",
+    "kickerStaySafe": "ಸುರಕ್ಷಿತವಾಗಿರಿ",
+    "titleSecureVault": "SecureVault",
+    "titlePrivateVault": "ಖಾಸಗಿ ದಾಖಲೆ ತಿಜೋರಿ",
+    "titleBuiltFamilies": "ಕುಟುಂಬಗಳಿಗಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ",
+    "titleBackup": "ನಿಯಮಿತವಾಗಿ ಬ್ಯಾಕಪ್ ಮಾಡಿ",
+    "bodySetup": "ನಿಮ್ಮ ತಿಜೋರಿಯನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲು ಬಲವಾದ ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ. ಏನೂ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ — ನಿಮ್ಮ ರಹಸ್ಯಗಳು ಈ ಸಾಧನದಲ್ಲಿಯೇ ಉಳಿಯುತ್ತವೆ.",
+    "bodyLogin": "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ನೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಎಲ್ಲವೂ ಸ್ಥಳೀಯ ಮತ್ತು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.",
+    "bodyVault": "ಸರ್ಕಾರಿ ID ಗಳು, ಬ್ಯಾಂಕ್ ವಿವರಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವು — ವರ್ಗೀಕರಿಸಲ್ಪಟ್ಟಿವೆ ಮತ್ತು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿವೆ.",
+    "bodyFamily": "ಮನೆಯ ದಾಖಲೆಗಳು ಸಂಘಟಿತವಾಗಿರಲು ದಾಖಲೆಗಳನ್ನು ಕುಟುಂಬ ಸದಸ್ಯರಿಗೆ ಲಿಂಕ್ ಮಾಡಿ.",
+    "bodyBackup": "ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ ಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ JSON ಬ್ಯಾಕಪ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಿ.",
+    "skip": "ಪರಿಚಯವನ್ನು ಬಿಟ್ಟುಬಿಡಿ",
+    "next": "ಮುಂದೆ",
+    "createPassword": "ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ",
+    "signIn": "ಸೈನ್ ಇನ್",
+    "cards": {
+      "welcome": [
+        {
+          "t": "ಸ್ಥಳೀಯ-ಮೊದಲ ತಿಜೋರಿ",
+          "b": "ನಿಮ್ಮ ಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ ಡೇಟಾ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಯುತ್ತದೆ — ಡೀಫಾಲ್ಟ್ ಆಗಿ ಏನೂ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ."
+        },
+        {
+          "t": "ಬಲವಾದ ಎನ್‌ಕ್ರಿಪ್ಷನ್",
+          "b": "ಇಂಡಸ್ಟ್ರಿ-ಸ್ಟಾಂಡರ್ಡ್ AES ದಾಖಲೆಗಳನ್ನು ರೆಸ್ಟ್‌ನಲ್ಲಿ ರಕ್ಷಿಸುತ್ತದೆ."
+        },
+        {
+          "t": "ವಿಶ್ವಾಸಕ್ಕಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ",
+          "b": "ಯಾವಾಗ ಬೇಕಾದರೂ ಟೂರ್ ಬಿಟ್ಟುಬಿಡಿ ಅಥವಾ ಮತ್ತೆ ನೋಡಿ; ನಿಮ್ಮ ತಿಜೋರಿ ಖಾಸಗಿ ಮತ್ತು ಆಫ್‌ಲೈನ್."
+        }
+      ],
+      "vault": [
+        {
+          "t": "ವರ್ಗಗಳು ಮತ್ತು ಸ್ಪಷ್ಟತೆ",
+          "b": "ID, ಹಣಕಾಸು, ವೈದ್ಯಕೀಯ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಗುಂಪು ಮಾಡಿ ಸುಲಭವಾಗಿ ಹುಡುಕಿ."
+        },
+        {
+          "t": "ನೀವು ಅನ್‌ಲಾಕ್ ಮಾಡುವವರೆಗೆ ಲಾಕ್",
+          "b": "ನೀವು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸುವವರೆಗೆ ಸಂವೇದನಶೀಲ ಫೀಲ್ಡ್‌ಗಳು ಸೈಫರ್‌ಟೆಕ್ಸ್ಟ್ ಆಗಿರುತ್ತವೆ."
+        },
+        {
+          "t": "ನವೀಕರಣಗಳು ಮತ್ತು ದಿನಾಂಕಗಳು",
+          "b": "ಪ್ರಮುಖ ದಾಖಲೆಗಳು ತಪ್ಪಿಹೋಗದಂತೆ ಅವಧಿ ಮೀರುವಿಕೆ ಮತ್ತು ನವೀಕರಣಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ."
+        }
+      ],
+      "family": [
+        {
+          "t": "ಸದಸ್ಯ-ವಾರು ಸ್ಥಳಗಳು",
+          "b": "ರಚನಾತ್ಮಕ ಮನೆಯ ನೋಟಕ್ಕಾಗಿ ದಾಖಲೆಗಳನ್ನು ಕುಟುಂಬ ಸದಸ್ಯರಿಗೆ ಲಿಂಕ್ ಮಾಡಿ."
+        },
+        {
+          "t": "ಮನೆಯ ಮುಖಪುಟ",
+          "b": "ಸದಸ್ಯರ ಪುಟ ನಿಮ್ಮ ಲ್ಯಾಂಡಿಂಗ್ ಸ್ಪಾಟ್ — ಪ್ರೊಫೈಲ್‌ಗಳು, ಟೈಲ್‌ಗಳು ಮತ್ತು ಚಟುವಟಿಕೆ."
+        },
+        {
+          "t": "ಹಂಚಿದ ಮನಸ್ಸಿನ ಶಾಂತಿ",
+          "b": "ಗೊಂದಲ ಶೇರ್ಡ್ ಫೋಲ್ಡರ್‌ಗಳಿಲ್ಲದೆ ಎಲ್ಲರ ಅಗತ್ಯವಸ್ತುಗಳನ್ನು ಸಂಘಟಿತವಾಗಿಡಿ."
+        }
+      ],
+      "backup": [
+        {
+          "t": "ಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ ರಫ್ತುಗಳು",
+          "b": "ನಿಮಗೆ ಬೇಕಾದಾಗ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ JSON ಬ್ಯಾಕಪ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ."
+        },
+        {
+          "t": "ರಿಕವರಿ ಯೋಜನೆ",
+          "b": "ನೀವು ರೀಸೆಟ್ ಮಾಡಿದರೆ ಅಥವಾ ಸಾಧನವನ್ನು ಬದಲಾಯಿಸಿದರೆ, ಇತ್ತೀಚಿನ ಬ್ಯಾಕಪ್ ನಿಮ್ಮ ಸುರಕ್ಷತೆ ಜಾಲ."
+        },
+        {
+          "t": "ನೀವು ಸಮಯವನ್ನು ನಿಯಂತ್ರಿಸುತ್ತೀರಿ",
+          "b": "ಐಚ್ಛಿಕ ಕ್ಲೌಡ್ ಸಿಂಕ್ — ಡೀಫಾಲ್ಟ್ ಆಗಿ ಅಲ್ಲ, ನಿಮ್ಮ ಆಯ್ಕೆಯಂತೆ."
+        }
+      ]
+    }
+  },
+  "language": {
+    "label": "ಭಾಷೆ",
+    "en": "🇮🇳 English",
+    "hi": "🇮🇳 हिन्दी",
+    "ta": "🇮🇳 தமிழ்",
+    "te": "🇮🇳 తెలుగు",
+    "kn": "🇮🇳 ಕನ್ನಡ",
+    "ml": "🇮🇳 മലയാളം"
+  },
   "categories": {
     "password-vault": {
       "label": "ಪಾಸ್‌ವರ್ಡ್‌ಗಳು",
-      "shortLabel": "ಪಾಸ್‌ವರ್ಡ್"
+      "shortLabel": "ಪಾಸ್‌ವರ್ಡ್",
+      "fields": {
+        "website_app": "ವೆಬ್‌ಸೈಟ್ / ಆಪ್",
+        "login_url": "ಲಾಗಿನ್ URL",
+        "user_id_email": "ಬಳಕೆದಾರ ID / ಇಮೇಲ್",
+        "password": "ಪಾಸ್‌ವರ್ಡ್",
+        "2fa_recovery": "2FA / ಚೇತರಿಕೆ ಟಿಪ್ಪಣಿಗಳು"
+      }
     },
     "government-ids": {
       "label": "ಸರ್ಕಾರಿ ಗುರುತಿನ ದಾಖಲೆಗಳು",
-      "shortLabel": "ಸರ್ಕಾರಿ ಐಡಿ"
+      "shortLabel": "ಸರ್ಕಾರಿ ಐಡಿ",
+      "fields": {
+        "document_type": "ದಾಖಲೆ ಪ್ರಕಾರ",
+        "id_document_number": "ID / ದಾಖಲೆ ಸಂಖ್ಯೆ",
+        "date_of_issue": "ವಿತರಣಾ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+        "issuing_authority": "ವಿತರಿಸುವ ಪ್ರಾಧಿಕಾರ",
+        "address_on_document": "ದಾಖಲೆಯಲ್ಲಿನ ವಿಳಾಸ"
+      }
     },
     "bank-accounts": {
       "label": "ಬ್ಯಾಂಕ್ ಖಾತೆಗಳು",
-      "shortLabel": "ಬ್ಯಾಂಕ್"
+      "shortLabel": "ಬ್ಯಾಂಕ್",
+      "fields": {
+        "bank_name": "ಬ್ಯಾಂಕ್ ಹೆಸರು",
+        "account_number": "ಖಾತೆ ಸಂಖ್ಯೆ",
+        "ifsc_code": "IFSC / SWIFT ಕೋಡ್",
+        "account_type": "ಖಾತೆ ಪ್ರಕಾರ",
+        "branch": "ಶಾಖೆ",
+        "nominee": "ನಾಮನಿರ್ದೇಶಿತ",
+        "net_banking_id": "ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್ ಬಳಕೆದಾರ ID"
+      }
     },
     "credit-debit-cards": {
       "label": "ಕ್ರೆಡಿಟ್ / ಡೆಬಿಟ್ ಕಾರ್ಡ್‌ಗಳು",
-      "shortLabel": "ಕಾರ್ಡ್‌ಗಳು"
+      "shortLabel": "ಕಾರ್ಡ್‌ಗಳು",
+      "fields": {
+        "card_name": "ಕಾರ್ಡ್ ಹೆಸರು / ಪ್ರಕಾರ",
+        "card_number_last_4": "ಕೊನೆಯ 4 ಅಂಕೆಗಳು",
+        "card_network": "ಕಾರ್ಡ್ ನೆಟ್‌ವರ್ಕ್",
+        "expiry": "ಮುಕ್ತಾಯ (MM/YYYY)",
+        "credit_limit": "ಕ್ರೆಡಿಟ್ ಮಿತಿ",
+        "billing_cycle": "ಬಿಲ್ಲಿಂಗ್ ಸೈಕಲ್ ದಿನಾಂಕ",
+        "customer_care": "ಗ್ರಾಹಕ ಸೇವೆ ಸಂಖ್ಯೆ"
+      }
     },
     "institutional-docs": {
       "label": "ಸಂಸ್ಥಾತ್ಮಕ ದಾಖಲೆಗಳು",
-      "shortLabel": "ಸಂಸ್ಥೆ"
+      "shortLabel": "ಸಂಸ್ಥೆ",
+      "fields": {
+        "institution_name": "ಸಂಸ್ಥೆ / ಕಂಪೆನಿ",
+        "document_type": "ದಾಖಲೆ ಪ್ರಕಾರ",
+        "reference_number": "ಪಾಲಿಸಿ / ಉಲ್ಲೇಖ ಸಂಖ್ಯೆ",
+        "start_date": "ಆರಂಭಿಕ / ವಿತರಣಾ ದಿನಾಂಕ",
+        "end_maturity_date": "ಮುಕ್ತಾಯ / ಪರಿಪಕ್ವತಾ ದಿನಾಂಕ",
+        "amount_value": "ಮೊತ್ತ",
+        "contact_number": "ಸಂಪರ್ಕ / ಏಜೆಂಟ್ ಸಂಖ್ಯೆ"
+      }
     },
     "vehicle-documents": {
       "label": "ವಾಹನ ದಾಖಲೆಗಳು",
-      "shortLabel": "ವಾಹನಗಳು"
+      "shortLabel": "ವಾಹನಗಳು",
+      "fields": {
+        "vehicle_name": "ವಾಹನ ಹೆಸರು / ಮಾಡೆಲ್",
+        "registration_number": "ನೋಂದಣಿ ಸಂಖ್ಯೆ",
+        "engine_number": "ಎಂಜಿನ್ ಸಂಖ್ಯೆ",
+        "chassis_number": "ಚಾಸಿಸ್ ಸಂಖ್ಯೆ",
+        "fuel_type": "ಇಂಧನ ಪ್ರಕಾರ",
+        "insurance_expiry": "ವಿಮೆ ಮುಕ್ತಾಯ",
+        "puc_expiry": "PUC / ಎಮಿಷನ್ ಮುಕ್ತಾಯ"
+      }
     },
     "family-profiles": {
       "label": "ಕುಟುಂಬ ಸದಸ್ಯರ ಪ್ರೊಫೈಲ್‌ಗಳು",
-      "shortLabel": "ಪ್ರೊಫೈಲ್"
+      "shortLabel": "ಪ್ರೊಫೈಲ್",
+      "fields": {
+        "full_name": "ಪೂರ್ಣ ಹೆಸರು",
+        "relationship": "ಸಂಬಂಧ",
+        "date_of_birth": "ಜನ್ಮ ದಿನಾಂಕ",
+        "blood_group": "ರಕ್ತದ ಗುಂಪು",
+        "emergency_contact": "ತುರ್ತು ಸಂಪರ್ಕ",
+        "medical_conditions": "ವೈದ್ಯಕೀಯ ಸ್ಥಿತಿ / ಅಲರ್ಜಿಗಳು"
+      }
     },
     "passport": {
       "label": "ಪಾಸ್‌ಪೋರ್ಟ್",
-      "shortLabel": "ಪಾಸ್‌ಪೋರ್ಟ್"
+      "shortLabel": "ಪಾಸ್‌ಪೋರ್ಟ್",
+      "fields": {
+        "passport_number": "ಪಾಸ್‌ಪೋರ್ಟ್ ಸಂಖ್ಯೆ",
+        "date_of_issue": "ವಿತರಣಾ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+        "place_of_issue": "ವಿತರಣಾ ಸ್ಥಳ",
+        "file_number": "ಫೈಲ್ ಸಂಖ್ಯೆ"
+      }
     },
     "drivers-license": {
       "label": "ಚಾಲನೆ ಪರವಾನಗಿ",
-      "shortLabel": "ಪರವಾನಗಿ"
+      "shortLabel": "ಪರವಾನಗಿ",
+      "fields": {
+        "license_number": "ಪರವಾನಗಿ ಸಂಖ್ಯೆ",
+        "date_of_issue": "ವಿತರಣಾ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+        "issuing_authority": "ವಿತರಿಸುವ ಪ್ರಾಧಿಕಾರ",
+        "vehicle_class": "ವಾಹನ ವರ್ಗ"
+      }
     },
     "insurance": {
       "label": "ವಿಮೆ",
-      "shortLabel": "ವಿಮೆ"
+      "shortLabel": "ವಿಮೆ",
+      "fields": {
+        "provider": "ಪ್ರದಾತ",
+        "policy_number": "ಪಾಲಿಸಿ ಸಂಖ್ಯೆ",
+        "type": "ಪ್ರಕಾರ",
+        "start_date": "ಆರಂಭಿಕ ದಿನಾಂಕ",
+        "end_date": "ಮುಕ್ತಾಯ / ಅವಧಿ",
+        "contact": "ಏಜೆಂಟ್ / ಬೆಂಬಲ ಸಂಪರ್ಕ"
+      }
     },
     "visa": {
       "label": "ವೀಸಾ",
-      "shortLabel": "ವೀಸಾ"
+      "shortLabel": "ವೀಸಾ",
+      "fields": {
+        "country": "ದೇಶ",
+        "visa_type": "ವೀಸಾ ಪ್ರಕಾರ",
+        "visa_number": "ವೀಸಾ ಸಂಖ್ಯೆ",
+        "issue_date": "ವಿತರಣಾ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ"
+      }
     },
     "medical-record": {
       "label": "ವೈದ್ಯಕೀಯ ದಾಖಲೆ",
-      "shortLabel": "ವೈದ್ಯಕೀಯ"
+      "shortLabel": "ವೈದ್ಯಕೀಯ",
+      "fields": {
+        "hospital_clinic": "ಆಸ್ಪತ್ರೆ / ಕ್ಲಿನಿಕ್",
+        "doctor": "ವೈದ್ಯ",
+        "record_id": "ದಾಖಲೆ ID",
+        "date": "ದಿನಾಂಕ",
+        "notes": "ಟಿಪ್ಪಣಿಗಳು"
+      }
     },
     "certificate": {
       "label": "ಪ್ರಮಾಣಪತ್ರ",
-      "shortLabel": "ಪ್ರಮಾಣ"
+      "shortLabel": "ಪ್ರಮಾಣ",
+      "fields": {
+        "certificate_name": "ಪ್ರಮಾಣಪತ್ರ ಹೆಸರು",
+        "issuer": "ವಿತರಕ",
+        "certificate_id": "ಪ್ರಮಾಣಪತ್ರ ID",
+        "issue_date": "ವಿತರಣಾ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ"
+      }
     },
     "contract": {
       "label": "ಒಪ್ಪಂದ",
-      "shortLabel": "ಒಪ್ಪಂದ"
+      "shortLabel": "ಒಪ್ಪಂದ",
+      "fields": {
+        "party": "ಪಕ್ಷ / ಮಾರಾಟಗಾರ",
+        "contract_id": "ಒಪ್ಪಂದ ID",
+        "start_date": "ಆರಂಭಿಕ ದಿನಾಂಕ",
+        "end_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+        "notes": "ಟಿಪ್ಪಣಿಗಳು"
+      }
     },
     "warranty": {
       "label": "ವಾರಂಟಿ",
-      "shortLabel": "ವಾರಂಟಿ"
+      "shortLabel": "ವಾರಂಟಿ",
+      "fields": {
+        "product": "ಉತ್ಪನ್ನ",
+        "brand": "ಬ್ರ್ಯಾಂಡ್",
+        "serial_number": "ಸೀರಿಯಲ್ ಸಂಖ್ಯೆ",
+        "purchase_date": "ಖರೀದಿ ದಿನಾಂಕ",
+        "warranty_expiry": "ವಾರಂಟಿ ಮುಕ್ತಾಯ"
+      }
     },
     "membership": {
       "label": "ಸದಸ್ಯತ್ವ",
-      "shortLabel": "ಸದಸ್ಯ"
+      "shortLabel": "ಸದಸ್ಯ",
+      "fields": {
+        "organization": "ಸಂಸ್ಥೆ",
+        "member_id": "ಸದಸ್ಯ ID",
+        "start_date": "ಆರಂಭಿಕ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ"
+      }
     },
     "subscription": {
       "label": "ಚಂದಾದಾರಿಕೆ",
-      "shortLabel": "ಚಂದಾ"
+      "shortLabel": "ಚಂದಾ",
+      "fields": {
+        "service": "ಸೇವೆ",
+        "plan": "ಯೋಜನೆ",
+        "billing_cycle": "ಬಿಲ್ಲಿಂಗ್ ಸೈಕಲ್",
+        "renewal_date": "ನವೀಕರಣ ದಿನಾಂಕ",
+        "account_email": "ಖಾತೆ ಇಮೇಲ್"
+      }
     },
     "permit": {
       "label": "ಪರವಾನಗಿ (ಪರ್ಮಿಟ್)",
-      "shortLabel": "ಪರ್ಮಿಟ್"
+      "shortLabel": "ಪರ್ಮಿಟ್",
+      "fields": {
+        "permit_type": "ಪರ್ಮಿಟ್ ಪ್ರಕಾರ",
+        "permit_number": "ಪರ್ಮಿಟ್ ಸಂಖ್ಯೆ",
+        "issue_date": "ವಿತರಣಾ ದಿನಾಂಕ",
+        "expiry_date": "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+        "authority": "ಪ್ರಾಧಿಕಾರ"
+      }
     },
     "other": {
       "label": "ಇತರೆ",
-      "shortLabel": "ಇತರೆ"
+      "shortLabel": "ಇತರೆ",
+      "fields": {
+        "reference": "ಉಲ್ಲೇಖ / ID"
+      }
     }
   }
 }

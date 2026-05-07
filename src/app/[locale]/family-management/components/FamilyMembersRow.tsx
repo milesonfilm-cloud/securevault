@@ -28,6 +28,8 @@ export interface FamilyMembersRowProps {
   documentsByMemberId: (id: string) => Document[];
   onEdit: (member: FamilyMember) => void;
   onDelete: (member: FamilyMember) => void;
+  /** Coverflow carousel vs grid of cards */
+  layout?: 'carousel' | 'grid';
 }
 
 /** 3D coverflow of smartwatch-style member cards (side tap = focus, center tap = flip). */
@@ -36,6 +38,7 @@ export default function FamilyMembersRow({
   documentsByMemberId,
   onEdit,
   onDelete,
+  layout = 'carousel',
 }: FamilyMembersRowProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isNarrow, setIsNarrow] = useState(false);
@@ -57,7 +60,7 @@ export default function FamilyMembersRow({
   }, [n]);
 
   useEffect(() => {
-    if (n <= 1) return;
+    if (layout !== 'carousel' || n <= 1) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -69,10 +72,46 @@ export default function FamilyMembersRow({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [n]);
+  }, [n, layout]);
 
   if (n === 0) {
     return null;
+  }
+
+  if (layout === 'grid') {
+    const itemW = isNarrow ? 'min(88vw, 240px)' : 'min(92vw, 340px)';
+
+    return (
+      <div className="relative -mx-4 w-[calc(100%+2rem)] min-w-0 overflow-y-visible sm:-mx-6 sm:w-[calc(100%+3rem)] lg:-mx-8 lg:w-[calc(100%+4rem)]">
+        <div
+          className="flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-visible overscroll-x-contain pb-3 pt-1 pl-4 pr-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:pl-6 sm:pr-6 lg:pl-8 lg:pr-8"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+          role="region"
+          aria-label="Family members — swipe horizontally"
+        >
+          {members.map((member, index) => (
+            <div
+              key={member.id}
+              className="flex shrink-0 snap-center justify-center"
+              style={{ width: itemW }}
+            >
+              <FamilyMemberWatchCard
+                member={member}
+                documents={documentsByMemberId(member.id)}
+                accentIndex={index}
+                onEdit={() => onEdit(member)}
+                onDelete={() => onDelete(member)}
+                isCarouselCenter
+                coverflowChild={false}
+                frontTapOpensVault={layout === 'grid'}
+                cardWidth={isNarrow ? CARD_W_NARROW : CARD_W}
+                cardHeight={isNarrow ? CARD_H_NARROW : CARD_H}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -127,9 +166,8 @@ export default function FamilyMembersRow({
       {n > 1 ? (
         <div
           className={cn(
-            'flex items-center justify-center gap-2 sm:mt-3 sm:gap-4',
-            isNarrow ? 'mt-1.5' : 'mt-3',
-            isNarrow && '-translate-y-1.5 sm:translate-y-0'
+            'flex flex-wrap items-center justify-center gap-2 sm:gap-3',
+            isNarrow ? 'mt-0' : 'mt-1 sm:mt-1.5'
           )}
         >
           <button
@@ -141,26 +179,36 @@ export default function FamilyMembersRow({
             <ChevronLeft className="h-5 w-5" strokeWidth={2} aria-hidden />
           </button>
 
-          <div
-            className="flex max-w-[min(100%,280px)] flex-wrap justify-center gap-2"
-            role="tablist"
-            aria-label="Choose member"
-          >
-            {members.map((member, i) => (
-              <button
-                key={member.id}
-                type="button"
-                role="tab"
-                aria-selected={i === activeIndex}
-                aria-label={`Focus ${member.name}`}
-                className={`h-2 rounded-full transition-all ${
-                  i === activeIndex
-                    ? 'w-6 bg-vault-warm'
-                    : 'w-2 bg-vault-faint/60 hover:bg-vault-muted'
-                }`}
-                onClick={() => setActiveIndex(i)}
-              />
-            ))}
+          <div className="flex min-w-0 max-w-[min(100%,320px)] flex-col items-center gap-2 sm:max-w-none sm:flex-row sm:gap-4">
+            <p
+              className="shrink-0 tabular-nums text-sm font-700 text-vault-text sm:text-base"
+              aria-live="polite"
+            >
+              {activeIndex + 1}
+              <span className="font-600 text-vault-muted"> / </span>
+              {n}
+            </p>
+            <div
+              className="flex flex-wrap justify-center gap-2"
+              role="tablist"
+              aria-label="Choose member"
+            >
+              {members.map((member, i) => (
+                <button
+                  key={member.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === activeIndex}
+                  aria-label={`Focus ${member.name}`}
+                  className={`h-2 rounded-full transition-all ${
+                    i === activeIndex
+                      ? 'w-6 bg-vault-warm'
+                      : 'w-2 bg-vault-faint/60 hover:bg-vault-muted'
+                  }`}
+                  onClick={() => setActiveIndex(i)}
+                />
+              ))}
+            </div>
           </div>
 
           <button

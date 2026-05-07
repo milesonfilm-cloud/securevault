@@ -3,16 +3,29 @@
   "short_name": "SecureVault",
   "description": "Private offline document storage for families",
   "start_url": "/family-management",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#09090b",
+  "background_color": "#f6f5fa",
+  "theme_color": "#4338c9",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/brand/securevault-app-icon.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/securevault-app-icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
     {
       "src": "/brand/vault-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

@@ -2,13 +2,13 @@ import { MEMBER_AVATAR_COLORS } from './memberAvatarColors';
 
 export type PastelLedgerTile = { bg: string; accent: string };
 
-/** Neon — charcoal panels with green / magenta rim light */
+/** Neon — uniform charcoal tiles; soft edge tint only (avoids harsh diagonal bands). */
 const NEON_TILE_GRADIENTS = [
-  'linear-gradient(165deg, #0a0a0c 0%, #121212 42%, #151518 100%)',
-  'linear-gradient(168deg, #080808 0%, #101010 40%, rgba(0, 255, 65, 0.09) 100%)',
-  'linear-gradient(170deg, #0c0c0e 0%, #141416 50%, rgba(255, 0, 85, 0.07) 100%)',
-  'linear-gradient(165deg, #09090b 0%, #121212 45%, #0e0e12 100%)',
-  'linear-gradient(172deg, #050506 0%, #0f0f12 48%, rgba(0, 255, 65, 0.07) 100%)',
+  'linear-gradient(180deg, #141416 0%, #101012 50%, #0e0e10 100%)',
+  'linear-gradient(180deg, #131315 0%, #101012 52%, rgba(0, 255, 65, 0.06) 100%)',
+  'linear-gradient(180deg, #131315 0%, #101012 52%, rgba(255, 0, 85, 0.05) 100%)',
+  'linear-gradient(180deg, #141416 0%, #0f0f12 50%, #0d0d10 100%)',
+  'linear-gradient(180deg, #121214 0%, #0f1012 50%, rgba(0, 255, 65, 0.05) 100%)',
 ] as const;
 
 const PASTEL_LEDGER_TILES_NEON: readonly PastelLedgerTile[] = MEMBER_AVATAR_COLORS.map(

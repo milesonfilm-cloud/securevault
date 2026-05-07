@@ -15,7 +15,6 @@ import {
   Car,
   Users,
   StickyNote,
-  Copy,
   KeyRound,
   Share2,
   BadgeCheck,
@@ -24,9 +23,10 @@ import { toast } from 'sonner';
 import { Document, FamilyMember } from '@/lib/storage';
 import { getCategoryById } from '@/lib/categories';
 import { DEFAULT_EXPIRY_WARN_DAYS, getDocumentExpiryUrgency } from '@/lib/documentExpiry';
-import { hexAlpha } from '@/lib/memberAvatarColors';
+import { hexAlpha, contrastingInitialsHex } from '@/lib/memberAvatarColors';
 import PhotoAttachments from './PhotoAttachments';
 import ShareDocumentModal from '@/components/sharing/ShareDocumentModal';
+import CopyValueButton from '@/components/ui/CopyValueButton';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   CreditCard: <CreditCard size={16} />,
@@ -166,16 +166,6 @@ export default function DocumentList({
 
   const maskValue = (value: string) => '•'.repeat(Math.min(value.length, 12));
 
-  const copyToClipboard = async (label: string, value: string) => {
-    try {
-      if (!value) return;
-      await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied`);
-    } catch {
-      toast.error('Copy failed — browser permission blocked');
-    }
-  };
-
   return (
     <>
       <div id="vault-document-list" className="space-y-2">
@@ -255,17 +245,25 @@ export default function DocumentList({
                 </div>
                 <div className="flex-1 min-w-0">
                   {cat && (
-                    <p
-                      className="text-[10px] font-bold uppercase tracking-[1.5px] leading-tight"
-                      style={{ color: cat.color }}
-                    >
-                      {cat.shortLabel}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-[1.5px] leading-tight"
+                        style={{ color: cat.color }}
+                      >
+                        {cat.shortLabel}
+                      </p>
+                      <CopyValueButton value={cat.label} compact className="p-1" />
+                    </div>
                   )}
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
-                    <p className="text-[15px] font-semibold text-vault-text leading-snug truncate">
+                    <p className="min-w-0 text-[15px] font-semibold leading-snug text-vault-text truncate">
                       {doc.title}
                     </p>
+                    <CopyValueButton
+                      value={doc.title}
+                      compact
+                      className="shrink-0 text-vault-faint"
+                    />
                     {expiryUrgency === 'expired' && (
                       <span className="shrink-0 text-[9px] font-800 uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/25 text-red-200 border border-red-400/30">
                         Expired
@@ -286,13 +284,14 @@ export default function DocumentList({
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
                     {member && (
                       <span
-                        className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-[20px] text-white"
+                        className="inline-flex items-center gap-1.5 rounded-[20px] px-2.5 py-0.5 text-[11px] font-bold"
                         style={{
                           backgroundColor: hexAlpha(member.avatarColor, 0.4),
                           border: `1px solid ${hexAlpha(member.avatarColor, 0.65)}`,
+                          color: contrastingInitialsHex(member.avatarColor),
                         }}
                       >
                         {member.photoDataUrl ? (
@@ -305,6 +304,13 @@ export default function DocumentList({
                         ) : null}
                         {member.name.split(' ')[0]}
                       </span>
+                    )}
+                    {member && (
+                      <CopyValueButton
+                        value={`${member.name} (${member.relationship})`}
+                        compact
+                        className="shrink-0"
+                      />
                     )}
                     {fieldEntries.length > 0 && !isExpanded && (
                       <p className="text-xs font-mono truncate text-vault-muted">
@@ -332,10 +338,6 @@ export default function DocumentList({
                       const isSensitive = catField?.sensitive;
                       const maskKey = `${doc.id}-${key}`;
                       const isMasked = isSensitive && !maskedFields.has(maskKey);
-                      const isPasswordDoc = doc.categoryId === 'password-vault';
-                      const canQuickCopy =
-                        isPasswordDoc && (key === 'User ID / Email' || key === 'Password');
-                      const quickCopyLabel = key === 'Password' ? 'Password' : 'User ID';
 
                       return (
                         <div
@@ -343,21 +345,19 @@ export default function DocumentList({
                           className="neo-inset rounded-xl px-3 py-2"
                         >
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-xs font-medium text-vault-muted">{key}</p>
-                            <div className="flex items-center gap-2">
-                              {canQuickCopy && (
-                                <button
-                                  onClick={() => copyToClipboard(quickCopyLabel, value)}
-                                  className="text-vault-faint hover:text-vault-warm transition-colors"
-                                  title={`Copy ${quickCopyLabel}`}
-                                >
-                                  <Copy size={12} />
-                                </button>
-                              )}
+                            <p className="min-w-0 flex-1 text-xs font-medium text-vault-muted">
+                              {key}
+                            </p>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <CopyValueButton value={value} compact />
                               {isSensitive && (
                                 <button
-                                  onClick={() => toggleMask(maskKey)}
-                                  className="text-vault-faint hover:text-vault-warm transition-colors"
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleMask(maskKey);
+                                  }}
+                                  className="rounded-lg p-1.5 text-vault-faint transition-colors hover:text-vault-warm"
                                   title={isMasked ? 'Reveal value' : 'Hide value'}
                                 >
                                   {isMasked ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -374,22 +374,35 @@ export default function DocumentList({
                   </div>
 
                   {doc.notes && (
-                    <div className="mt-2.5 flex items-start gap-2 rounded-xl px-3 py-2 border border-border bg-vault-elevated">
-                      <StickyNote size={13} className="mt-0.5 flex-shrink-0 text-vault-warm" />
-                      <p className="text-xs text-vault-muted">{doc.notes}</p>
+                    <div className="mt-2.5 rounded-xl border border-border bg-vault-elevated px-3 py-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 flex-1 items-start gap-2">
+                          <StickyNote size={13} className="mt-0.5 shrink-0 text-vault-warm" />
+                          <p className="min-w-0 text-xs text-vault-muted">{doc.notes}</p>
+                        </div>
+                        <CopyValueButton value={doc.notes} compact className="shrink-0" />
+                      </div>
                     </div>
                   )}
 
                   {doc.tags.length > 0 && (
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {doc.tags.map((tag) => (
-                        <span
-                          key={`tag-${doc.id}-${tag}`}
-                          className="neo-pill text-xs px-2.5 py-1 rounded-full font-bold bg-vault-elevated text-vault-muted border border-border"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
+                    <div className="mt-2.5">
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <p className="text-[11px] font-600 uppercase tracking-wide text-vault-faint">
+                          Tags
+                        </p>
+                        <CopyValueButton value={doc.tags.join(', ')} compact className="shrink-0" />
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {doc.tags.map((tag) => (
+                          <span
+                            key={`tag-${doc.id}-${tag}`}
+                            className="neo-pill text-xs px-2.5 py-1 rounded-full font-bold bg-vault-elevated text-vault-muted border border-border"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
 

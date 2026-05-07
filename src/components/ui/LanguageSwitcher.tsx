@@ -32,7 +32,7 @@ export default function LanguageSwitcher({ className = '' }: { className?: strin
     ta: t('ta'),
     te: t('te'),
     kn: t('kn'),
-    bn: t('bn'),
+    ml: t('ml'),
   };
 
   return (

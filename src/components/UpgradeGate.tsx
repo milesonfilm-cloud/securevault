@@ -6,7 +6,7 @@ import { Lock } from 'lucide-react';
 
 interface Props {
   feature: keyof PlanLimits;
-  requiredPlan?: 'Pro' | 'Elite';
+  requiredPlan?: 'Pro';
   children: React.ReactNode;
   fallback?: React.ReactNode;
 }

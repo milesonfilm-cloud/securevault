@@ -17,10 +17,13 @@ import VaultPageHeading from '@/components/ui/VaultPageHeading';
 import AuditLogPanel from '@/components/AuditLogPanel';
 import UpgradeGate from '@/components/UpgradeGate';
 import TotpSetupModal from '@/components/TotpSetupModal';
+import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 
 export default function SettingsExportContent() {
   const ts = useTranslations('settings');
   const [totpOpen, setTotpOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="mx-auto min-h-full max-w-screen-2xl bg-vault-bg p-4 lg:p-6">
@@ -54,6 +57,37 @@ export default function SettingsExportContent() {
         <LanguageSwitcher className="max-w-xs" />
       </div>
 
+      <div className="neo-card mb-6 rounded-2xl p-5">
+        <h3 className="mb-1 text-sm font-800 text-vault-text">{ts('appearance')}</h3>
+        <p className="mb-3 text-xs text-vault-muted">{ts('appearanceSubtitle')}</p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setTheme('neon')}
+            className={cn(
+              'rounded-full px-4 py-2 text-xs font-700 transition-all',
+              theme === 'neon'
+                ? 'bg-vault-warm text-vault-ink shadow-[0_4px_14px_rgba(33,33,33,0.12)]'
+                : 'border border-[color:var(--color-border)] bg-vault-elevated text-vault-text hover:opacity-90'
+            )}
+          >
+            {ts('themeNeon')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setTheme('pastel')}
+            className={cn(
+              'rounded-full px-4 py-2 text-xs font-700 transition-all',
+              theme === 'pastel'
+                ? 'bg-vault-warm text-vault-ink shadow-[0_4px_14px_rgba(33,33,33,0.12)]'
+                : 'border border-[color:var(--color-border)] bg-vault-elevated text-vault-text hover:opacity-90'
+            )}
+          >
+            {ts('themePastel')}
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
         <div className="space-y-5">
           <StorageMeter />
@@ -69,12 +103,12 @@ export default function SettingsExportContent() {
 
         <div className="space-y-5 lg:col-span-2 xl:col-span-1">
           <ImportPanel />
-          <UpgradeGate feature="auditLog" requiredPlan="Elite">
+          <UpgradeGate feature="auditLog" requiredPlan="Pro">
             <div className="neo-card rounded-2xl p-5">
               <AuditLogPanel />
             </div>
           </UpgradeGate>
-          <UpgradeGate feature="totp2fa" requiredPlan="Elite">
+          <UpgradeGate feature="totp2fa" requiredPlan="Pro">
             <div className="neo-card rounded-2xl p-5 space-y-3">
               <h3 className="text-sm font-800 text-vault-text">Two-factor authentication</h3>
               <p className="text-xs text-vault-muted leading-relaxed">

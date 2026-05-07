@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
-import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
+import { BRAND_LOGO_HEIGHT, BRAND_LOGO_SRC, BRAND_LOGO_WIDTH } from '@/lib/brandLogo';
 import { getStoredVerifier } from '@/lib/vaultSession';
 import { completeAuthIntroSession } from '@/lib/authIntroSession';
 
-const TITLE = 'SECUREVAULT';
+const TITLE_SECURE = 'SECURE';
+const TITLE_VAULT = 'VAULT';
 const TAG = 'SECURE DIGITAL MANAGER';
 
 type Step = 'hero' | 'onboarding';
@@ -79,23 +81,25 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
   }, []);
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-vault-bg px-4 py-12">
+    <div className="auth-welcome-banner relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden px-4 py-12">
       <button
         type="button"
         onClick={onContinue}
-        className="absolute right-4 top-4 z-20 rounded-[10px] px-3 py-1.5 text-xs font-600 text-vault-muted transition-colors hover:bg-white/5 hover:text-vault-warm"
+        className="absolute right-4 top-4 z-20 rounded-[10px] px-3 py-1.5 text-xs font-600 text-neutral-500 transition-colors hover:bg-black/[0.04] hover:text-violet-800"
       >
         Skip to tour
       </button>
       <div className="pointer-events-none absolute inset-0">
         <motion.div
-          className="absolute -left-[30%] top-[10%] h-[min(520px,90vw)] w-[min(520px,90vw)] rounded-full bg-vault-warm/18 blur-[100px]"
-          animate={{ x: [0, 30, 0], y: [0, 20, 0], opacity: [0.12, 0.22, 0.12] }}
+          className="absolute -left-[30%] top-[10%] h-[min(520px,90vw)] w-[min(520px,90vw)] rounded-full blur-[100px]"
+          style={{ backgroundColor: 'rgba(123, 111, 212, 0.16)' }}
+          animate={{ x: [0, 30, 0], y: [0, 20, 0], opacity: [0.4, 0.55, 0.4] }}
           transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className="absolute -right-[25%] bottom-[5%] h-[min(440px,80vw)] w-[min(440px,80vw)] rounded-full bg-vault-coral/14 blur-[90px]"
-          animate={{ x: [0, -24, 0], scale: [1, 1.06, 1], opacity: [0.1, 0.18, 0.1] }}
+          className="absolute -right-[25%] bottom-[5%] h-[min(440px,80vw)] w-[min(440px,80vw)] rounded-full blur-[90px]"
+          style={{ backgroundColor: 'rgba(167, 243, 208, 0.22)' }}
+          animate={{ x: [0, -24, 0], scale: [1, 1.06, 1], opacity: [0.35, 0.5, 0.35] }}
           transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut', delay: 0.4 }}
         />
         <div
@@ -108,12 +112,12 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
       </div>
 
       <div className="relative z-10 flex w-full max-w-lg flex-col items-center text-center">
-        <div className="relative mb-2 flex h-[min(280px,62vw)] w-[min(280px,62vw)] items-center justify-center">
+        <div className="relative mb-2 flex min-h-[min(360px,78vw)] w-full max-w-[min(360px,92vw)] items-center justify-center">
           <motion.div
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[min(200px,48vw)] w-[min(200px,48vw)] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[min(220px,52vw)] w-[min(220px,52vw)] -translate-x-1/2 -translate-y-1/2 rounded-full"
             style={{
               background:
-                'radial-gradient(circle, rgba(240,195,142,0.55) 0%, rgba(240,195,142,0.08) 42%, transparent 70%)',
+                'radial-gradient(circle, rgba(123,111,212,0.32) 0%, rgba(167,243,208,0.14) 42%, transparent 72%)',
             }}
             initial={{ scale: 0.4, opacity: 0 }}
             animate={{ scale: [1, 1.12, 1], opacity: [0.75, 1, 0.75] }}
@@ -123,11 +127,13 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
           {FRAGMENTS.map((f, i) => (
             <motion.div
               key={i}
-              className="absolute left-1/2 top-1/2 h-11 w-11 border border-vault-warm/35 bg-vault-warm/10 shadow-[0_0_24px_rgba(240,195,142,0.12)]"
+              className="absolute left-1/2 top-1/2 h-11 w-11 border shadow-[0_0_24px_rgba(0,0,0,0.2)]"
               style={{
                 clipPath: f.clip,
                 marginLeft: -22,
                 marginTop: -22,
+                borderColor: i % 2 === 0 ? 'rgba(123, 111, 212, 0.35)' : 'rgba(52, 211, 153, 0.4)',
+                backgroundColor: i % 2 === 0 ? 'rgba(123, 111, 212, 0.08)' : 'rgba(167, 243, 208, 0.2)',
               }}
               initial={{ x: f.fromX, y: f.fromY, opacity: 0, rotate: 0, scale: 0.3 }}
               animate={{ x: f.toX, y: f.toY, opacity: 0.92, rotate: f.rotate, scale: 1 }}
@@ -150,19 +156,21 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-              className="drop-shadow-[0_24px_56px_rgba(0,0,0,0.55)]"
+              className="drop-shadow-[0_20px_40px_rgba(33,33,33,0.14)]"
             >
-              <VaultBrandIcon
-                variant="neon"
-                aria-label=""
-                size={64}
-                className="h-[min(220px,52vw)] w-[min(220px,52vw)] max-h-[260px] max-w-[260px]"
+              <Image
+                src={BRAND_LOGO_SRC}
+                alt=""
+                width={BRAND_LOGO_WIDTH}
+                height={BRAND_LOGO_HEIGHT}
+                className="h-[min(300px,64vw)] w-auto max-h-[360px] object-contain"
+                priority
               />
             </motion.div>
           </motion.div>
 
           <motion.div
-            className="absolute -right-1 top-[18%] z-20 flex h-9 w-9 items-center justify-center rounded-xl border border-vault-warm/40 bg-vault-warm/15"
+            className="absolute -right-1 top-[18%] z-20 flex h-9 w-9 items-center justify-center rounded-xl border border-violet-200/90 bg-white shadow-md"
             initial={{ scale: 0, rotate: -40 }}
             animate={{ scale: 1, rotate: [0, 6, -6, 0] }}
             transition={{
@@ -170,33 +178,53 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
               rotate: { duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 1 },
             }}
           >
-            <Sparkles className="h-4 w-4 text-vault-warm" aria-hidden />
+            <Sparkles className="h-4 w-4 text-[#4338C9]" aria-hidden />
           </motion.div>
         </div>
 
         <div className="mt-2" style={{ perspective: 800 }}>
-          <h1 className="flex flex-wrap justify-center gap-y-1 text-[clamp(1.65rem,6.5vw,2.35rem)] font-semibold tracking-[0.12em] text-vault-muted">
-            {TITLE.split('').map((ch, i) => (
-              <motion.span
-                key={`${ch}-${i}`}
-                className="inline-block"
-                initial={{ opacity: 0, y: 36, rotateX: -78 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{
-                  delay: 0.35 + i * 0.045,
-                  type: 'spring',
-                  stiffness: 280,
-                  damping: 22,
-                }}
-              >
-                {ch}
-              </motion.span>
-            ))}
+          <h1 className="flex flex-wrap items-baseline justify-center gap-x-4 gap-y-1 text-[clamp(1.65rem,6.5vw,2.35rem)] font-semibold tracking-[0.12em]">
+            <span className="flex">
+              {TITLE_SECURE.split('').map((ch, i) => (
+                <motion.span
+                  key={`${ch}-s-${i}`}
+                  className="inline-block text-neutral-800"
+                  initial={{ opacity: 0, y: 36, rotateX: -78 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{
+                    delay: 0.35 + i * 0.045,
+                    type: 'spring',
+                    stiffness: 280,
+                    damping: 22,
+                  }}
+                >
+                  {ch}
+                </motion.span>
+              ))}
+            </span>
+            <span className="flex text-[#4338C9]">
+              {TITLE_VAULT.split('').map((ch, i) => (
+                <motion.span
+                  key={`${ch}-v-${i}`}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 36, rotateX: -78 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{
+                    delay: 0.35 + (TITLE_SECURE.length + 1 + i) * 0.045,
+                    type: 'spring',
+                    stiffness: 280,
+                    damping: 22,
+                  }}
+                >
+                  {ch}
+                </motion.span>
+              ))}
+            </span>
           </h1>
         </div>
 
         <motion.p
-          className="mt-4 max-w-md text-[11px] font-700 uppercase tracking-[0.42em] text-vault-muted"
+          className="mt-4 max-w-md text-[11px] font-700 uppercase tracking-[0.42em] text-neutral-500"
           initial={{ opacity: 0, letterSpacing: '0.65em' }}
           animate={{ opacity: 1, letterSpacing: '0.42em' }}
           transition={{ delay: 0.95, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -205,7 +233,7 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
         </motion.p>
 
         <motion.p
-          className="mt-5 max-w-sm text-sm leading-relaxed text-vault-faint"
+          className="mt-5 max-w-sm text-sm leading-relaxed text-neutral-600"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.15, duration: 0.5 }}
@@ -226,7 +254,7 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
               <motion.button
                 type="button"
                 onClick={onContinue}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-vault-warm px-6 py-3.5 text-sm font-800 text-vault-ink shadow-vault"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-[14px] bg-gradient-to-br from-[#7B6FD4] to-[#4338C9] px-6 py-3.5 text-sm font-800 text-white shadow-[0_14px_32px_rgba(67,56,201,0.28)]"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -236,11 +264,11 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
               <button
                 type="button"
                 onClick={onContinue}
-                className="text-[11px] font-600 text-vault-muted underline-offset-4 hover:text-vault-warm hover:underline"
+                className="text-[11px] font-600 text-neutral-500 underline-offset-4 hover:text-violet-800 hover:underline"
               >
                 Skip animation — go to tour
               </button>
-              <p className="text-center text-[10px] text-vault-faint">
+              <p className="text-center text-[10px] text-neutral-400">
                 Next: quick tour, then unlock your vault
               </p>
             </motion.div>
@@ -283,7 +311,7 @@ export default function LandingClient() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="flex min-h-[100dvh] flex-col items-center justify-center bg-vault-bg px-4 py-10"
+          className="flex min-h-[100dvh] flex-col items-center justify-center px-4 py-10 auth-welcome-banner"
         >
           <AuthWelcomePanel phase={vaultPhase} onFinish={goVault} />
         </motion.div>

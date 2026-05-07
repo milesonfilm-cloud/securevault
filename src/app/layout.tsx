@@ -6,10 +6,11 @@ import {
   DM_Sans,
   DM_Serif_Display,
   Roboto_Condensed,
-  Inter,
+  Urbanist,
 } from 'next/font/google';
 import '../styles/tailwind.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { PastelMemberAccentProvider } from '@/context/PastelMemberAccentContext';
 import VaultToaster from '@/components/VaultToaster';
 import SupabaseSessionBootstrap from '@/components/SupabaseSessionBootstrap';
 import { cn } from '@/lib/utils';
@@ -56,11 +57,11 @@ const fontNeonStack = Roboto_Condensed({
   fallback: ['system-ui', 'sans-serif'],
 });
 
-/** Inter — Voyager demo gallery only (app themes use Plus Jakarta / DM Sans / Roboto Condensed). */
-const fontPastel = Inter({
+/** Urbanist — Pastel / light “Family Vault” home theme. */
+const fontUrbanist = Urbanist({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-pastel',
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-urbanist',
   display: 'swap',
   fallback: ['system-ui', 'sans-serif'],
 });
@@ -69,7 +70,10 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#09090b',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f6f5fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -79,14 +83,26 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   icons: {
     icon: [
-      { url: '/favicon.ico', type: 'image/x-icon' },
+      {
+        url: '/brand/securevault-app-icon.png',
+        type: 'image/png',
+        sizes: '512x512',
+      },
+      {
+        url: '/brand/securevault-app-icon.png',
+        type: 'image/png',
+        sizes: '192x192',
+      },
       { url: '/brand/vault-mark.svg', type: 'image/svg+xml', sizes: 'any' },
     ],
-    apple: '/brand/vault-mark.svg',
+    apple: [
+      { url: '/brand/securevault-app-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: [{ url: '/brand/securevault-app-icon.png', type: 'image/png', sizes: '192x192' }],
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'default',
     title: 'SecureVault',
   },
 };
@@ -102,11 +118,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         fontWellnessSans.variable,
         fontWellnessSerif.variable,
         fontNeonStack.variable,
-        fontPastel.variable,
+        fontUrbanist.variable,
         'font-sans'
       )}
       data-theme="neon"
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='sv_ui_theme';var t=localStorage.getItem(k);document.documentElement.setAttribute('data-theme',t==='pastel'?'pastel':'neon');}catch(e){document.documentElement.setAttribute('data-theme','neon');}})();`,
+          }}
+        />
+      </head>
       <body className="overflow-x-hidden antialiased [text-size-adjust:100%]">
         <a
           href="#main-content"
@@ -115,8 +138,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         <ThemeProvider>
-          <SupabaseSessionBootstrap />
-          {children}
+          <PastelMemberAccentProvider>
+            <SupabaseSessionBootstrap />
+            {children}
+          </PastelMemberAccentProvider>
         </ThemeProvider>
         <VaultToaster />
       </body>

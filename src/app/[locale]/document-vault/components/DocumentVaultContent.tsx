@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Link } from '@/i18n/navigation';
-import { Plus, Search, X, RefreshCw } from 'lucide-react';
+import { Crown, Plus, Search, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Document, VaultData } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
@@ -18,6 +18,10 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import VaultPageHeading from '@/components/ui/VaultPageHeading';
 import { appendAuditEntry } from '@/lib/auditLog';
 import { documentMatchesStack, stackColorFromId } from '@/lib/documentStacks';
+import { resolveMemberProfileById, isResolvableMemberId } from '@/lib/pastelDisplayMembers';
+import { getBlockedCategory, isPro } from '@/lib/subscription';
+import { getCategoryById } from '@/lib/categories';
+import ProUpgradeModal from '@/components/ui/ProUpgradeModal';
 
 export default function DocumentVaultContent() {
   const router = useRouter();
@@ -40,6 +44,9 @@ export default function DocumentVaultContent() {
   const [formPrefill, setFormPrefill] = useState<DocumentPrefill | null>(null);
   const [editDoc, setEditDoc] = useState<Document | null>(null);
   const [deleteDoc, setDeleteDoc] = useState<Document | null>(null);
+  const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; categoryLabel?: string }>({
+    open: false,
+  });
   /** Notification strip → scroll/highlight document in list */
   const [vaultListNav, setVaultListNav] = useState<{
     docId: string;
@@ -70,7 +77,7 @@ export default function DocumentVaultContent() {
   const memberParam = searchParams.get('member');
   const activeMember = useMemo((): string | null => {
     if (!memberParam) return null;
-    return vaultData.members.some((m) => m.id === memberParam) ? memberParam : null;
+    return isResolvableMemberId(memberParam, vaultData.members) ? memberParam : null;
   }, [memberParam, vaultData.members]);
 
   const setMemberFilter = useCallback(
@@ -108,6 +115,17 @@ export default function DocumentVaultContent() {
   }, [stackFilteredDocuments, activeCategory, activeMember, search]);
 
   const handleSaveDocument = async (docData: Omit<Document, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Enforce free-plan limit: 1 document per category
+    if (!editDoc && !isPro(vaultData.settings)) {
+      const blocked = getBlockedCategory(vaultData.documents, docData.categoryId, vaultData.settings);
+      if (blocked) {
+        setShowAddModal(false);
+        const cat = getCategoryById(blocked as Parameters<typeof getCategoryById>[0]);
+        setUpgradeModal({ open: true, categoryLabel: cat?.label ?? blocked });
+        return;
+      }
+    }
+
     const now = new Date().toISOString();
     let updated: VaultData;
 
@@ -174,7 +192,7 @@ export default function DocumentVaultContent() {
   const activeFiltersCount = [activeCategory, activeMember, search, stackId].filter(Boolean).length;
 
   const activeMemberProfile = useMemo(
-    () => vaultData.members.find((m) => m.id === activeMember) ?? null,
+    () => (activeMember ? resolveMemberProfileById(activeMember, vaultData.members) : null),
     [vaultData.members, activeMember]
   );
 
@@ -330,6 +348,37 @@ export default function DocumentVaultContent() {
             ) : null
           }
         />
+
+        {/* Free plan limit banner — dark purple Pro accent */}
+        {!isPro(vaultData.settings) && (
+          <div
+            className="mb-5 flex items-center justify-between gap-3 overflow-hidden rounded-2xl px-4 py-3 text-white shadow-[0_8px_24px_rgba(67,56,201,0.25)]"
+            style={{
+              background: 'linear-gradient(135deg, #4338C9 0%, #6d28d9 50%, #7c3aed 100%)',
+            }}
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 ring-1 ring-white/25 backdrop-blur-sm">
+                <Crown className="h-4 w-4 text-yellow-300" strokeWidth={2.4} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-bold text-white">
+                  Free Plan — 1 document per category
+                </p>
+                <p className="text-[11px] text-white/80">
+                  Upgrade to Pro for unlimited documents in every category.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUpgradeModal({ open: true })}
+              className="shrink-0 rounded-full bg-yellow-300 px-3.5 py-1.5 text-[11px] font-extrabold text-[#4338C9] shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-all active:scale-95"
+            >
+              Upgrade
+            </button>
+          </div>
+        )}
 
         <VaultDashboardStats vaultData={vaultData} />
 
@@ -497,6 +546,12 @@ export default function DocumentVaultContent() {
         description={`Remove "${deleteDoc?.title}" from the vault? This cannot be undone.`}
         confirmLabel="Delete Document"
         isDanger
+      />
+
+      <ProUpgradeModal
+        isOpen={upgradeModal.open}
+        onClose={() => setUpgradeModal({ open: false })}
+        blockedCategory={upgradeModal.categoryLabel}
       />
     </div>
   );

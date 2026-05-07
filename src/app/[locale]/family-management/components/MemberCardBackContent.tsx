@@ -10,6 +10,7 @@ import { isDemoMemberId } from '@/lib/demoFamilyMembers';
 import MemberAvatar from '@/components/MemberAvatar';
 import { cn } from '@/lib/utils';
 import { WATCH_UI_INTER, WATCH_UI_MONO } from '@/lib/watchUiFonts';
+import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
 
 function formatDOB(dob: string): string {
   if (!dob) return '—';
@@ -125,100 +126,125 @@ export default function MemberCardBackContent({
         </p>
       ) : null}
 
-      <div className={cn('flex items-start justify-between', watch && compact ? 'mb-2' : 'mb-4')}>
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <MemberAvatar
-            name={member.name}
-            avatarColor={member.avatarColor}
-            photoDataUrl={member.photoDataUrl}
-            className={
-              watch
-                ? compact
-                  ? 'h-11 w-11 flex-shrink-0 rounded-xl text-base ring-1 ring-white/10'
-                  : 'h-14 w-14 flex-shrink-0 rounded-2xl text-lg ring-1 ring-white/10'
-                : 'h-14 w-14 flex-shrink-0 rounded-2xl text-lg'
-            }
-            textClassName={compact ? 'text-base' : 'text-lg'}
-          />
-          <div className="min-w-0">
-            <h3
-              className={cn(
-                'truncate font-semibold',
-                watch ? 'text-white' : 'text-vault-text',
-                compact ? 'text-base' : 'text-lg'
-              )}
-              style={watch ? { fontFamily: WATCH_UI_INTER } : undefined}
-            >
-              {member.name}
-            </h3>
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-              <span className={`text-xs font-600 ${watch ? 'text-[#888]' : 'text-vault-muted'}`}>
-                {member.relationship}
-              </span>
-              {member.dob ? (
-                <>
-                  <span className={watch ? 'text-[#555]' : 'text-vault-faint'}>·</span>
-                  <span className={`text-xs ${watch ? 'text-[#888]' : 'text-vault-muted'}`}>
-                    {getAge(member.dob)}
-                  </span>
-                </>
-              ) : null}
+      <div
+        className={cn(
+          watch ? cn('relative', compact ? 'mb-2' : 'mb-4') : 'mb-4 flex items-start justify-between'
+        )}
+      >
+        {watch ? (
+          <>
+            {!demo ? (
+              <div
+                className="absolute right-0 top-0 z-10 flex shrink-0 items-center gap-0.5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className={
+                    compact
+                      ? 'rounded-lg p-1.5 text-[#888] transition-colors hover:bg-white/10 hover:text-white'
+                      : 'rounded-xl p-2 text-[#888] transition-colors hover:bg-white/10 hover:text-white sm:p-1.5'
+                  }
+                  title="Edit member"
+                >
+                  <Pencil size={compact ? 14 : 16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className={
+                    compact
+                      ? 'rounded-lg p-1.5 text-[#888] transition-colors hover:bg-red-500/15 hover:text-red-400'
+                      : 'rounded-xl p-2 text-[#888] transition-colors hover:bg-red-500/15 hover:text-red-400 sm:p-1.5'
+                  }
+                  title="Delete member — removes all their documents"
+                >
+                  <Trash2 size={compact ? 14 : 16} />
+                </button>
+              </div>
+            ) : null}
+            <div className={cn('flex flex-col items-center text-center', compact ? 'px-4' : 'px-6')}>
+              <MemberAvatar
+                name={member.name}
+                avatarColor={member.avatarColor}
+                photoDataUrl={member.photoDataUrl}
+                className={
+                  compact
+                    ? 'h-11 w-11 shrink-0 rounded-xl text-base ring-1 ring-white/10'
+                    : 'h-14 w-14 shrink-0 rounded-2xl text-lg ring-1 ring-white/10'
+                }
+                textClassName={compact ? 'text-base' : 'text-lg'}
+              />
+              <h3
+                className={cn(
+                  'mt-2 line-clamp-2 text-balance font-semibold text-white',
+                  compact ? 'text-base leading-snug' : 'text-lg'
+                )}
+                style={{ fontFamily: WATCH_UI_INTER }}
+              >
+                {member.name}
+              </h3>
+              <div className="mt-1 flex flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5">
+                <span className="text-xs font-600 text-[#888]">{member.relationship}</span>
+                {member.dob ? (
+                  <>
+                    <span className="text-[#555]">·</span>
+                    <span className="text-xs text-[#888]">{getAge(member.dob)}</span>
+                  </>
+                ) : null}
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        ) : (
+          <>
+            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+              <MemberAvatar
+                name={member.name}
+                avatarColor={member.avatarColor}
+                photoDataUrl={member.photoDataUrl}
+                className="h-14 w-14 flex-shrink-0 rounded-2xl text-lg"
+                textClassName="text-lg"
+              />
+              <div className="min-w-0">
+                <h3 className="truncate text-lg font-semibold text-vault-text">{member.name}</h3>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                  <span className="text-xs font-600 text-vault-muted">{member.relationship}</span>
+                  {member.dob ? (
+                    <>
+                      <span className="text-vault-faint">·</span>
+                      <span className="text-xs text-vault-muted">{getAge(member.dob)}</span>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
 
-        {!demo ? (
-          <div className="flex shrink-0 items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={onEdit}
-              className={
-                watch
-                  ? compact
-                    ? 'rounded-lg p-1.5 text-[#888] transition-colors hover:bg-white/10 hover:text-white'
-                    : 'rounded-xl p-2 text-[#888] transition-colors hover:bg-white/10 hover:text-white sm:p-1.5'
-                  : 'rounded-xl p-2 text-vault-faint transition-colors hover:bg-vault-elevated/50 hover:text-vault-warm sm:p-1.5'
-              }
-              title="Edit member"
-            >
-              <Pencil size={compact ? 14 : 16} />
-            </button>
-            <button
-              type="button"
-              onClick={onDelete}
-              className={
-                watch
-                  ? compact
-                    ? 'rounded-lg p-1.5 text-[#888] transition-colors hover:bg-red-500/15 hover:text-red-400'
-                    : 'rounded-xl p-2 text-[#888] transition-colors hover:bg-red-500/15 hover:text-red-400 sm:p-1.5'
-                  : 'rounded-xl p-2 text-vault-faint transition-colors hover:bg-red-500/10 hover:text-red-400 sm:p-1.5'
-              }
-              title="Delete member — removes all their documents"
-            >
-              <Trash2 size={compact ? 14 : 16} />
-            </button>
-          </div>
-        ) : null}
+            {!demo ? (
+              <div className="flex shrink-0 items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={onEdit}
+                  className="rounded-xl p-2 text-vault-faint transition-colors hover:bg-vault-elevated/50 hover:text-vault-warm sm:p-1.5"
+                  title="Edit member"
+                >
+                  <Pencil size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={onDelete}
+                  className="rounded-xl p-2 text-vault-faint transition-colors hover:bg-red-500/10 hover:text-red-400 sm:p-1.5"
+                  title="Delete member — removes all their documents"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
 
-      {watch ? (
-        <p
-          className={cn(
-            'text-[#888]',
-            compact ? 'mb-1.5 text-[10px] leading-snug' : 'mb-4 text-[11px] leading-relaxed'
-          )}
-        >
-          <span className="font-600 text-[#666]">Added </span>
-          <span className="font-700 text-white tabular-nums" style={{ fontFamily: WATCH_UI_MONO }}>
-            {formatShortDate(member.createdAt)}
-          </span>
-          <span className="mx-1.5 text-[#555]">·</span>
-          <span className="font-600 text-[#666]">Last active </span>
-          <span className="font-700 text-white tabular-nums" style={{ fontFamily: WATCH_UI_MONO }}>
-            {lastActivity ? formatShortDate(new Date(lastActivity).toISOString()) : '—'}
-          </span>
-        </p>
-      ) : (
+      {!watch ? (
         <div className="mb-4 grid grid-cols-2 gap-2 text-[11px]">
           <div className="rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated/35 px-2.5 py-2">
             <div className="mb-0.5 flex items-center gap-1 text-vault-faint">
@@ -239,13 +265,13 @@ export default function MemberCardBackContent({
             </p>
           </div>
         </div>
-      )}
+      ) : null}
 
       {member.dob ? (
         <p
           className={cn(
             watch && compact ? 'mb-1.5 text-[10px] leading-tight' : 'mb-3 text-xs',
-            watch ? 'text-[#888]' : 'text-vault-muted'
+            watch ? 'text-center text-[#888]' : 'text-vault-muted'
           )}
         >
           <span className={`font-600 ${watch ? 'text-[#666]' : 'text-vault-faint'}`}>
@@ -258,7 +284,8 @@ export default function MemberCardBackContent({
       <div
         className={cn(
           'flex flex-wrap items-center gap-1.5 sm:gap-2',
-          watch && compact ? 'mb-1.5' : 'mb-2'
+          watch && compact ? 'mb-1.5' : 'mb-2',
+          watch && 'justify-center text-center'
         )}
       >
         <FileText
@@ -290,6 +317,30 @@ export default function MemberCardBackContent({
 
       {categoryBreakdown.length > 0 ? (
         <>
+          <div
+            className={cn(
+              'mb-2 flex flex-wrap items-center justify-center gap-1',
+              watch && compact ? 'gap-0.5' : 'gap-1'
+            )}
+            aria-label="Categories with documents"
+          >
+            {categoryBreakdown.map(({ cat, count }) => (
+              <span
+                key={`cat-ico-${member.id}-${cat.id}`}
+                title={`${cat.shortLabel} (${count})`}
+                className={cn(
+                  'inline-flex items-center justify-center rounded-lg border shadow-sm',
+                  watch && compact ? 'h-6 w-6' : 'h-7 w-7',
+                  watch
+                    ? 'border-white/12 bg-white/[0.07]'
+                    : 'border-[color:var(--color-border)] bg-vault-elevated/50'
+                )}
+                style={{ color: cat.color }}
+              >
+                <CategoryLucideIcon name={cat.icon} size={watch && compact ? 11 : 13} />
+              </span>
+            ))}
+          </div>
           <div
             className={cn(
               'flex w-full overflow-hidden rounded-full ring-1',

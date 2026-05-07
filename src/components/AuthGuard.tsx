@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-react';
+import Image from 'next/image';
 import BackupReminderBanner from '@/components/ui/BackupReminderBanner';
-import VaultBrandIcon from '@/components/ui/VaultBrandIcon';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
 import {
   isBiometricSupported,
@@ -23,6 +24,7 @@ import {
   setStoredVerifier,
   setVaultKey,
 } from '@/lib/vaultSession';
+import { BRAND_LOGO_HEIGHT, BRAND_LOGO_SRC, BRAND_LOGO_WIDTH } from '@/lib/brandLogo';
 import { persistUnlockedVaultKey, tryRestoreVaultKeyFromPersist } from '@/lib/vaultKeyPersist';
 import {
   computePinVerifier,
@@ -54,6 +56,8 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
   const t = useTranslations('auth');
+  const router = useRouter();
+  const pathname = usePathname();
   const [phase, setPhase] = useState<'loading' | 'setup' | 'login' | 'unlocked'>('loading');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -147,7 +151,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     safeSessionSet(SESSION_KEY, 'true');
     setSuccess(true);
     setPhase('unlocked');
-  }, []);
+    if (pathname !== '/family-management') {
+      router.replace('/family-management');
+    }
+  }, [pathname, router]);
 
   const handleSetup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -484,7 +491,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (showIntro) {
     return (
-      <div className="min-h-[100dvh] auth-bg flex flex-col items-center justify-center p-4 py-10 relative overflow-x-hidden">
+      <div className="auth-welcome-banner flex min-h-[100dvh] flex-col items-center justify-center p-4 py-10 relative overflow-x-hidden">
         <AuthWelcomePanel phase={phase} onFinish={completeAuthIntro} />
       </div>
     );
@@ -501,11 +508,18 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <div
             className={`relative mb-4 transition-all duration-500 ${success ? 'scale-110' : ''}`}
           >
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated">
+            <div className="flex min-h-[6.75rem] w-full max-w-[280px] items-center justify-center rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated px-5 py-3.5">
               {success ? (
                 <CheckCircle2 size={36} className="text-vault-warm animate-scale-in" />
               ) : (
-                <VaultBrandIcon variant="neon" size={48} aria-label="SecureVault" />
+                <Image
+                  src={BRAND_LOGO_SRC}
+                  alt="SecureVault"
+                  width={BRAND_LOGO_WIDTH}
+                  height={BRAND_LOGO_HEIGHT}
+                  className="h-[5.25rem] w-auto max-h-[108px] object-contain"
+                  priority
+                />
               )}
             </div>
           </div>

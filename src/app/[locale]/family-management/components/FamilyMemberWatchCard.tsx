@@ -13,6 +13,7 @@ import {
   watchAccentGlow,
 } from '@/lib/watchUiFonts';
 import { cn } from '@/lib/utils';
+import { useRouter } from '@/i18n/navigation';
 
 function CardMenuDots({ compact = false }: { compact?: boolean }) {
   return (
@@ -57,6 +58,8 @@ export interface FamilyMemberWatchCardProps {
   /** When false, front tap focuses the card in a coverflow (no flip). Default true. */
   isCarouselCenter?: boolean;
   onCarouselSelect?: () => void;
+  /** When true, tapping the card front opens Document Vault filtered to this member (grid layout). */
+  frontTapOpensVault?: boolean;
   /** Nested under a coverflow wrapper (no local perspective/extra shell shadow). */
   coverflowChild?: boolean;
   /** Defaults match desktop coverflow. Pass smaller sizes for mobile carousel. */
@@ -83,7 +86,9 @@ export default function FamilyMemberWatchCard({
   coverflowChild = false,
   cardWidth = CARD_W,
   cardHeight = CARD_H,
+  frontTapOpensVault = false,
 }: FamilyMemberWatchCardProps) {
+  const router = useRouter();
   const [flipped, setFlipped] = useState(false);
   const compact = cardWidth < 300;
   const cardRound = compact ? CARD_ROUND_COMPACT : CARD_ROUND;
@@ -111,18 +116,18 @@ export default function FamilyMemberWatchCard({
 
   const { shellShadow, shellShadowHover } = useMemo(() => {
     const g = (a: number) => watchAccentGlow(accent, a);
-    const idleGlow = `0 0 0 1px ${g(0.14)}, 0 0 22px ${g(0.34)}, 0 0 48px ${g(0.19)}, 0 0 78px ${g(0.08)}`;
-    const hoverGlow = `0 0 0 1px ${g(0.2)}, 0 0 30px ${g(0.5)}, 0 0 58px ${g(0.28)}, 0 0 92px ${g(0.11)}`;
+    const idleGlow = `0 0 0 1px ${g(0.14)}, 0 0 12px ${g(0.34)}, 0 0 38px ${g(0.19)}, 0 0 68px ${g(0.08)}`;
+    const hoverGlow = `0 0 0 1px ${g(0.2)}, 0 0 20px ${g(0.5)}, 0 0 48px ${g(0.28)}, 0 0 82px ${g(0.11)}`;
     /** Coverflow (web + in-app WebView on iOS/Android): same neon shell as desktop carousel. */
     if (coverflowChild) {
       return {
-        shellShadow: `${idleGlow}, 0 12px 30px rgba(0,0,0,0.55)`,
-        shellShadowHover: `${hoverGlow}, 0 14px 34px rgba(0,0,0,0.5)`,
+        shellShadow: `${idleGlow}, 0 12px 20px rgba(0,0,0,0.55)`,
+        shellShadowHover: `${hoverGlow}, 0 14px 24px rgba(0,0,0,0.5)`,
       };
     }
     return {
-      shellShadow: `0 8px 40px rgba(0,0,0,0.6), ${idleGlow}`,
-      shellShadowHover: `0 12px 52px ${g(0.42)}, ${hoverGlow}`,
+      shellShadow: `0 8px 30px rgba(0,0,0,0.6), ${idleGlow}`,
+      shellShadowHover: `0 12px 42px ${g(0.42)}, ${hoverGlow}`,
     };
   }, [accent, coverflowChild]);
 
@@ -164,6 +169,10 @@ export default function FamilyMemberWatchCard({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              if (frontTapOpensVault) {
+                router.push(`/document-vault?member=${encodeURIComponent(member.id)}`);
+                return;
+              }
               setFlipped(true);
             }}
             aria-expanded={flipped}
@@ -293,8 +302,21 @@ export default function FamilyMemberWatchCard({
                     className="text-center text-[9px] text-[#5c5c5c] min-[400px]:text-[10px]"
                     style={{ fontFamily: WATCH_UI_INTER }}
                   >
-                    Tap for details
+                    {frontTapOpensVault ? 'Tap to open vault' : 'Tap for details'}
                   </p>
+                  {frontTapOpensVault ? (
+                    <button
+                      type="button"
+                      className="mt-1 text-center text-[9px] font-semibold uppercase tracking-wide text-[#8a8a8a] underline decoration-[#666]/40 underline-offset-2"
+                      style={{ fontFamily: WATCH_UI_INTER }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFlipped(true);
+                      }}
+                    >
+                      Member details
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </div>

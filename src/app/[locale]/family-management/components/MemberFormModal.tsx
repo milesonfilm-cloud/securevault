@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Camera, X } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import CopyValueButton from '@/components/ui/CopyValueButton';
 import { FamilyMember } from '@/lib/storage';
 import { MEMBER_AVATAR_COLORS } from '@/lib/memberAvatarColors';
 import { resizeImageFileToJpegDataUrl } from '@/lib/memberPhoto';
@@ -165,7 +166,10 @@ export default function MemberFormModal({
 
         {/* Name */}
         <div>
-          <label className="label-text">Full Name *</label>
+          <div className="mb-1 flex items-start justify-between gap-2">
+            <label className="label-text !mb-0 flex-1">Full Name *</label>
+            <CopyValueButton value={watch('name') ?? ''} compact />
+          </div>
           <input
             {...register('name', { required: 'Full name is required' })}
             placeholder="e.g. Arjun Sharma"
@@ -177,7 +181,10 @@ export default function MemberFormModal({
         {/* Relationship + DOB */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label-text">Relationship *</label>
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <label className="label-text !mb-0 flex-1">Relationship *</label>
+              <CopyValueButton value={watch('relationship') ?? ''} compact />
+            </div>
             <select
               {...register('relationship', { required: 'Select relationship' })}
               className="input-field"
@@ -190,7 +197,10 @@ export default function MemberFormModal({
             </select>
           </div>
           <div>
-            <label className="label-text">Date of Birth</label>
+            <div className="mb-1 flex items-start justify-between gap-2">
+              <label className="label-text !mb-0 flex-1">Date of Birth</label>
+              <CopyValueButton value={watch('dob') ?? ''} compact />
+            </div>
             <input {...register('dob')} type="date" className="input-field" />
           </div>
         </div>
@@ -199,7 +209,10 @@ export default function MemberFormModal({
 
         {/* Avatar color */}
         <div>
-          <label className="label-text">Profile Color</label>
+          <div className="mb-1 flex items-start justify-between gap-2">
+            <label className="label-text !mb-0 flex-1">Profile Color</label>
+            <CopyValueButton value={selectedColor} compact />
+          </div>
           <p className="mb-2 text-xs text-vault-faint">
             Used when no photo is set, and for document badges
           </p>
@@ -209,7 +222,7 @@ export default function MemberFormModal({
                 key={`color-${color}`}
                 type="button"
                 onClick={() => setValue('avatarColor', color)}
-                className={`h-8 w-8 rounded-lg transition-all duration-150 ${
+                className={`h-8 w-8 rounded-lg border border-[#212121]/14 shadow-[0_1px_2px_rgba(33,33,33,0.06)] transition-all duration-150 ${
                   selectedColor === color
                     ? 'scale-110 ring-2 ring-vault-warm ring-offset-2 ring-offset-vault-panel'
                     : 'hover:scale-105'
