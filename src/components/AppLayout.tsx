@@ -35,32 +35,28 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {activePath !== '/family-management' ? (
-          <header
-            className={cn(
-              'flex h-12 shrink-0 items-center justify-between gap-2 border-b border-[color:var(--color-border)] bg-vault-panel/95 px-4 backdrop-blur-sm',
-              'lg:hidden pt-[env(safe-area-inset-top)]'
-            )}
-            style={
-              theme === 'pastel'
-                ? {
-                    borderBottomColor:
-                      'color-mix(in srgb, var(--pastel-member-ink) 24%, transparent)',
-                  }
-                : undefined
-            }
+        <header
+          className={cn(
+            'flex h-14 shrink-0 items-center justify-center border-b border-[color:var(--color-border)] bg-vault-panel/95 px-4 backdrop-blur-sm',
+            'lg:hidden pt-[env(safe-area-inset-top)]'
+          )}
+          style={
+            theme === 'pastel'
+              ? {
+                  borderBottomColor:
+                    'color-mix(in srgb, var(--pastel-member-ink) 24%, transparent)',
+                }
+              : undefined
+          }
+        >
+          <Link
+            href="/family-management"
+            aria-label="SecureVault home"
+            className="flex items-center justify-center rounded-lg py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50"
           >
-            <Link
-              href="/family-management"
-              className="flex min-w-0 max-w-full items-center gap-2 rounded-lg py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50"
-            >
-              <AppLogo size={36} className="flex-shrink-0" />
-              <span className="truncate text-[10px] font-bold uppercase leading-snug tracking-[0.2em] text-vault-text min-[380px]:text-[11px]">
-                Secure Vault
-              </span>
-            </Link>
-          </header>
-        ) : null}
+            <AppLogo size={40} />
+          </Link>
+        </header>
         <main
           id="main-content"
           className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden lg:pb-0"

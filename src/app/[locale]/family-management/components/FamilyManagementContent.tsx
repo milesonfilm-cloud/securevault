@@ -4,8 +4,6 @@ import React, { useMemo, useState } from 'react';
 import { Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
-import AppLogo from '@/components/ui/AppLogo';
 import { FamilyMember, VaultData } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -232,15 +230,6 @@ export default function FamilyManagementContent() {
           <MembersViewModeToggle value={membersLayout} onChange={setMembersLayout} />
         </div>
         <div className="mx-auto flex max-w-full flex-col items-center">
-          <Link
-            href="/family-management"
-            className="mb-2 flex items-center gap-1.5 rounded-lg py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50 lg:hidden"
-          >
-            <AppLogo size={24} className="flex-shrink-0" />
-            <span className="text-[8px] font-bold uppercase leading-none tracking-[0.22em] text-vault-muted min-[380px]:text-[9px]">
-              Secure Vault
-            </span>
-          </Link>
           <h1 className="text-balance text-[clamp(1.05rem,3.6vw,1.65rem)] font-bold uppercase tracking-[0.16em] text-vault-text sm:tracking-[0.2em]">
             {t('heroTitle')}
           </h1>
