@@ -64,16 +64,6 @@ export default function DocumentVaultContent() {
     [activeStack]
   );
 
-  const sortedFolders = useMemo(
-    () => [...vaultData.documentStacks].sort((a, b) => a.sortOrder - b.sortOrder),
-    [vaultData.documentStacks]
-  );
-
-  const defaultStackIdForForm = useMemo((): string | null => {
-    if (!stackId) return null;
-    return vaultData.documentStacks.some((s) => s.id === stackId) ? stackId : null;
-  }, [stackId, vaultData.documentStacks]);
-
   const memberParam = searchParams.get('member');
   const activeMember = useMemo((): string | null => {
     if (!memberParam) return null;
@@ -537,8 +527,6 @@ export default function DocumentVaultContent() {
         onSave={handleSaveDocument}
         editDoc={editDoc}
         members={vaultData.members}
-        folders={sortedFolders}
-        defaultStackId={editDoc ? undefined : defaultStackIdForForm}
         prefill={editDoc ? null : formPrefill}
       />
 
