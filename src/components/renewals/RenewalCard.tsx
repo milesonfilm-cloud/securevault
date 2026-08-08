@@ -1,100 +1,97 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CreditCard, Car, Shield, Wallet, Building2, KeyRound, FileText } from 'lucide-react';
+import React from 'react';
+import { FileText } from 'lucide-react';
 import type { RenewalItem } from '@/lib/documentExpiry';
 import { getCategoryById } from '@/lib/categories';
+import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
 import { formatExpirySummary } from '@/lib/documentExpiry';
-import { renewalPaymentParams } from '@/lib/upi/deepLinks';
-import PaymentBottomSheet from './PaymentBottomSheet';
-import type { CategoryId } from '@/lib/storage';
+import type { FamilyMember } from '@/lib/storage';
+import { resolveMemberColor } from '@/lib/memberAvatarColors';
 
-const ICON_MAP: Record<string, React.ReactNode> = {
-  CreditCard: <CreditCard size={18} />,
-  Car: <Car size={18} />,
-  Landmark: <Building2 size={18} />,
-  Wallet: <Wallet size={18} />,
-  Building2: <Building2 size={18} />,
-  KeyRound: <KeyRound size={18} />,
-};
-
-function urgencyStyle(daysUntil: number): { bar: string; label: string } {
-  if (daysUntil < 0) return { bar: 'bg-red-500', label: 'text-red-300' };
-  if (daysUntil <= 7) return { bar: 'bg-orange-500', label: 'text-orange-200' };
-  if (daysUntil <= 30) return { bar: 'bg-amber-400', label: 'text-amber-200' };
-  return { bar: 'bg-emerald-500', label: 'text-emerald-200' };
+function urgencyStyle(daysUntil: number): { label: string } {
+  if (daysUntil < 0) return { label: 'text-red-300' };
+  if (daysUntil <= 7) return { label: 'text-orange-200' };
+  if (daysUntil <= 30) return { label: 'text-amber-200' };
+  return { label: 'text-emerald-200' };
 }
-
-const PAY_CATEGORIES: Set<CategoryId> = new Set([
-  'insurance',
-  'vehicle-documents',
-  'subscription',
-  'warranty',
-  'membership',
-]);
 
 interface RenewalCardProps {
   item: RenewalItem;
   memberName: string;
+  member?: FamilyMember;
+  compact?: boolean;
 }
 
-export default function RenewalCard({ item, memberName }: RenewalCardProps) {
-  const [payOpen, setPayOpen] = useState(false);
+export default function RenewalCard({ item, memberName, member, compact }: RenewalCardProps) {
   const cat = getCategoryById(item.categoryId);
   const u = urgencyStyle(item.daysUntil);
-  const showPay = PAY_CATEGORIES.has(item.categoryId);
-  const payParams = showPay ? renewalPaymentParams(item.categoryId, item.title) : null;
+  const memberAccent = member ? resolveMemberColor(member.avatarColor).border : undefined;
 
-  return (
-    <>
+  if (compact) {
+    return (
       <div
-        className={`rounded-2xl border border-border bg-vault-panel overflow-hidden shadow-vault ${
-          item.daysUntil < 0 ? 'ring-1 ring-red-500/35' : ''
-        }`}
+        className="flex gap-3 px-4 py-3 hover:bg-vault-elevated/40 transition-colors"
+        style={memberAccent ? { borderLeft: `4px solid ${memberAccent}` } : undefined}
       >
-        <div className={`h-1 w-full ${u.bar}`} />
-        <div className="p-4 flex gap-3">
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border border-border"
-            style={{
-              backgroundColor: cat ? `${cat.color}22` : 'var(--vault-c-elevated)',
-              color: cat?.color ?? 'var(--vault-c-warm)',
-            }}
-          >
-            {cat ? (ICON_MAP[cat.icon] ?? <FileText size={18} />) : <FileText size={18} />}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[15px] font-bold text-vault-text leading-snug truncate">
-              {item.title}
-            </p>
-            <p className="text-xs text-vault-muted mt-0.5 truncate">
-              {memberName} · {cat?.shortLabel ?? item.categoryId}
-            </p>
-            <p className={`text-xs font-700 mt-2 ${u.label}`}>
-              {formatExpirySummary(item.daysUntil)}
-            </p>
-            <p className="text-[11px] text-vault-faint mt-0.5">
-              {item.fieldLabel}:{' '}
-              {item.expiryDay.toLocaleDateString(undefined, {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </p>
-            {showPay && (
-              <button
-                type="button"
-                onClick={() => setPayOpen(true)}
-                className="mt-3 text-xs font-800 uppercase tracking-wider text-vault-warm hover:text-vault-text flex items-center gap-1.5"
-              >
-                <Shield size={14} />
-                Pay / Renew
-              </button>
-            )}
-          </div>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border"
+          style={{
+            backgroundColor: cat ? `${cat.color}22` : 'var(--vault-c-elevated)',
+            color: cat?.color ?? 'var(--vault-c-warm)',
+          }}
+        >
+          {cat ? <CategoryLucideIcon name={cat.icon} size={18} /> : <FileText size={18} />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-bold text-vault-text">{item.title}</p>
+          <p className="mt-0.5 truncate text-xs text-vault-muted">
+            {memberName} · {cat?.label ?? item.categoryId}
+          </p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className={`text-xs font-700 ${u.label}`}>
+            {formatExpirySummary(item.daysUntil, item.expiryDay)}
+          </p>
+          <p className="mt-0.5 text-[10px] text-vault-faint">
+            {item.expiryDay.toLocaleDateString(undefined, {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            })}
+          </p>
         </div>
       </div>
-      <PaymentBottomSheet isOpen={payOpen} onClose={() => setPayOpen(false)} params={payParams} />
-    </>
+    );
+  }
+
+  return (
+    <div
+      className={`rounded-2xl border border-border bg-vault-panel overflow-hidden shadow-vault ${
+        item.daysUntil < 0 ? 'ring-1 ring-red-500/35' : ''
+      }`}
+      style={memberAccent ? { borderLeft: `4px solid ${memberAccent}` } : undefined}
+    >
+      <div className="flex gap-3 p-4">
+        <div
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border"
+          style={{
+            backgroundColor: cat ? `${cat.color}22` : 'var(--vault-c-elevated)',
+            color: cat?.color ?? 'var(--vault-c-warm)',
+          }}
+        >
+          {cat ? <CategoryLucideIcon name={cat.icon} size={18} /> : <FileText size={18} />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[15px] font-bold leading-snug text-vault-text">{item.title}</p>
+          <p className="mt-0.5 truncate text-xs text-vault-muted">
+            {memberName} · {cat?.label ?? item.categoryId}
+          </p>
+          <p className={`mt-2 text-xs font-700 ${u.label}`}>
+            {formatExpirySummary(item.daysUntil, item.expiryDay)}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

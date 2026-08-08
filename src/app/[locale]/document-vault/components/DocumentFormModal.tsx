@@ -2,21 +2,24 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Camera, FileUp, Loader2, PenLine } from 'lucide-react';
+import { FileUp, Loader2, PenLine } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
 import CopyValueButton from '@/components/ui/CopyValueButton';
-import ScanDocumentModal from '@/components/scan/ScanDocumentModal';
-import UpgradeGate from '@/components/UpgradeGate';
 import { CATEGORIES, getCategoryById, type FieldFormat } from '@/lib/categories';
 import { categoryFieldMsgKey } from '@/lib/categoryI18n';
+import {
+  collectFieldFormatErrors,
+  validateFormattedValue,
+  validateGovernmentIdNumber,
+} from '@/lib/fieldValidation';
 import { Document, FamilyMember } from '@/lib/storage';
 import { CategoryId } from '@/lib/storage';
 import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
 import { extractTextFromImportFile, IMPORT_FILE_ACCEPT } from '@/lib/import/fileImportExtract';
-import { guessCategoryFromOcrText } from '@/lib/ocr/ocrExtract';
-import { getSupabaseAuthHeaders } from '@/lib/supabase/session';
+import { buildDocumentPrefillFromOcr } from '@/lib/ocr/ocrExtract';
+import { isCompleteIfsc, lookupIfsc } from '@/lib/ifscLookup';
 
 // ─── Input formatters ────────────────────────────────────────────────────────
 
@@ -67,6 +70,11 @@ function applyFormat(raw: string, format: FieldFormat): string {
       return raw.toUpperCase().slice(0, 10);
     case 'alpha-upper':
       return raw.toUpperCase();
+    case 'email':
+    case 'login-id':
+      return raw.trimStart().slice(0, 120);
+    case 'url':
+      return raw.trimStart().slice(0, 500);
     default:
       return raw;
   }
@@ -112,9 +120,6 @@ export default function DocumentFormModal({
   const tc = useTranslations('categories');
   const tcom = useTranslations('common');
   const [showPassword, setShowPassword] = useState(false);
-  const [scanOpen, setScanOpen] = useState(false);
-  /** Merged into form after an in-modal AI scan (badges + banner). */
-  const [aiAugment, setAiAugment] = useState<DocumentPrefill | null>(null);
   const [addFlowStep, setAddFlowStep] = useState<'choose' | 'form'>('choose');
   const [importBusy, setImportBusy] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -124,8 +129,14 @@ export default function DocumentFormModal({
     watch,
     reset,
     getValues,
+    setValue,
+    setError,
+    clearErrors,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<DocumentFormData>({
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       memberId: members[0]?.id || '',
       categoryId: 'government-ids',
@@ -136,6 +147,55 @@ export default function DocumentFormModal({
   });
 
   const selectedCategoryId = watch('categoryId') as CategoryId;
+  const watchedDocumentType = watch('Document Type');
+  const watchedIfsc = watch('IFSC Code');
+  const [ifscHint, setIfscHint] = useState<string | null>(null);
+  const [ifscStatus, setIfscStatus] = useState<'idle' | 'loading' | 'found' | 'not_found'>('idle');
+
+  useEffect(() => {
+    if (selectedCategoryId === 'government-ids' && getValues('ID / Document Number')) {
+      void trigger('ID / Document Number');
+    }
+  }, [watchedDocumentType, selectedCategoryId, getValues, trigger]);
+
+  useEffect(() => {
+    if (selectedCategoryId !== 'bank-accounts') {
+      setIfscHint(null);
+      setIfscStatus('idle');
+      return;
+    }
+    const code = (watchedIfsc ?? '').trim().toUpperCase();
+    if (!isCompleteIfsc(code)) {
+      setIfscHint(null);
+      setIfscStatus('idle');
+      return;
+    }
+
+    let cancelled = false;
+    setIfscStatus('loading');
+    const timer = window.setTimeout(() => {
+      void lookupIfsc(code).then((details) => {
+        if (cancelled) return;
+        if (!details) {
+          setIfscHint(null);
+          setIfscStatus('not_found');
+          return;
+        }
+        setIfscHint(`${details.BANK} · ${details.BRANCH}`);
+        setIfscStatus('found');
+        const bank = getValues('Bank Name');
+        const branch = getValues('Branch');
+        if (!bank?.trim()) setValue('Bank Name', details.BANK, { shouldDirty: true });
+        if (!branch?.trim()) setValue('Branch', details.BRANCH, { shouldDirty: true });
+      });
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [watchedIfsc, selectedCategoryId, getValues, setValue]);
+
   const categoryConfig = getCategoryById(selectedCategoryId);
   const watchedMemberId = watch('memberId');
   const memberSummaryForCopy = useMemo(() => {
@@ -154,28 +214,23 @@ export default function DocumentFormModal({
     return categoryConfig.fields.find((f) => f.key === 'Password')?.key || null;
   }, [categoryConfig]);
 
-  const aiMeta = useMemo(() => {
-    const keys = new Set<string>([
-      ...(prefill?.aiFilledFieldKeys ?? []),
-      ...(aiAugment?.aiFilledFieldKeys ?? []),
-    ]);
-    return {
-      fromAiScan: !!(prefill?.fromAiScan || aiAugment?.fromAiScan),
-      fromOcrOnly: !!(prefill?.fromOcr && !prefill?.fromAiScan && !aiAugment?.fromAiScan),
-      aiFilledFieldKeys: [...keys],
-      aiConfidence: { ...prefill?.aiConfidence, ...aiAugment?.aiConfidence },
-    };
-  }, [prefill, aiAugment]);
+  const fromOcrOnly = !!(prefill?.fromOcr);
 
   useEffect(() => {
     if (!isOpen) {
-      setAiAugment(null);
-      setScanOpen(false);
       setAddFlowStep('choose');
       setImportBusy(false);
       return;
     }
-    if (editDoc || prefill) {
+    const hasFilledPrefill = Boolean(
+      editDoc ||
+        prefill?.fromOcr ||
+        prefill?.fromAiScan ||
+        prefill?.categoryId ||
+        (prefill?.title && prefill.title.trim()) ||
+        (prefill?.fields && Object.keys(prefill.fields).length > 0)
+    );
+    if (hasFilledPrefill) {
       setAddFlowStep('form');
     } else {
       setAddFlowStep('choose');
@@ -190,8 +245,8 @@ export default function DocumentFormModal({
         ...editDoc.fields,
       });
     } else {
-      const preferredMemberId = members[0]?.id || '';
-      if (prefill) {
+      const preferredMemberId = prefill?.memberId ?? members[0]?.id ?? '';
+      if (prefill && hasFilledPrefill) {
         reset({
           memberId: preferredMemberId,
           categoryId: prefill.categoryId ?? 'government-ids',
@@ -218,14 +273,28 @@ export default function DocumentFormModal({
     if (categoryConfig) {
       categoryConfig.fields.forEach((f) => {
         if (rest[f.key] !== undefined && rest[f.key] !== '') {
-          fields[f.key] = rest[f.key];
+          fields[f.key] = String(rest[f.key]).trim();
         }
       });
+
+      const formatErrors = collectFieldFormatErrors(categoryConfig.fields, {
+        ...fields,
+        'Document Type': String(rest['Document Type'] ?? ''),
+      });
+      const keys = Object.keys(formatErrors);
+      if (keys.length > 0) {
+        clearErrors();
+        for (const key of keys) {
+          setError(key, { type: 'validate', message: formatErrors[key] });
+        }
+        toast.error(td('fixFormatErrors'));
+        return;
+      }
     }
     onSave({
       memberId,
       categoryId,
-      title,
+      title: title.trim(),
       fields,
       notes,
       tags: tags
@@ -261,42 +330,16 @@ export default function DocumentFormModal({
           toast.error(td('importNoText'));
           return;
         }
-        const categoryId = guessCategoryFromOcrText(text);
-        const auth = await getSupabaseAuthHeaders();
-        const res = await fetch('/api/ai/scan-document', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...auth },
-          body: JSON.stringify({ ocrText: text, categoryId }),
-        });
-        const data = (await res.json()) as {
-          fields?: Record<string, string>;
-          confidence?: Record<string, number>;
-          error?: string;
-          detail?: string;
-        };
-        if (!res.ok) {
-          const hint = data.detail ? ` — ${String(data.detail).slice(0, 200)}` : '';
-          throw new Error((data.error || 'scan_api_failed') + hint);
-        }
-        const fields = data.fields || {};
-        const confidence = data.confidence || {};
-        const filledKeys = Object.entries(fields)
-          .filter(([, v]) => v && String(v).trim() !== '')
-          .map(([k]) => k);
-        const baseName = file.name.replace(/\.[^.]+$/, '') || td('importDefaultTitle');
+        const prefillFromFile = buildDocumentPrefillFromOcr(text);
         const preferredMemberId = members[0]?.id || '';
+        const baseName = file.name.replace(/\.[^.]+$/, '') || td('importDefaultTitle');
         reset({
           memberId: preferredMemberId,
-          categoryId,
-          title: baseName,
-          notes: td('importNotesAppend'),
+          categoryId: prefillFromFile.categoryId ?? 'government-ids',
+          title: prefillFromFile.title?.trim() ? prefillFromFile.title : baseName,
+          notes: [prefillFromFile.notesAppend?.trim()].filter(Boolean).join('\n'),
           tags: '',
-          ...fields,
-        });
-        setAiAugment({
-          fromAiScan: true,
-          aiFilledFieldKeys: filledKeys,
-          aiConfidence: confidence,
+          ...(prefillFromFile.fields ?? {}),
         });
         setAddFlowStep('form');
         toast.success(td('importSuccess'));
@@ -324,49 +367,28 @@ export default function DocumentFormModal({
           <div className="space-y-4 p-6">
             <p className="text-center text-sm text-vault-muted">{td('chooseAddMethodHint')}</p>
             <div className="grid gap-3">
-              <UpgradeGate feature="aiScansPerMonth" requiredPlan="Pro">
-                <button
-                  type="button"
-                  onClick={() => setScanOpen(true)}
-                  className="flex w-full items-start gap-3 rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated px-4 py-4 text-left transition-colors hover:bg-vault-panel"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vault-warm/15 text-vault-warm">
-                    <Camera className="h-5 w-5" strokeWidth={2} />
+              <button
+                type="button"
+                disabled={importBusy}
+                onClick={() => importInputRef.current?.click()}
+                className="flex w-full items-start gap-3 rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated px-4 py-4 text-left transition-colors hover:bg-vault-panel disabled:opacity-60"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vault-warm/15 text-vault-warm">
+                  {importBusy ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <FileUp className="h-5 w-5" strokeWidth={2} />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-800 text-vault-text">
+                    {td('methodImportFile')}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-800 text-vault-text">
-                      {td('methodAiScan')}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-vault-muted">
-                      {td('methodAiScanDesc')}
-                    </span>
+                  <span className="mt-0.5 block text-xs text-vault-muted">
+                    {td('methodImportFileDesc')}
                   </span>
-                </button>
-              </UpgradeGate>
-              <UpgradeGate feature="aiScansPerMonth" requiredPlan="Pro">
-                <button
-                  type="button"
-                  disabled={importBusy}
-                  onClick={() => importInputRef.current?.click()}
-                  className="flex w-full items-start gap-3 rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated px-4 py-4 text-left transition-colors hover:bg-vault-panel disabled:opacity-60"
-                >
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vault-warm/15 text-vault-warm">
-                    {importBusy ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <FileUp className="h-5 w-5" strokeWidth={2} />
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-800 text-vault-text">
-                      {td('methodImportFile')}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-vault-muted">
-                      {td('methodImportFileDesc')}
-                    </span>
-                  </span>
-                </button>
-              </UpgradeGate>
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={() => setAddFlowStep('form')}
@@ -406,17 +428,10 @@ export default function DocumentFormModal({
                 </button>
               </div>
             ) : null}
-            {!editDoc && aiMeta.fromOcrOnly ? (
+            {!editDoc && fromOcrOnly ? (
               <div className="rounded-xl border border-[rgba(20,115,230,0.35)] bg-[rgba(20,115,230,0.08)] px-4 py-3 text-sm text-vault-text">
                 <p className="font-semibold text-vault-warm">{td('reviewOcrTitle')}</p>
                 <p className="text-vault-muted text-xs mt-1">{td('reviewOcrBody')}</p>
-              </div>
-            ) : null}
-
-            {!editDoc && aiMeta.fromAiScan ? (
-              <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-vault-text">
-                <p className="font-semibold text-amber-200">{td('aiVerifyTitle')}</p>
-                <p className="text-vault-muted text-xs mt-1">{td('aiVerifyBody')}</p>
               </div>
             ) : null}
 
@@ -515,18 +530,6 @@ export default function DocumentFormModal({
                                 </span>
                               )}
                             </span>
-                            {!editDoc && aiMeta.aiFilledFieldKeys.includes(field.key) ? (
-                              <span
-                                title={
-                                  aiMeta.aiConfidence[field.key] != null
-                                    ? `AI confidence ~${Math.round((aiMeta.aiConfidence[field.key] ?? 0) * 100)}%`
-                                    : 'Filled by AI scan'
-                                }
-                                className="rounded-md bg-amber-400 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-950"
-                              >
-                                {td('aiFilledBadge')}
-                              </span>
-                            ) : null}
                           </label>
                           <CopyValueButton
                             value={watch(field.key) ?? ''}
@@ -557,6 +560,19 @@ export default function DocumentFormModal({
                                 required: field.required
                                   ? tcom('fieldRequired', { field: fieldLabel })
                                   : false,
+                                validate: (value) => {
+                                  const raw = typeof value === 'string' ? value : '';
+                                  if (!raw.trim()) return true;
+                                  if (field.key === 'ID / Document Number') {
+                                    const err = validateGovernmentIdNumber(
+                                      raw,
+                                      getValues('Document Type')
+                                    );
+                                    return err || true;
+                                  }
+                                  const err = validateFormattedValue(raw, field.format);
+                                  return err || true;
+                                },
                                 onChange: field.format
                                   ? (e: React.ChangeEvent<HTMLInputElement>) => {
                                       e.target.value = applyFormat(e.target.value, field.format!);
@@ -574,10 +590,11 @@ export default function DocumentFormModal({
                               placeholder={
                                 field.placeholder || td('fieldPlaceholder', { field: fieldLabel })
                               }
+                              aria-invalid={Boolean(errors[field.key])}
                               className={
                                 isPasswordCategory && field.key === passwordFieldKey
-                                  ? 'input-field pr-11'
-                                  : 'input-field'
+                                  ? `input-field pr-11${errors[field.key] ? ' border-red-400 focus:ring-red-400/40' : ''}`
+                                  : `input-field${errors[field.key] ? ' border-red-400 focus:ring-red-400/40' : ''}`
                               }
                             />
                             {isPasswordCategory && field.key === passwordFieldKey && (
@@ -634,11 +651,25 @@ export default function DocumentFormModal({
                             )}
                           </div>
                         )}
-                        {errors[field.key] && (
-                          <p className="text-xs text-red-500 mt-1">
+                        {errors[field.key] ? (
+                          <p className="mt-1 text-xs text-red-500" role="alert">
                             {errors[field.key]?.message as string}
                           </p>
-                        )}
+                        ) : null}
+                        {field.key === 'IFSC Code' && !errors[field.key] && ifscStatus !== 'idle' ? (
+                          <p
+                            className={`mt-1 text-xs ${
+                              ifscStatus === 'found' ? 'text-vault-muted' : 'text-vault-faint'
+                            }`}
+                            role="status"
+                          >
+                            {ifscStatus === 'loading'
+                              ? td('ifscLookingUp')
+                              : ifscStatus === 'not_found'
+                                ? td('ifscNotFound')
+                                : ifscHint}
+                          </p>
+                        ) : null}
                       </div>
                     );
                   })}
@@ -714,30 +745,6 @@ export default function DocumentFormModal({
           </form>
         )}
       </Modal>
-
-      <ScanDocumentModal
-        isOpen={scanOpen}
-        onClose={() => setScanOpen(false)}
-        onApply={({ prefill: p }) => {
-          setAddFlowStep('form');
-          const cur = getValues();
-          const nextNotes = [cur.notes?.trim(), p.notesAppend?.trim()].filter(Boolean).join('\n');
-          reset({
-            ...cur,
-            categoryId: (p.categoryId ?? cur.categoryId) as CategoryId,
-            title: p.title?.trim() ? p.title : cur.title,
-            notes: nextNotes,
-            tags: cur.tags,
-            ...(p.fields ?? {}),
-          });
-          setAiAugment({
-            fromAiScan: true,
-            aiFilledFieldKeys: p.aiFilledFieldKeys,
-            aiConfidence: p.aiConfidence,
-          });
-          setScanOpen(false);
-        }}
-      />
     </>
   );
 }

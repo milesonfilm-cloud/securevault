@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-react';
-import Image from 'next/image';
 import BackupReminderBanner from '@/components/ui/BackupReminderBanner';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
@@ -24,7 +23,7 @@ import {
   setStoredVerifier,
   setVaultKey,
 } from '@/lib/vaultSession';
-import { BRAND_LOGO_HEIGHT, BRAND_LOGO_SRC, BRAND_LOGO_WIDTH } from '@/lib/brandLogo';
+import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
 import { persistUnlockedVaultKey, tryRestoreVaultKeyFromPersist } from '@/lib/vaultKeyPersist';
 import {
   computePinVerifier,
@@ -36,9 +35,12 @@ import {
 import { appendAuditEntry } from '@/lib/auditLog';
 import { resetVaultLocalOnly } from '@/lib/storage';
 import { VaultDataProvider } from '@/context/VaultDataContext';
-import { AUTH_INTRO_SESSION_KEY, completeAuthIntroSession } from '@/lib/authIntroSession';
+import { completeAuthIntroSession, shouldShowAuthIntro } from '@/lib/authIntroSession';
 import { verifyTotp } from '@/lib/totp';
 import { isTotpEnabled, loadTotpSecretEncrypted } from '@/lib/totpSettings';
+import { enterDemoMode, exitDemoMode, isDemoMode } from '@/lib/demoMode';
+import { createEphemeralDemoVaultKey, ensureDemoVaultSeeded } from '@/lib/demoVaultSeed';
+import { EXIT_DEMO_EVENT } from '@/components/DemoModeBanner';
 
 const SESSION_KEY = SESSION_UNLOCKED_KEY;
 
@@ -90,8 +92,21 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       }
 
       if (!storedVerifier) {
+        if (isDemoMode()) {
+          try {
+            ensureDemoVaultSeeded();
+            const key = await createEphemeralDemoVaultKey();
+            setVaultKey(key);
+            safeSessionSet(SESSION_KEY, 'true');
+            setPhase('unlocked');
+            return;
+          } catch {
+            exitDemoMode();
+          }
+        }
         setPhase('setup');
       } else {
+        if (isDemoMode()) exitDemoMode();
         const restored = await tryRestoreVaultKeyFromPersist();
         if (restored) {
           setVaultKey(restored);
@@ -108,12 +123,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   useEffect(() => {
     if (phase !== 'setup' && phase !== 'login') return;
-    try {
-      const done = sessionStorage.getItem(AUTH_INTRO_SESSION_KEY) === '1';
-      setShowIntro(!done);
-    } catch {
-      setShowIntro(true);
-    }
+    const hasCredentials = !!getStoredVerifier();
+    setShowIntro(shouldShowAuthIntro(hasCredentials));
     setIntroChecked(true);
   }, [phase]);
 
@@ -129,6 +140,56 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     setShowIntro(false);
   }, []);
 
+  const startDemoMode = useCallback(() => {
+    void (async () => {
+      try {
+        enterDemoMode();
+        ensureDemoVaultSeeded();
+        const key = await createEphemeralDemoVaultKey();
+        setVaultKey(key);
+        completeAuthIntroSession();
+        setShowIntro(false);
+        setError('');
+        setPin('');
+        setConfirmPin('');
+        safeSessionSet(SESSION_KEY, 'true');
+        setSuccess(true);
+        setPhase('unlocked');
+        if (pathname !== '/family-management') {
+          router.replace('/family-management');
+        }
+      } catch (err) {
+        console.error('[SecureVault] demo mode failed', err);
+        exitDemoMode();
+        setError(t('createFailed'));
+        triggerShake();
+      }
+    })();
+  }, [pathname, router, t]);
+
+  const leaveDemoForSetup = useCallback(() => {
+    exitDemoMode();
+    clearVaultKey();
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      /* ignore */
+    }
+    setSuccess(false);
+    setPin('');
+    setConfirmPin('');
+    setError('');
+    setShowIntro(false);
+    completeAuthIntroSession();
+    setPhase('setup');
+  }, []);
+
+  useEffect(() => {
+    const onExitDemo = () => leaveDemoForSetup();
+    window.addEventListener(EXIT_DEMO_EVENT, onExitDemo);
+    return () => window.removeEventListener(EXIT_DEMO_EVENT, onExitDemo);
+  }, [leaveDemoForSetup]);
+
   const triggerShake = () => {
     setShake(true);
     setTimeout(() => setShake(false), 600);
@@ -141,13 +202,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       targetId: null,
       targetTitle: null,
     });
-    void (async () => {
-      try {
-        await persistUnlockedVaultKey(getVaultKey());
-      } catch {
-        /* ignore */
-      }
-    })();
+    if (!isDemoMode()) {
+      void (async () => {
+        try {
+          await persistUnlockedVaultKey(getVaultKey());
+        } catch {
+          /* ignore */
+        }
+      })();
+    }
     safeSessionSet(SESSION_KEY, 'true');
     setSuccess(true);
     setPhase('unlocked');
@@ -159,7 +222,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const handleSetup = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (pin.length < 4) {
+    if (pin.length < 6) {
       setError(t('pwdMin'));
       triggerShake();
       return;
@@ -176,6 +239,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           setError(t('secureContext'));
           triggerShake();
           return;
+        }
+        // Leaving demo: wipe sample session data before creating a real vault
+        if (isDemoMode()) {
+          exitDemoMode();
         }
         const params = newKdfParams();
         const key = await deriveAesKeyFromPin(pin, params);
@@ -492,7 +559,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   if (showIntro) {
     return (
       <div className="auth-welcome-banner flex min-h-[100dvh] flex-col items-center justify-center p-4 py-10 relative overflow-x-hidden">
-        <AuthWelcomePanel phase={phase} onFinish={completeAuthIntro} />
+        <AuthWelcomePanel
+          phase={phase === 'login' ? 'login' : 'setup'}
+          onFinish={completeAuthIntro}
+          onTryDemo={phase === 'setup' ? startDemoMode : undefined}
+        />
       </div>
     );
   }
@@ -512,13 +583,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
               {success ? (
                 <CheckCircle2 size={36} className="text-vault-warm animate-scale-in" />
               ) : (
-                <Image
-                  src={BRAND_LOGO_SRC}
-                  alt="SecureVault"
-                  width={BRAND_LOGO_WIDTH}
-                  height={BRAND_LOGO_HEIGHT}
-                  className="h-[5.25rem] w-auto max-h-[108px] object-contain"
-                  priority
+                <BrandMarkSvg
+                  title="SecureVault"
+                  className="max-h-[108px] w-auto shrink-0"
+                  size={96}
                 />
               )}
             </div>
@@ -667,6 +735,15 @@ export default function AuthGuard({ children }: AuthGuardProps) {
               <Lock size={18} />
               {phase === 'setup' ? t('createVaultPassword') : t('submitUnlock')}
             </button>
+            {phase === 'setup' ? (
+              <button
+                type="button"
+                onClick={startDemoMode}
+                className="mt-3 w-full rounded-xl border border-[color:var(--color-border)] bg-vault-elevated py-3 text-sm font-700 text-vault-text transition-colors hover:bg-vault-panel"
+              >
+                {t('tryDemo')}
+              </button>
+            ) : null}
           </form>
         )}
 

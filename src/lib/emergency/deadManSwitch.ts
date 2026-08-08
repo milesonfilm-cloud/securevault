@@ -28,7 +28,7 @@ export function msUntilDeadline(contact: EmergencyContact | null): number | null
 
 /**
  * MVP: schedule a one-shot alert flag in localStorage when timer crosses (checked on app open).
- * Server email should be triggered from `/api/emergency/notify` when UI detects expiry.
+ * When the timer expires, export your emergency PDF and contact your trusted person directly.
  */
 export function scheduleAlertFlag(contact: EmergencyContact | null): void {
   if (!contact?.email) return;

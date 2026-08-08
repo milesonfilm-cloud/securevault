@@ -26,22 +26,6 @@ export default function PrivacyPage() {
         browser&apos;s IndexedDB. The encryption key is derived from your PIN using Argon2id and
         never leaves your device.
       </p>
-      <p style={{ marginTop: 12 }}>
-        When you enable Google Drive backup, only the <em>already-encrypted</em> vault blob is
-        uploaded. We cannot read your documents.
-      </p>
-
-      <h2 style={{ fontSize: 18, fontWeight: 500, marginTop: 28, marginBottom: 8 }}>
-        AI document scan
-      </h2>
-      <p>
-        When you use the AI scan feature, OCR text extracted from your document image is sent to
-        Anthropic&apos;s API for field extraction.{' '}
-        <strong>Document images do not leave your device.</strong> Only plain text (already
-        extracted by Tesseract.js on your device) is transmitted. This is an optional feature you
-        must explicitly invoke.
-      </p>
-
       <h2 style={{ fontSize: 18, fontWeight: 500, marginTop: 28, marginBottom: 8 }}>DigiLocker</h2>
       <p>
         When you connect DigiLocker, we use PKCE OAuth 2.0 to obtain a short-lived access token.
@@ -57,15 +41,14 @@ export default function PrivacyPage() {
           Right to access: See Settings → Export for a full export of your vault data.
         </li>
         <li style={{ marginBottom: 4 }}>
-          Right to erasure: Delete your account in Settings → Danger Zone. Local data is cleared by
-          clearing browser storage.
+          Right to erasure: Use Settings → Danger Zone to wipe vault data on this device, or clear
+          browser storage for this site.
         </li>
         <li style={{ marginBottom: 4 }}>
           Right to portability: Export as JSON at any time from Settings → Export.
         </li>
         <li style={{ marginBottom: 4 }}>
-          Right to withdraw consent: Change AI processing and analytics preferences in Settings →
-          Privacy.
+          Right to withdraw consent: Change analytics preferences when prompted in the app.
         </li>
       </ul>
 
@@ -83,9 +66,7 @@ export default function PrivacyPage() {
         <tbody>
           {(
             [
-              ['Anthropic', 'AI document scan (OCR text, opt-in only)', 'USA'],
-              ['Supabase', 'Authentication', 'USA / EU'],
-              ['Google', 'Optional Drive backup; DigiLocker OAuth', 'USA'],
+              ['Google', 'Optional DigiLocker OAuth only', 'USA'],
               ['Firebase / Google', 'Web hosting', 'USA'],
             ] as const
           ).map(([name, purpose, loc]) => (

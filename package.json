@@ -56,14 +56,19 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "i18n:compose": "node scripts/generate-en-messages.mjs && node scripts/compose-messages.mjs && node scripts/merge-hi-categories.mjs && node scripts/merge-indic-category-labels.mjs",
+    "build:mobile": "node scripts/build-mobile.mjs",
+    "postinstall": "node scripts/patch-capgo-share-target.mjs",
     "cap:sync": "npx cap sync",
-    "cap:open:android": "npx cap open android"
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:add:ios": "npx cap add ios"
   },
   "dependencies": {
+    "@capacitor/core": "7.6.2",
+    "@capgo/capacitor-share-target": "^7.0.8",
     "@dhiwise/component-tagger": "^1.0.15",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-dialog": "^1.1.15",
-    "@supabase/supabase-js": "^2.105.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
     "@upstash/ratelimit": "^2.0.8",
@@ -98,7 +103,7 @@
   "devDependencies": {
     "@capacitor/android": "7.6.2",
     "@capacitor/cli": "7.6.2",
-    "@capacitor/core": "7.6.2",
+    "@capacitor/ios": "^7.6.2",
     "@eslint/eslintrc": "^3",
     "@netlify/plugin-nextjs": "^5.11.1",
     "@playwright/test": "^1.59.1",

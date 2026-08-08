@@ -1,3 +1,5 @@
+import { resolveMemberColor } from './memberAvatarColors';
+
 /** Distinct gradient + ghost/avatar tints for pastel home stacked cards (cycles for 9+ members). */
 export type MemberPastelPalette = {
   gradient: string;
@@ -58,34 +60,27 @@ export const PASTEL_ACCENT_PLACEHOLDER_PALETTE: MemberPastelPalette = {
  * Card + global accent palette from the member profile color (edit / swatch).
  */
 export function pastelPaletteFromAvatarColor(avatarColor: string): MemberPastelPalette {
-  const rgb = parseHexRgb(avatarColor);
-  if (!rgb) {
+  const mc = resolveMemberColor(avatarColor);
+  const borderRgb = parseHexRgb(mc.border);
+  const bgRgb = parseHexRgb(mc.bg);
+  if (!borderRgb || !bgRgb) {
     return PASTEL_ACCENT_PLACEHOLDER_PALETTE;
   }
-  const { r, g, b } = rgb;
-  const light = (t: number) => ({
-    r: mix(r, 255, t),
-    g: mix(g, 255, t),
-    b: mix(b, 255, t),
+  const { r, g, b } = borderRgb;
+  const lightFromBg = (t: number) => ({
+    r: mix(bgRgb.r, borderRgb.r, t),
+    g: mix(bgRgb.g, borderRgb.g, t),
+    b: mix(bgRgb.b, borderRgb.b, t),
   });
-  const dark = (t: number) => ({
-    r: mix(r, 0, t),
-    g: mix(g, 0, t),
-    b: mix(b, 0, t),
-  });
-  const gHi = light(0.28);
-  const gLo = dark(0.22);
-  const lg52 = light(0.52);
-  const lg68 = light(0.68);
-  const lg86 = light(0.86);
-  const dk32 = dark(0.32);
+  const lg35 = lightFromBg(0.35);
+  const lg55 = lightFromBg(0.55);
   return {
-    gradient: `linear-gradient(135deg, ${rgbToHex(gHi.r, gHi.g, gHi.b)}, ${rgbToHex(gLo.r, gLo.g, gLo.b)})`,
+    gradient: `linear-gradient(135deg, ${mc.bg}, ${mc.border})`,
     cardShadow: `rgba(${clamp255(r)},${clamp255(g)},${clamp255(b)},0.34)`,
-    ghost1: rgbToHex(lg52.r, lg52.g, lg52.b),
-    ghost2: rgbToHex(lg68.r, lg68.g, lg68.b),
-    avatarBg: rgbToHex(lg86.r, lg86.g, lg86.b),
-    avatarInk: rgbToHex(dk32.r, dk32.g, dk32.b),
+    ghost1: rgbToHex(lg35.r, lg35.g, lg35.b),
+    ghost2: rgbToHex(lg55.r, lg55.g, lg55.b),
+    avatarBg: mc.bg,
+    avatarInk: mc.text,
   };
 }
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Fingerprint, ScanFace, ShieldCheck, ShieldOff, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import {
   isBiometricSupported,
   isPlatformAuthenticatorAvailable,
@@ -11,6 +12,7 @@ import {
 } from '@/lib/webauthn';
 
 export default function BiometricSettings() {
+  const t = useTranslations('settingsPanels');
   const [supported, setSupported] = useState(false);
   const [registered, setRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,9 +44,9 @@ export default function BiometricSettings() {
     const ok = await registerBiometric();
     if (ok) {
       setRegistered(true);
-      showMessage('Biometric login enabled successfully!', 'success');
+      showMessage(t('biometricEnableSuccess'), 'success');
     } else {
-      showMessage('Setup failed. Please try again.', 'error');
+      showMessage(t('biometricSetupFailed'), 'error');
     }
     setLoading(false);
   };
@@ -52,7 +54,7 @@ export default function BiometricSettings() {
   const handleDisable = () => {
     clearBiometricCredential();
     setRegistered(false);
-    showMessage('Biometric login disabled.', 'success');
+    showMessage(t('biometricDisabledToast'), 'success');
   };
 
   if (checking) return null;
@@ -65,12 +67,12 @@ export default function BiometricSettings() {
             <Fingerprint size={18} className="text-vault-warm" />
           </div>
           <div>
-            <h3 className="text-sm font-700 text-vault-text">Biometric Login</h3>
-            <p className="text-xs text-vault-faint">Fingerprint &amp; Face ID</p>
+            <h3 className="text-sm font-700 text-vault-text">{t('biometricTitle')}</h3>
+            <p className="text-xs text-vault-faint">{t('biometricSubtitle')}</p>
           </div>
         </div>
         <p className="text-xs text-vault-muted neo-inset rounded-2xl px-4 py-3">
-          Biometric authentication is not available on this device or browser.
+          {t('biometricUnavailableBody')}
         </p>
       </div>
     );
@@ -83,8 +85,8 @@ export default function BiometricSettings() {
           <Fingerprint size={18} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-sm font-700 text-vault-text">Biometric Login</h3>
-          <p className="text-xs text-vault-faint">Fingerprint &amp; Face ID</p>
+          <h3 className="text-sm font-700 text-vault-text">{t('biometricTitle')}</h3>
+          <p className="text-xs text-vault-faint">{t('biometricSubtitle')}</p>
         </div>
         <div
           className={`ml-auto px-2.5 py-1 rounded-full text-xs font-700 border ${
@@ -93,7 +95,7 @@ export default function BiometricSettings() {
               : 'bg-vault-elevated text-vault-muted border-border'
           }`}
         >
-          {registered ? 'Enabled' : 'Disabled'}
+          {registered ? t('biometricEnabled') : t('biometricDisabled')}
         </div>
       </div>
 
@@ -101,18 +103,16 @@ export default function BiometricSettings() {
       <div className="flex gap-3 mb-4">
         <div className="flex-1 flex items-center gap-2 neo-inset rounded-2xl px-3 py-2.5">
           <Fingerprint size={16} className="text-vault-warm flex-shrink-0" />
-          <span className="text-xs text-vault-muted">Fingerprint</span>
+          <span className="text-xs text-vault-muted">{t('fingerprint')}</span>
         </div>
         <div className="flex-1 flex items-center gap-2 neo-inset rounded-2xl px-3 py-2.5">
           <ScanFace size={16} className="text-vault-warm flex-shrink-0" />
-          <span className="text-xs text-vault-muted">Face ID</span>
+          <span className="text-xs text-vault-muted">{t('faceId')}</span>
         </div>
       </div>
 
       <p className="text-xs text-vault-faint mb-4">
-        {registered
-          ? 'Your biometric credential is registered. You can use it to unlock the vault quickly.'
-          : 'Register your fingerprint or Face ID to unlock the vault without typing your password.'}
+        {registered ? t('biometricHintRegistered') : t('biometricHintRegister')}
       </p>
 
       {message && (
@@ -132,7 +132,7 @@ export default function BiometricSettings() {
           className="neo-btn neo-btn-secondary w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border border-red-400/50 text-red-300 hover:bg-red-500/10 text-sm font-700 transition-colors"
         >
           <ShieldOff size={15} />
-          Disable Biometric Login
+          {t('biometricDisableCta')}
         </button>
       ) : (
         <button
@@ -141,7 +141,7 @@ export default function BiometricSettings() {
           className="neo-btn neo-btn-primary w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl text-sm font-800 transition-colors disabled:opacity-60"
         >
           {loading ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
-          {loading ? 'Setting up…' : 'Enable Biometric Login'}
+          {loading ? t('biometricSettingUp') : t('biometricEnableCta')}
         </button>
       )}
     </div>

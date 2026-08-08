@@ -7,23 +7,11 @@ import { Camera, X } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import CopyValueButton from '@/components/ui/CopyValueButton';
 import { FamilyMember } from '@/lib/storage';
-import { MEMBER_AVATAR_COLORS } from '@/lib/memberAvatarColors';
+import { MEMBER_COLORS, pickNextMemberColor } from '@/lib/memberAvatarColors';
 import { resizeImageFileToJpegDataUrl } from '@/lib/memberPhoto';
 import MemberAvatar from '@/components/MemberAvatar';
-
-const RELATIONSHIPS = [
-  'Self',
-  'Spouse',
-  'Son',
-  'Daughter',
-  'Father',
-  'Mother',
-  'Brother',
-  'Sister',
-  'Grandfather',
-  'Grandmother',
-  'Other',
-];
+import { MEMBER_RELATIONSHIP_VALUES } from '@/lib/memberRelationships';
+import { useTranslations } from 'next-intl';
 
 interface MemberFormData {
   name: string;
@@ -41,6 +29,7 @@ interface MemberFormModalProps {
   onClose: () => void;
   onSave: (data: MemberFormSavePayload) => void;
   editMember?: FamilyMember | null;
+  existingMembers?: FamilyMember[];
 }
 
 export default function MemberFormModal({
@@ -48,7 +37,10 @@ export default function MemberFormModal({
   onClose,
   onSave,
   editMember,
+  existingMembers = [],
 }: MemberFormModalProps) {
+  const t = useTranslations('memberForm');
+  const tc = useTranslations('common');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -61,9 +53,9 @@ export default function MemberFormModal({
   } = useForm<MemberFormData>({
     defaultValues: {
       name: '',
-      relationship: 'Self',
+      relationship: MEMBER_RELATIONSHIP_VALUES[0],
       dob: '',
-      avatarColor: MEMBER_AVATAR_COLORS[0],
+      avatarColor: pickNextMemberColor(existingMembers),
       photoDataUrl: '',
     },
   });
@@ -84,9 +76,9 @@ export default function MemberFormModal({
     } else {
       reset({
         name: '',
-        relationship: 'Self',
+        relationship: MEMBER_RELATIONSHIP_VALUES[0],
         dob: '',
-        avatarColor: MEMBER_AVATAR_COLORS[0],
+        avatarColor: pickNextMemberColor(existingMembers),
         photoDataUrl: '',
       });
     }
@@ -110,7 +102,7 @@ export default function MemberFormModal({
       const url = await resizeImageFileToJpegDataUrl(file);
       setValue('photoDataUrl', url, { shouldDirty: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not add photo');
+      toast.error(err instanceof Error ? err.message : t('photoError'));
     }
   };
 
@@ -118,8 +110,8 @@ export default function MemberFormModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editMember ? 'Edit Family Member' : 'Add Family Member'}
-      subtitle="Member profiles help organize documents by person"
+      title={editMember ? t('editTitle') : t('addTitle')}
+      subtitle={t('subtitle')}
       size="md"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-6">
@@ -146,7 +138,7 @@ export default function MemberFormModal({
               className="btn-secondary inline-flex items-center gap-2 py-2 text-xs"
             >
               <Camera size={16} />
-              {photoDataUrl ? 'Change photo' : 'Add photo'}
+              {photoDataUrl ? t('changePhoto') : t('addPhotoBtn')}
             </button>
             {photoDataUrl ? (
               <button
@@ -155,24 +147,24 @@ export default function MemberFormModal({
                 className="inline-flex items-center gap-1 rounded-xl border border-[color:var(--color-border)] px-3 py-2 text-xs font-600 text-vault-muted transition-colors hover:bg-vault-elevated hover:text-vault-text"
               >
                 <X size={14} />
-                Remove
+                {t('removePhoto')}
               </button>
             ) : null}
           </div>
           <p className="max-w-xs text-center text-[11px] text-vault-faint">
-            Photos are stored locally in your vault and resized to save space.
+            {t('photoHint')}
           </p>
         </div>
 
         {/* Name */}
         <div>
           <div className="mb-1 flex items-start justify-between gap-2">
-            <label className="label-text !mb-0 flex-1">Full Name *</label>
+            <label className="label-text !mb-0 flex-1">{t('fullNameLabel')}</label>
             <CopyValueButton value={watch('name') ?? ''} compact />
           </div>
           <input
-            {...register('name', { required: 'Full name is required' })}
-            placeholder="e.g. Arjun Sharma"
+            {...register('name', { required: t('nameRequired') })}
+            placeholder={t('namePlaceholder')}
             className="input-field"
           />
           {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
@@ -182,23 +174,23 @@ export default function MemberFormModal({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="mb-1 flex items-start justify-between gap-2">
-              <label className="label-text !mb-0 flex-1">Relationship *</label>
+              <label className="label-text !mb-0 flex-1">{t('relationshipLabel')}</label>
               <CopyValueButton value={watch('relationship') ?? ''} compact />
             </div>
             <select
-              {...register('relationship', { required: 'Select relationship' })}
+              {...register('relationship', { required: t('relationshipRequired') })}
               className="input-field"
             >
-              {RELATIONSHIPS.map((r) => (
+              {MEMBER_RELATIONSHIP_VALUES.map((r) => (
                 <option key={`rel-${r}`} value={r}>
-                  {r}
+                  {t(`relationshipOptions.${r}`)}
                 </option>
               ))}
             </select>
           </div>
           <div>
             <div className="mb-1 flex items-start justify-between gap-2">
-              <label className="label-text !mb-0 flex-1">Date of Birth</label>
+              <label className="label-text !mb-0 flex-1">{t('dobLabel')}</label>
               <CopyValueButton value={watch('dob') ?? ''} compact />
             </div>
             <input {...register('dob')} type="date" className="input-field" />
@@ -210,25 +202,26 @@ export default function MemberFormModal({
         {/* Avatar color */}
         <div>
           <div className="mb-1 flex items-start justify-between gap-2">
-            <label className="label-text !mb-0 flex-1">Profile Color</label>
+            <label className="label-text !mb-0 flex-1">{t('profileColor')}</label>
             <CopyValueButton value={selectedColor} compact />
           </div>
-          <p className="mb-2 text-xs text-vault-faint">
-            Used when no photo is set, and for document badges
-          </p>
+          <p className="mb-2 text-xs text-vault-faint">{t('profileColorHint')}</p>
           <div className="flex flex-wrap gap-2">
-            {MEMBER_AVATAR_COLORS.map((color) => (
+            {MEMBER_COLORS.map((color) => (
               <button
-                key={`color-${color}`}
+                key={`color-${color.name}`}
                 type="button"
-                onClick={() => setValue('avatarColor', color)}
-                className={`h-8 w-8 rounded-lg border border-[#212121]/14 shadow-[0_1px_2px_rgba(33,33,33,0.06)] transition-all duration-150 ${
-                  selectedColor === color
+                onClick={() => setValue('avatarColor', color.border)}
+                className={`h-8 w-8 rounded-lg border-2 transition-all duration-150 ${
+                  selectedColor === color.border
                     ? 'scale-110 ring-2 ring-vault-warm ring-offset-2 ring-offset-vault-panel'
                     : 'hover:scale-105'
                 }`}
-                style={{ backgroundColor: color }}
-                title={color}
+                style={{
+                  backgroundColor: color.bg,
+                  borderColor: color.border,
+                }}
+                title={color.name}
               />
             ))}
           </div>
@@ -237,7 +230,7 @@ export default function MemberFormModal({
         {/* Actions */}
         <div className="flex justify-end gap-3 border-t border-[color:var(--color-border)] pt-2">
           <button type="button" onClick={onClose} className="btn-secondary">
-            Cancel
+            {tc('cancel')}
           </button>
           <button
             type="submit"
@@ -257,12 +250,12 @@ export default function MemberFormModal({
                   />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
-                Saving...
+                {t('saving')}
               </span>
             ) : editMember ? (
-              'Save Changes'
+              t('saveChanges')
             ) : (
-              'Add Member'
+              t('addMember')
             )}
           </button>
         </div>

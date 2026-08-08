@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 const CONSENT_KEY = 'sv_consent_v1';
 
 export interface ConsentPreferences {
   analytics: boolean;
+  /** Legacy field; always false — vault data stays on device. */
   aiProcessing: boolean;
   acceptedAt: string;
 }
@@ -20,7 +22,11 @@ export function getStoredConsent(): ConsentPreferences | null {
 }
 
 export function storeConsent(prefs: Omit<ConsentPreferences, 'acceptedAt'>) {
-  const full: ConsentPreferences = { ...prefs, acceptedAt: new Date().toISOString() };
+  const full: ConsentPreferences = {
+    analytics: prefs.analytics,
+    aiProcessing: false,
+    acceptedAt: new Date().toISOString(),
+  };
   try {
     localStorage.setItem(CONSENT_KEY, JSON.stringify(full));
   } catch {
@@ -30,18 +36,18 @@ export function storeConsent(prefs: Omit<ConsentPreferences, 'acceptedAt'>) {
 }
 
 export default function ConsentBanner() {
+  const t = useTranslations('consentBanner');
   const [visible, setVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [analytics, setAnalytics] = useState(false);
-  const [aiProcessing, setAiProcessing] = useState(true);
 
   useEffect(() => {
     const existing = getStoredConsent();
     if (!existing) setVisible(true);
   }, []);
 
-  const accept = (analyticsChoice: boolean, aiChoice: boolean) => {
-    storeConsent({ analytics: analyticsChoice, aiProcessing: aiChoice });
+  const accept = () => {
+    // Local-only app: never enable analytics (or any networked processing).
+    storeConsent({ analytics: false, aiProcessing: false });
     setVisible(false);
   };
 
@@ -51,7 +57,7 @@ export default function ConsentBanner() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Privacy preferences"
+      aria-label={t('ariaLabel')}
       style={{
         position: 'fixed',
         bottom: 0,
@@ -74,13 +80,11 @@ export default function ConsentBanner() {
           }}
         >
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 6 }}>
-              Privacy & data preferences
-            </p>
+            <p style={{ fontSize: 14, fontWeight: 500, marginBottom: 6 }}>{t('title')}</p>
             <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 12 }}>
-              SecureVault stores all your documents <strong>encrypted on your device</strong>. When
-              you use AI document scan, OCR text is sent to Anthropic for processing. Analytics help
-              us improve the app. You can change these choices anytime in Settings.
+              {t.rich('body', {
+                device: (chunks) => <strong>{chunks}</strong>,
+              })}
             </p>
 
             {showDetails && (
@@ -94,48 +98,9 @@ export default function ConsentBanner() {
                     style={{ width: 16, height: 16 }}
                   />
                   <span>
-                    <strong>Essential</strong> — Local encrypted storage, auth, offline
-                    functionality (required)
-                  </span>
-                </label>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={aiProcessing}
-                    onChange={(e) => setAiProcessing(e.target.checked)}
-                    style={{ width: 16, height: 16 }}
-                  />
-                  <span>
-                    <strong>AI processing</strong> — OCR text sent to Anthropic Claude for document
-                    field extraction. No document images leave your device.
-                  </span>
-                </label>
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={analytics}
-                    onChange={(e) => setAnalytics(e.target.checked)}
-                    style={{ width: 16, height: 16 }}
-                  />
-                  <span>
-                    <strong>Analytics</strong> — Anonymous usage statistics via Google Analytics to
-                    improve the app.
+                    {t.rich('essential', {
+                      strong: (chunks) => <strong>{chunks}</strong>,
+                    })}
                   </span>
                 </label>
               </div>
@@ -144,7 +109,7 @@ export default function ConsentBanner() {
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button
                 type="button"
-                onClick={() => accept(analytics, aiProcessing)}
+                onClick={() => accept()}
                 style={{
                   padding: '8px 20px',
                   borderRadius: 8,
@@ -155,12 +120,12 @@ export default function ConsentBanner() {
                   cursor: 'pointer',
                 }}
               >
-                {showDetails ? 'Save preferences' : 'Accept all'}
+                {showDetails ? t('savePreferences') : t('acceptAll')}
               </button>
               {!showDetails && (
                 <button
                   type="button"
-                  onClick={() => accept(false, false)}
+                  onClick={() => accept()}
                   style={{
                     padding: '8px 16px',
                     borderRadius: 8,
@@ -171,7 +136,7 @@ export default function ConsentBanner() {
                     color: 'var(--color-text-secondary)',
                   }}
                 >
-                  Essential only
+                  {t('essentialOnly')}
                 </button>
               )}
               <button
@@ -187,7 +152,7 @@ export default function ConsentBanner() {
                   color: 'var(--color-text-secondary)',
                 }}
               >
-                {showDetails ? 'Hide details' : 'Manage preferences'}
+                {showDetails ? t('hideDetails') : t('managePreferences')}
               </button>
             </div>
           </div>

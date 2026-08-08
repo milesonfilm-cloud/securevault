@@ -87,20 +87,6 @@ export const BADGE_DEFINITIONS: Array<{
     icon: '🏆',
     condition: () => getStreakCount() >= 30,
   },
-  {
-    id: 'cloud_synced',
-    name: 'Cloud backup',
-    description: 'Enabled cloud sync for your vault.',
-    icon: '☁️',
-    condition: (v) => v.settings.cloudSyncEnabled === true,
-  },
-  {
-    id: 'share_master',
-    name: 'Share master',
-    description: 'Created at least 3 time-limited share links.',
-    icon: '🔗',
-    condition: (v) => v.shareLinks.length >= 3,
-  },
 ];
 
 /** Badges newly earned compared to `vaultData.streakData.badges`. */

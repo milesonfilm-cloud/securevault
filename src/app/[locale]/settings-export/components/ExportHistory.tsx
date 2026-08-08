@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { History, FileJson, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { ExportRecord } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
 
@@ -20,6 +21,7 @@ function formatDate(iso: string): string {
 }
 
 export default function ExportHistory() {
+  const t = useTranslations('settingsPanels');
   const { vaultData } = useVaultData();
   const history: ExportRecord[] = vaultData.exportHistory ?? [];
 
@@ -30,16 +32,16 @@ export default function ExportHistory() {
           <History size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-vault-text">Export History</h3>
-          <p className="text-xs text-vault-faint">Last 10 exports from this device</p>
+          <h3 className="text-base font-700 text-vault-text">{t('exportHistory')}</h3>
+          <p className="text-xs text-vault-faint">{t('exportHistorySub')}</p>
         </div>
       </div>
 
       {history.length === 0 ? (
         <div className="text-center py-8">
           <History size={28} className="mx-auto text-vault-elevated mb-2" />
-          <p className="text-sm text-vault-muted">No exports yet</p>
-          <p className="text-xs text-vault-faint mt-0.5">Your export history will appear here</p>
+          <p className="text-sm text-vault-muted">{t('noExportsYet')}</p>
+          <p className="text-xs text-vault-faint mt-0.5">{t('noExportsHint')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -55,12 +57,14 @@ export default function ExportHistory() {
                   <FileText size={16} className="text-vault-warm flex-shrink-0" />
                 )}
                 <div>
-                  <span className="text-sm font-700 text-vault-text">{record.format} backup</span>
+                  <span className="text-sm font-700 text-vault-text">
+                    {t('backupFormat', { format: record.format })}
+                  </span>
                   <p className="text-xs text-vault-faint">{formatDate(record.exportedAt)}</p>
                 </div>
               </div>
               <span className="text-xs font-800 text-vault-muted tabular-nums flex-shrink-0">
-                {record.documentCount} docs
+                {t('docCountShort', { count: record.documentCount })}
               </span>
             </div>
           ))}

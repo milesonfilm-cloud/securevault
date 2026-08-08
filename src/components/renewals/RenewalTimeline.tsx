@@ -3,9 +3,10 @@
 import React, { useMemo } from 'react';
 import type { RenewalItem } from '@/lib/documentExpiry';
 import type { FamilyMember } from '@/lib/storage';
+import { CheckCircle2 } from 'lucide-react';
 import RenewalCard from './RenewalCard';
 
-type GroupKey = 'expired' | 'd7' | 'd30' | 'upcoming';
+type GroupKey = 'expired' | 'd7' | 'd30' | 'upcoming' | 'clear';
 
 function groupItem(item: RenewalItem): GroupKey {
   if (item.daysUntil < 0) return 'expired';
@@ -14,11 +15,18 @@ function groupItem(item: RenewalItem): GroupKey {
   return 'upcoming';
 }
 
-const GROUP_LABEL: Record<GroupKey, string> = {
+const GROUP_LABEL: Record<Exclude<GroupKey, 'clear'>, string> = {
   expired: 'Expired',
-  d7: 'Expiring in 7 days',
-  d30: 'Expiring in 30 days',
-  upcoming: 'Upcoming (30–90 days)',
+  d7: 'Expiring this week',
+  d30: 'Expiring this month',
+  upcoming: 'Expiring in 90 days',
+};
+
+const GROUP_EMPTY: Record<Exclude<GroupKey, 'clear'>, string> = {
+  expired: 'No expired documents',
+  d7: 'Nothing due this week',
+  d30: 'Nothing due this month',
+  upcoming: 'Nothing in the 30–90 day window',
 };
 
 interface RenewalTimelineProps {
@@ -28,9 +36,10 @@ interface RenewalTimelineProps {
 
 export default function RenewalTimeline({ items, members }: RenewalTimelineProps) {
   const names = useMemo(() => new Map(members.map((m) => [m.id, m.name])), [members]);
+  const memberById = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
 
   const grouped = useMemo(() => {
-    const g: Record<GroupKey, RenewalItem[]> = {
+    const g: Record<Exclude<GroupKey, 'clear'>, RenewalItem[]> = {
       expired: [],
       d7: [],
       d30: [],
@@ -42,41 +51,47 @@ export default function RenewalTimeline({ items, members }: RenewalTimelineProps
     return g;
   }, [items]);
 
-  const order: GroupKey[] = ['expired', 'd7', 'd30', 'upcoming'];
+  const order: Exclude<GroupKey, 'clear'>[] = ['expired', 'd7', 'd30', 'upcoming'];
 
   if (items.length === 0) {
     return (
       <div className="rounded-2xl border border-border bg-vault-panel p-10 text-center">
-        <p className="text-sm font-600 text-vault-text">No renewal dates in the next 90 days</p>
-        <p className="text-xs text-vault-muted mt-2">
-          Add expiry fields to insurance, vehicle, or ID documents to see them here.
+        <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-emerald-400" aria-hidden />
+        <p className="text-sm font-600 text-vault-text">All documents are current — nothing to renew</p>
+        <p className="mt-2 text-xs text-vault-muted">
+          Add expiry dates to insurance, vehicle, or ID documents to track renewals here.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {order.map((key) => {
         const list = grouped[key];
-        if (list.length === 0) return null;
         return (
           <section key={key}>
-            <h2 className="text-[11px] font-800 uppercase tracking-[0.2em] text-vault-faint mb-4">
+            <h2 className="mb-3 text-sm font-700 text-vault-text">
               {GROUP_LABEL[key]}{' '}
-              <span className="text-vault-muted font-700 normal-case tracking-normal">
-                ({list.length})
-              </span>
+              <span className="font-normal text-vault-muted">({list.length})</span>
             </h2>
-            <div className="space-y-3">
-              {list.map((item) => (
-                <RenewalCard
-                  key={`${item.docId}-${item.fieldKey}`}
-                  item={item}
-                  memberName={names.get(item.memberId) ?? 'Member'}
-                />
-              ))}
-            </div>
+            {list.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border bg-vault-elevated/30 px-4 py-3 text-xs text-vault-muted">
+                {GROUP_EMPTY[key]}
+              </p>
+            ) : (
+              <div className="divide-y divide-border rounded-2xl border border-border bg-vault-panel overflow-hidden">
+                {list.map((item) => (
+                  <RenewalCard
+                    key={`${item.docId}-${item.fieldKey}`}
+                    item={item}
+                    memberName={names.get(item.memberId) ?? 'Member'}
+                    member={memberById.get(item.memberId)}
+                    compact
+                  />
+                ))}
+              </div>
+            )}
           </section>
         );
       })}

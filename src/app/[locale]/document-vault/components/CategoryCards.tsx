@@ -2,52 +2,10 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  CreditCard,
-  Landmark,
-  Wallet,
-  Building2,
-  Car,
-  Users,
-  KeyRound,
-  BookOpen,
-  IdCard,
-  Shield,
-  Globe,
-  BriefcaseMedical,
-  ScrollText,
-  FileText,
-  Wrench,
-  User,
-  RefreshCw,
-  BadgeCheck,
-  File,
-} from 'lucide-react';
 import { CATEGORIES } from '@/lib/categories';
+import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
 import { Document } from '@/lib/storage';
 import { hexAlpha } from '@/lib/memberAvatarColors';
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  CreditCard: <CreditCard size={20} />,
-  Landmark: <Landmark size={20} />,
-  Wallet: <Wallet size={20} />,
-  Building2: <Building2 size={20} />,
-  Car: <Car size={20} />,
-  Users: <Users size={20} />,
-  KeyRound: <KeyRound size={20} />,
-  BookOpen: <BookOpen size={20} />,
-  IdCard: <IdCard size={20} />,
-  Shield: <Shield size={20} />,
-  Globe: <Globe size={20} />,
-  BriefcaseMedical: <BriefcaseMedical size={20} />,
-  ScrollText: <ScrollText size={20} />,
-  FileText: <FileText size={20} />,
-  Wrench: <Wrench size={20} />,
-  User: <User size={20} />,
-  RefreshCw: <RefreshCw size={20} />,
-  BadgeCheck: <BadgeCheck size={20} />,
-  File: <File size={20} />,
-};
 
 interface CategoryCardsProps {
   documents: Document[];
@@ -90,7 +48,7 @@ export default function CategoryCards({
                 className="[&_svg]:stroke-[1.75]"
                 style={{ color: isActive ? 'var(--vault-c-ink)' : cat.color }}
               >
-                {ICON_MAP[cat.icon]}
+                <CategoryLucideIcon name={cat.icon} size={20} />
               </span>
             </div>
             <div
@@ -101,7 +59,7 @@ export default function CategoryCards({
               {count}
             </div>
             <div
-              className={`text-[10px] font-bold uppercase tracking-[2px] mt-1 ${
+              className={`text-[11px] font-semibold leading-tight mt-1 line-clamp-2 ${
                 isActive ? 'text-vault-ink' : 'text-vault-muted'
               }`}
             >

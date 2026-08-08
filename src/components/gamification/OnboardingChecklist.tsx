@@ -58,18 +58,17 @@ export default function OnboardingChecklist({ vaultData, className }: Onboarding
     const hasMember = vaultData.members.length >= 1;
     const hasDoc = vaultData.documents.length >= 1;
     const backup =
-      vaultData.exportHistory.length >= 1 || vaultData.settings.cloudSyncEnabled === true;
+      vaultData.exportHistory.length >= 1;
     return [
       { id: 'member', label: 'Add a family member', done: hasMember },
       { id: 'document', label: 'Add your first document', done: hasDoc },
       { id: 'progress', label: 'Open the Progress page', done: persist.visitedProgress },
-      { id: 'backup', label: 'Export once or enable cloud sync', done: backup },
+      { id: 'backup', label: 'Export a backup once', done: backup },
     ];
   }, [
     vaultData.members.length,
     vaultData.documents.length,
     vaultData.exportHistory.length,
-    vaultData.settings.cloudSyncEnabled,
     persist.visitedProgress,
   ]);
 

@@ -8,6 +8,11 @@ import LocaleHtmlLang from '@/components/i18n/LocaleHtmlLang';
 import ConsentBanner from '@/components/ConsentBanner';
 
 export function generateStaticParams() {
+  // Mobile build (Capacitor shell) is Android/iOS only. To keep the static export small
+  // and avoid Windows heap-OOM, generate only the `en` locale routes.
+  if (process.env.NEXT_PUBLIC_MOBILE_BUILD === '1') {
+    return [{ locale: 'en' }];
+  }
   return routing.locales.map((locale) => ({ locale }));
 }
 

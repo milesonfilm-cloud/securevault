@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import type { FamilyMember } from '@/lib/storage';
 import MemberAvatar from '@/components/MemberAvatar';
+import { resolveMemberColor } from '@/lib/memberAvatarColors';
 import { cn } from '@/lib/utils';
 
 interface CompletenessRingProps {
@@ -25,6 +26,7 @@ export default function CompletenessRing({
   const c = 2 * Math.PI * r;
   const clamped = Math.max(0, Math.min(100, percent));
   const [animated, setAnimated] = useState(0);
+  const accent = resolveMemberColor(member.avatarColor).border;
 
   useEffect(() => {
     const t = requestAnimationFrame(() => setAnimated(clamped));
@@ -51,21 +53,26 @@ export default function CompletenessRing({
             cy={size / 2}
             r={r}
             fill="none"
-            className="text-vault-warm transition-[stroke-dashoffset] duration-1000 ease-out"
-            stroke="currentColor"
+            stroke={accent}
             strokeWidth={stroke}
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={offset}
+            className="transition-[stroke-dashoffset] duration-1000 ease-out"
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center p-2">
-          <MemberAvatar
-            name={member.name}
-            avatarColor={member.avatarColor}
-            photoDataUrl={member.photoDataUrl}
-            className="h-[52%] w-[52%] rounded-full border-2 border-vault-panel shadow-vault"
-          />
+          <div
+            className="h-[52%] w-[52%] overflow-hidden rounded-full border-2 shadow-vault"
+            style={{ borderColor: accent }}
+          >
+            <MemberAvatar
+              name={member.name}
+              avatarColor={member.avatarColor}
+              photoDataUrl={member.photoDataUrl}
+              className="h-full w-full rounded-full"
+            />
+          </div>
         </div>
       </div>
       <p className="mt-1.5 text-lg font-800 tabular-nums text-vault-text">{Math.round(clamped)}%</p>

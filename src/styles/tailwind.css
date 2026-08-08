@@ -7,18 +7,32 @@
 @import 'shadcn/tailwind.css';
 
 @layer base {
-  /* Default palette = Neon (Vault purple + Studio pastel themes removed) */
+  /* Default palette = light Family Vault */
   :root {
-    --vault-c-bg: #09090b;
-    --vault-c-panel: #121212;
-    --vault-c-elevated: #0e0e12;
-    --vault-c-warm: #00ff41;
-    --vault-c-coral: #ff0055;
-    --vault-c-ink: #0a0a0c;
-    --vault-c-text: #ffffff;
-    --vault-c-muted: #a0a0a0;
-    --vault-c-faint: #949494;
-    --vault-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+    --pastel-member-gradient: linear-gradient(135deg, #e4e6ed, #d8dfe9);
+    --pastel-member-ink: #212121;
+    --pastel-member-shadow: rgba(33, 33, 33, 0.12);
+    --pastel-member-ghost1: #e8eaef;
+    --pastel-member-ghost2: #f0f1f5;
+    --pastel-member-avatar-bg: #eceef2;
+
+    --pastel-ghost: #f6f5fa;
+    --pastel-alice: #d8dfe9;
+    --pastel-honeydew: #cfdeca;
+    --pastel-vanilla: #eff0a3;
+    --pastel-black: #212121;
+    --pastel-white: #ffffff;
+
+    --vault-c-bg: var(--pastel-ghost);
+    --vault-c-panel: var(--pastel-white);
+    --vault-c-elevated: var(--pastel-alice);
+    --vault-c-warm: #4338c9;
+    --vault-c-coral: #c62828;
+    --vault-c-ink: var(--pastel-black);
+    --vault-c-text: var(--pastel-black);
+    --vault-c-muted: rgba(33, 33, 33, 0.52);
+    --vault-c-faint: rgba(33, 33, 33, 0.35);
+    --vault-shadow: 0 10px 28px rgba(33, 33, 33, 0.09);
 
     --color-bg-primary: var(--vault-c-bg);
     --color-bg-secondary: var(--vault-c-panel);
@@ -28,43 +42,43 @@
     --color-text-primary: var(--vault-c-text);
     --color-text-muted: var(--vault-c-muted);
     --color-text-faint: var(--vault-c-faint);
-    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border: rgba(33, 33, 33, 0.09);
 
-    --background: 240 6% 4%;
-    --foreground: 0 0% 100%;
-    --card: 240 5% 7%;
-    --card-foreground: 0 0% 100%;
-    --muted: 240 4% 12%;
-    --muted-foreground: 0 0% 63%;
-    --popover: 240 5% 7%;
-    --popover-foreground: 0 0% 100%;
-    --border: 0 0% 100% / 0.08;
-    --input: 240 4% 12%;
-    --primary: 132 100% 50%;
-    --primary-foreground: 240 6% 4%;
-    --secondary: 240 4% 14%;
-    --secondary-foreground: 0 0% 100%;
-    --accent: 240 4% 14%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 348 100% 50%;
+    --background: 248 20% 97%;
+    --foreground: 0 0% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+    --muted: 220 18% 92%;
+    --muted-foreground: 0 0% 40%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+    --border: 0 0% 13% / 0.09;
+    --input: 220 18% 92%;
+    --primary: 245 58% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 18% 92%;
+    --secondary-foreground: 0 0% 13%;
+    --accent: 220 18% 92%;
+    --accent-foreground: 0 0% 13%;
+    --destructive: 0 72% 47%;
     --destructive-foreground: 0 0% 100%;
-    --ring: 132 100% 50%;
+    --ring: 245 58% 51%;
     --radius: 0.75rem;
-    --chart-1: 132 100% 50%;
-    --chart-2: 348 100% 50%;
-    --chart-3: 0 0% 63%;
-    --chart-4: 240 5% 7%;
-    --chart-5: 240 4% 14%;
-    --sidebar: 240 5% 7%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 132 100% 50%;
-    --sidebar-primary-foreground: 240 6% 4%;
-    --sidebar-accent: 240 4% 14%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 100% / 0.08;
-    --sidebar-ring: 132 100% 50%;
+    --chart-1: 245 58% 51%;
+    --chart-2: 0 72% 47%;
+    --chart-3: 0 0% 40%;
+    --chart-4: 0 0% 100%;
+    --chart-5: 220 18% 92%;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 245 58% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 18% 92%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 0 0% 13% / 0.09;
+    --sidebar-ring: 245 58% 51%;
 
-    font-family: var(--font-neon-stack), var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-urbanist), var(--font-sans), system-ui, sans-serif;
   }
   .theme {
     --font-heading: var(--font-sans);
@@ -207,8 +221,8 @@
     color: var(--color-text-faint);
   }
   .auth-input:focus {
-    box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.45);
-    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 0 0 2px rgba(67, 56, 201, 0.28);
+    border-color: rgba(67, 56, 201, 0.4);
   }
   .auth-btn {
     @apply neo-btn neo-btn-primary w-full py-3.5;
@@ -222,7 +236,7 @@
     @apply flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-medium transition-all duration-150 cursor-pointer;
   }
   .sidebar-item-inactive:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(33, 33, 33, 0.06);
   }
 
   /* ── Cards ── */
@@ -259,35 +273,12 @@
   }
   .input-field:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.45);
-    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 0 0 2px rgba(67, 56, 201, 0.28);
+    border-color: rgba(67, 56, 201, 0.4);
   }
   .label-text {
     @apply block text-xs font-600 mb-1.5 tracking-wide;
     color: var(--color-text-muted);
-  }
-
-  /* Neon vault — folder-tab category tiles */
-  .neon-folder-tile {
-    position: relative;
-    border-radius: 1.5rem;
-    isolation: isolate;
-  }
-  .neon-folder-tile::before {
-    content: '';
-    position: absolute;
-    top: -11px;
-    right: 1rem;
-    width: 2.75rem;
-    height: 0.875rem;
-    border-radius: 0.75rem 0.75rem 0 0;
-    background: inherit;
-    z-index: 0;
-    pointer-events: none;
-  }
-  .neon-folder-tile-inner {
-    position: relative;
-    z-index: 1;
   }
 
   /* ── Animations ── */
@@ -384,54 +375,27 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 65, 0.2);
+  background: rgba(33, 33, 33, 0.12);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 65, 0.35);
-}
-
-[data-theme='neon'] html,
-[data-theme='neon'] body {
-  background-color: var(--vault-c-bg);
-  color: var(--vault-c-text);
-}
-
-[data-theme='neon'] ::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 65, 0.2);
-}
-[data-theme='neon'] ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 65, 0.35);
-}
-
-[data-theme='neon'] .auth-input:focus,
-[data-theme='neon'] .input-field:focus {
-  box-shadow: 0 0 0 2px rgba(0, 255, 65, 0.45);
-  border-color: rgba(0, 255, 65, 0.4);
-}
-
-[data-theme='neon'] .neo-btn-primary,
-[data-theme='neon'] .btn-primary {
-  color: var(--vault-c-ink);
+  background: rgba(33, 33, 33, 0.2);
 }
 
 :root .neo-btn-primary,
 :root .btn-primary {
-  color: var(--vault-c-ink);
+  color: #ffffff;
 }
 
+.vault-app-bg,
 .neon-vault-bg {
-  background-color: #09090b;
-  background-image:
-    radial-gradient(ellipse 100% 60% at 50% -25%, rgba(0, 255, 65, 0.12) 0%, transparent 55%),
-    radial-gradient(circle at 85% 70%, rgba(255, 0, 85, 0.08) 0%, transparent 42%),
-    radial-gradient(circle at 10% 40%, rgba(204, 255, 0, 0.05) 0%, transparent 38%),
-    linear-gradient(180deg, #050506 0%, #09090b 100%);
+  background-color: var(--pastel-ghost);
+  background-image: none;
 }
 
 /**
  * Welcome / onboarding only — soft family pastel backdrop.
- * Intentionally not tied to `[data-theme='neon']` so first-run never shows terminal neon.
+ * Soft family pastel backdrop for welcome / onboarding.
  */
 .auth-welcome-banner {
   background-color: #f6f5fa;
@@ -462,7 +426,7 @@
   --vault-c-bg: var(--pastel-ghost);
   --vault-c-panel: var(--pastel-white);
   --vault-c-elevated: var(--pastel-alice);
-  --vault-c-warm: var(--pastel-honeydew);
+  --vault-c-warm: #4338c9;
   --vault-c-coral: #c62828;
   --vault-c-ink: var(--pastel-black);
   --vault-c-text: var(--pastel-black);
@@ -478,9 +442,9 @@
   --muted: 220 18% 92%;
   --muted-foreground: 0 0% 40%;
   --border: 0 0% 13% / 0.09;
-  --primary: 210 40% 98%;
-  --primary-foreground: 0 0% 13%;
-  --ring: 0 0% 13%;
+  --primary: 245 58% 51%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 245 58% 51%;
 }
 
 [data-theme='pastel'] html,
@@ -490,6 +454,7 @@
   color: var(--pastel-black);
 }
 
+[data-theme='pastel'] .vault-app-bg,
 [data-theme='pastel'] .neon-vault-bg {
   background: var(--pastel-ghost);
   background-image: none;

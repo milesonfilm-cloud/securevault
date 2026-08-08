@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[8635],{78635:(e,a,t)=>{t.d(a,{CapacitorShareTarget:()=>r});let r=(0,t(32587).F3)("CapacitorShareTarget",{web:()=>t.e(265).then(t.bind(t,30265)).then(e=>new e.CapacitorShareTargetWeb)})}}]);

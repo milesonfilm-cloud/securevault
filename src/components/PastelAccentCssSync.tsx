@@ -1,14 +1,12 @@
 'use client';
 
 import { useLayoutEffect, useMemo } from 'react';
-import { useTheme } from '@/context/ThemeContext';
 import { usePastelMemberAccent } from '@/context/PastelMemberAccentContext';
 import { useVaultData } from '@/context/VaultDataContext';
 import type { FamilyMember } from '@/lib/storage';
 import { pastelDisplayMembersOrder } from '@/lib/pastelDisplayMembers';
 import {
   applyPastelMemberCssVars,
-  clearPastelMemberCssVars,
   pastelPaletteFromAvatarColor,
   PASTEL_ACCENT_PLACEHOLDER_PALETTE,
 } from '@/lib/memberPastelPalettes';
@@ -35,11 +33,10 @@ function resolvePastelAccentPalette(
 }
 
 /**
- * Maps persisted / in-app selected member to CSS variables on `documentElement`
- * so mobile nav, drawer, sidebar, and vault tiles share the same accent in pastel theme.
+ * Maps selected member to CSS variables on `documentElement`
+ * so nav, drawer, sidebar, and vault tiles share the same accent.
  */
 export default function PastelAccentCssSync() {
-  const { theme } = useTheme();
   const { accentMemberId, accentHydrated } = usePastelMemberAccent();
   const { vaultData, loading } = useVaultData();
   const memberPaletteKey = useMemo(
@@ -49,18 +46,14 @@ export default function PastelAccentCssSync() {
 
   useLayoutEffect(() => {
     if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    if (theme !== 'pastel') {
-      clearPastelMemberCssVars(root);
-      return;
-    }
     if (!accentHydrated) return;
 
+    const root = document.documentElement;
     const displayMembers = pastelDisplayMembersOrder(vaultData.members);
     const vaultReady = !loading;
     const pal = resolvePastelAccentPalette(accentMemberId, displayMembers, vaultReady);
     applyPastelMemberCssVars(root, pal);
-  }, [theme, loading, accentHydrated, accentMemberId, memberPaletteKey]);
+  }, [loading, accentHydrated, accentMemberId, memberPaletteKey]);
 
   return null;
 }

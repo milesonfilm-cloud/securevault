@@ -5,10 +5,12 @@ import type { ComponentType } from 'react';
 import type { LucideProps } from 'lucide-react';
 import {
   BadgeCheck,
+  Banknote,
   BookOpen,
   BriefcaseMedical,
   Building2,
   Car,
+  CircleDollarSign,
   CreditCard,
   File,
   FileText,
@@ -19,6 +21,7 @@ import {
   RefreshCw,
   ScrollText,
   Shield,
+  TrendingUp,
   User,
   Users,
   Wallet,
@@ -45,6 +48,9 @@ const CATEGORY_LUCIDE: Record<string, ComponentType<LucideProps>> = {
   RefreshCw,
   BadgeCheck,
   File,
+  TrendingUp,
+  Banknote,
+  CircleDollarSign,
 };
 
 export function CategoryLucideIcon({

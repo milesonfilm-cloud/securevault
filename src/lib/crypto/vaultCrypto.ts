@@ -14,10 +14,12 @@ const ARGON2_TIME_COST = 3;
 const ARGON2_MEMORY_KIB = 8192;
 const ARGON2_PARALLELISM = 1;
 
-function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  const out = new Uint8Array(bytes.byteLength);
-  out.set(bytes);
-  return out.buffer;
+/** Fresh Uint8Array backed by a plain ArrayBuffer (satisfies strict WebCrypto typings). */
+function copyBytes(bytes: Uint8Array): Uint8Array<ArrayBuffer> {
+  const buf = new ArrayBuffer(bytes.byteLength);
+  const copy = new Uint8Array(buf);
+  copy.set(bytes);
+  return copy;
 }
 
 export type KdfParamsV1 = {
@@ -47,7 +49,7 @@ export type EncryptedPayloadV1 = {
 };
 
 async function sha256(bytes: Uint8Array): Promise<Uint8Array> {
-  const digest = await crypto.subtle.digest('SHA-256', toArrayBuffer(bytes));
+  const digest = await crypto.subtle.digest('SHA-256', copyBytes(bytes));
   return new Uint8Array(digest);
 }
 
@@ -108,7 +110,7 @@ async function deriveAesKeyFromPinPbkdf2(pin: string, params: KdfParamsV1): Prom
     'deriveKey',
   ]);
   const salt = base64ToBytes(params.saltB64);
-  const saltBuf = toArrayBuffer(salt);
+  const saltBuf = copyBytes(salt);
   return await crypto.subtle.deriveKey(
     { name: 'PBKDF2', salt: saltBuf, iterations: params.iterations, hash: 'SHA-256' },
     keyMaterial,
@@ -131,7 +133,7 @@ async function deriveAesKeyFromPinArgon2id(pin: string, params: KdfParamsV2): Pr
   });
   return await crypto.subtle.importKey(
     'raw',
-    toArrayBuffer(raw),
+    copyBytes(raw),
     { name: 'AES-GCM', length: 256 },
     true,
     ['encrypt', 'decrypt']
@@ -187,7 +189,7 @@ export async function encryptJson(key: CryptoKey, value: unknown): Promise<Encry
   const iv = new Uint8Array(crypto.getRandomValues(new Uint8Array(12)));
   const plain = new TextEncoder().encode(JSON.stringify(value));
   const ct = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(plain))
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, copyBytes(plain))
   );
   return { v: 1, ivB64: bytesToBase64(iv), ctB64: bytesToBase64(ct) };
 }
@@ -195,7 +197,7 @@ export async function encryptJson(key: CryptoKey, value: unknown): Promise<Encry
 export async function decryptJson<T>(key: CryptoKey, payload: EncryptedPayloadV1): Promise<T> {
   const iv = new Uint8Array(base64ToBytes(payload.ivB64));
   const ct = base64ToBytes(payload.ctB64);
-  const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(ct));
+  const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, copyBytes(ct));
   const txt = new TextDecoder().decode(new Uint8Array(plainBuf));
   return JSON.parse(txt) as T;
 }
@@ -203,7 +205,7 @@ export async function decryptJson<T>(key: CryptoKey, payload: EncryptedPayloadV1
 export async function encryptBytes(key: CryptoKey, bytes: Uint8Array): Promise<EncryptedPayloadV1> {
   const iv = new Uint8Array(crypto.getRandomValues(new Uint8Array(12)));
   const ct = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(bytes))
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, copyBytes(bytes))
   );
   return { v: 1, ivB64: bytesToBase64(iv), ctB64: bytesToBase64(ct) };
 }
@@ -214,6 +216,6 @@ export async function decryptBytes(
 ): Promise<Uint8Array> {
   const iv = new Uint8Array(base64ToBytes(payload.ivB64));
   const ct = base64ToBytes(payload.ctB64);
-  const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, toArrayBuffer(ct));
+  const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, copyBytes(ct));
   return new Uint8Array(plainBuf);
 }

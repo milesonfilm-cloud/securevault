@@ -8,9 +8,13 @@ export const DEFAULT_EXPIRY_WARN_DAYS = 30;
 export const EXPIRY_FIELD_KEYS = [
   'Expiry Date',
   'Expiry',
+  'End Date',
   'End / Maturity Date',
+  'Maturity Date',
   'Insurance Expiry',
   'PUC Expiry',
+  'Renewal Date',
+  'Warranty Expiry',
 ] as const;
 
 export type ExpiryFieldKey = (typeof EXPIRY_FIELD_KEYS)[number];
@@ -164,9 +168,25 @@ export function collectRenewalItems(documents: Document[], maxDaysAhead: number)
   return items;
 }
 
-export function formatExpirySummary(daysUntil: number): string {
-  if (daysUntil < 0)
-    return `Expired ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} ago`;
+export function formatExpirySummary(daysUntil: number, expiryDay?: Date): string {
+  if (daysUntil < 0) {
+    const daysExpired = Math.abs(daysUntil);
+    if (daysExpired > 365) {
+      if (expiryDay) {
+        return `Expired (${expiryDay.toLocaleDateString(undefined, {
+          month: 'short',
+          year: 'numeric',
+        })})`;
+      }
+      const years = Math.floor(daysExpired / 365);
+      return `Expired over ${years} year${years === 1 ? '' : 's'} ago`;
+    }
+    if (daysExpired > 90) {
+      const months = Math.max(1, Math.round(daysExpired / 30));
+      return `Expired ${months} month${months === 1 ? '' : 's'} ago`;
+    }
+    return `Expired ${daysExpired} day${daysExpired === 1 ? '' : 's'} ago`;
+  }
   if (daysUntil === 0) return 'Expires today';
   if (daysUntil === 1) return 'Expires tomorrow';
   return `Expires in ${daysUntil} days`;

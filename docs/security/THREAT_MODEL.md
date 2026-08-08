@@ -35,6 +35,9 @@ This document defines what we’re protecting, realistic attacker capabilities, 
 - Repackaged app without proper signing/attestation **cannot** perform sensitive operations in production.
 - Attestation tokens are **non-replayable** (nonce + server challenge + short TTL).
 
+**Current build (honest status)**  
+The bullets above describe the **target** production posture. In this repository, `requireAttestedSession()` exists and is exercised on a demo `/api/attested/ping` route only. **Sensitive document, share, and emergency routes do not yet enforce device attestation end-to-end.** Treat attestation acceptance as **not yet met** until those routes are gated and verified in production.
+
 ### 2) Anti-copy (IP protection)
 **Reality check**
 If users receive the client bundle, perfect prevention of copying is not achievable. Treat obfuscation as **friction**, not a security boundary.

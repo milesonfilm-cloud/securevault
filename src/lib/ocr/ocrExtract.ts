@@ -56,7 +56,10 @@ export function guessCategoryFromOcrText(text: string): CategoryId {
   if (/\b[A-Z]{4}0[A-Z0-9]{6}\b/.test(u)) return 'bank-accounts';
   if (/VISA\b/i.test(u) && /(ENTRY|VALID)/i.test(t)) return 'visa';
   if (/REG(?:ISTRATION)?|CHASSIS|ENGINE/i.test(t)) return 'vehicle-documents';
-  if (/POLICY|PREMIUM/i.test(u)) return 'insurance';
+  if (/\b(EMI|LOAN\s*ACCOUNT|HOME\s*LOAN|PERSONAL\s*LOAN)\b/i.test(t)) return 'loan';
+  if (/\b(MUTUAL\s*FUND|FOLIO|PPF|NPS|FIXED\s*DEPOSIT|\bFD\b|\bRD\b)\b/i.test(u))
+    return 'investment';
+  if (/POLICY|PREMIUM|SUM\s*INSURED/i.test(u)) return 'insurance';
   return 'other';
 }
 

@@ -3,7 +3,7 @@
 import { usePathname } from '@/i18n/navigation';
 import AuthGuard from './AuthGuard';
 
-const PUBLIC_PATHS = ['/landing', '/voyager', '/share', '/handover', '/privacy'];
+const PUBLIC_PATHS = ['/landing', '/voyager', '/privacy'];
 
 export default function ConditionalAuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

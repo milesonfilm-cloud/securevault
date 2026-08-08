@@ -109,7 +109,7 @@ export default function DocumentExpiryAlerts() {
                   {names.has(a.memberId) ? ` · ${names.get(a.memberId)}` : ''} —{' '}
                 </span>
                 <span className={a.daysUntil < 0 ? 'text-red-300 font-600' : 'text-amber-200/95'}>
-                  {formatExpirySummary(a.daysUntil)}
+                  {formatExpirySummary(a.daysUntil, a.expiryDay)}
                 </span>
               </li>
             ))}

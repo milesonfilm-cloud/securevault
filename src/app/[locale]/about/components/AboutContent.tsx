@@ -1,40 +1,96 @@
-import React from 'react';
-import { Info, Shield, Scale, Lock } from 'lucide-react';
-import VaultPageHeading from '@/components/ui/VaultPageHeading';
+'use client';
+
+import React, { useState } from 'react';
+import { Shield, Scale, Lock, FileText, ChevronDown, Landmark, ArrowRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import BrandLogoFull from '@/components/ui/BrandLogoFull';
+import ComplianceBadgeStrip from '@/components/trust/ComplianceBadgeStrip';
+import VaultIntegrityCard from '@/components/trust/VaultIntegrityCard';
+import { cn } from '@/lib/utils';
+
+function AccordionSection({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border-b border-border last:border-b-0">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 py-3 text-left"
+        aria-expanded={open}
+      >
+        <span className="text-base font-bold text-vault-text">{title}</span>
+        <ChevronDown
+          size={18}
+          className={cn('shrink-0 text-vault-muted transition-transform', open && 'rotate-180')}
+        />
+      </button>
+      {open ? <div className="pb-4 text-sm leading-relaxed text-vault-muted">{children}</div> : null}
+    </div>
+  );
+}
 
 export default function AboutContent() {
+  const t = useTranslations('aboutPage');
+
+  const strongEm = (chunks: React.ReactNode) => (
+    <strong className="font-semibold text-vault-text">{chunks}</strong>
+  );
+
+  const strongPlain = (chunks: React.ReactNode) => (
+    <strong className="text-vault-text">{chunks}</strong>
+  );
+
+  const termSections = [
+    { title: t('t1Title'), body: t('t1Body') },
+    { title: t('t2Title'), body: t('t2Body') },
+    { title: t('t3Title'), body: t('t3Body') },
+    { title: t('t4Title'), body: t('t4Body') },
+    {
+      title: t('t5Title'),
+      body: t.rich('t5Body', { asis: strongPlain, asavail: strongPlain }),
+    },
+    { title: t('t6Title'), body: t('t6Body') },
+    { title: t('t7Title'), body: t('t7Body') },
+    { title: t('t8Title'), body: t('t8Body') },
+  ];
+
   return (
     <div className="mx-auto min-h-full max-w-screen-lg bg-vault-bg p-4 lg:p-6">
-      <VaultPageHeading
-        icon={
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--color-border)] bg-vault-elevated text-vault-warm">
-            <Info size={18} aria-hidden />
-          </div>
-        }
-        eyebrow="SecureVault"
-        title="About"
-        description="What it does and what to expect"
-        titleClassName="mt-0.5 text-[28px] font-bold leading-tight tracking-tight text-vault-text sm:text-[32px]"
-      />
+      <div className="mb-10 flex flex-col items-center text-center">
+        <BrandLogoFull iconSize={220} className="mb-6" />
+        <h1 className="text-2xl font-extrabold tracking-tight text-vault-text sm:text-3xl">
+          {t('title')}
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-vault-muted">{t('intro')}</p>
+        <ComplianceBadgeStrip className="mt-5" />
+      </div>
 
       <section className="neo-card mb-5 rounded-2xl p-5 sm:p-6">
         <div className="mb-4 flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-vault-elevated text-vault-warm">
             <Shield size={18} aria-hidden />
           </div>
-          <h2 className="text-lg font-bold text-vault-text">What SecureVault is</h2>
+          <h2 className="text-lg font-bold text-vault-text">{t('whatHeading')}</h2>
         </div>
         <div className="space-y-3 text-sm leading-relaxed text-vault-muted">
           <p className="text-vault-text">
-            SecureVault stores and organizes sensitive personal and family data{' '}
-            <strong className="font-semibold text-vault-text">on this device</strong>, encrypted in
-            this app. Vault contents are not uploaded to an app-operated cloud—only you export
-            backups when you choose.
+            {t('whatP1a')}
+            <strong className="font-semibold text-vault-text">{t('whatP1b')}</strong>
+            {t('whatP1c')}
           </p>
           <p>
-            If you <strong className="text-vault-text">forget your password</strong>, encrypted data
-            cannot be recovered. Keep a strong passphrase and maintain your own backups if you need
-            copies elsewhere.
+            {t('whatP2a')}
+            <strong className="text-vault-text">{t('whatP2b')}</strong>
+            {t('whatP2c')}
           </p>
         </div>
       </section>
@@ -44,48 +100,89 @@ export default function AboutContent() {
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-vault-elevated text-vault-warm">
             <Lock size={18} aria-hidden />
           </div>
-          <h2 className="text-lg font-bold text-vault-text">Security &amp; expectations</h2>
+          <h2 className="text-lg font-bold text-vault-text">{t('securityHeading')}</h2>
         </div>
         <div className="space-y-3 text-sm leading-relaxed text-vault-muted">
           <p className="text-vault-text">
-            Encryption uses the browser&apos;s{' '}
-            <strong className="font-semibold text-vault-text">Web Crypto API</strong> (AES-256-GCM).
-            <strong className="font-semibold text-vault-text"> New vaults</strong> derive keys with{' '}
-            <strong className="font-semibold text-vault-text">Argon2id</strong> (WebAssembly);{' '}
-            <strong className="font-semibold text-vault-text">older vaults</strong> may use
-            PBKDF2-SHA256 with stored iteration counts. A password verifier uses SHA-256.
+            {t.rich('securityP1', {
+              wca: strongEm,
+              newv: strongEm,
+              argon: strongEm,
+              oldv: strongEm,
+            })}
           </p>
-          <p>
-            Protection depends on your passphrase and backups. Client-side code can be inspected;
-            strong crypto is what keeps ciphertext useless without your password. This is not a
-            claim of &quot;unhackable&quot; software—use a long, unique passphrase and safe backup
-            practices.
-          </p>
+          <p>{t('securityP2')}</p>
+          <Link
+            href="/security"
+            className="inline-flex items-center gap-1.5 pt-1 text-sm font-700 text-vault-warm hover:text-vault-text"
+          >
+            {t('securityPageLink')}
+            <ArrowRight size={16} aria-hidden />
+          </Link>
+        </div>
+      </section>
+
+      <section className="neo-card mb-5 rounded-2xl p-5 sm:p-6">
+        <div className="mb-4 flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-vault-elevated text-vault-warm">
+            <Landmark size={18} aria-hidden />
+          </div>
+          <h2 className="text-lg font-bold text-vault-text">{t('dpdpHeading')}</h2>
+        </div>
+        <div className="space-y-3 text-sm leading-relaxed text-vault-muted">
+          <p className="text-vault-text font-medium">{t('dpdpLead')}</p>
+          <p>{t('dpdpIntro')}</p>
+          <ul className="list-disc space-y-2 pl-5">
+            <li>{t('dpdpMinimise')}</li>
+            <li>{t('dpdpPurpose')}</li>
+            <li>{t('dpdpStorage')}</li>
+            <li>{t('dpdpAccess')}</li>
+            <li>{t('dpdpErasure')}</li>
+          </ul>
+          <p className="rounded-xl bg-vault-elevated/60 px-3 py-2 text-vault-text">{t('dpdpLocal')}</p>
+          <p className="text-xs text-vault-faint">{t('dpdpDisclaimer')}</p>
+        </div>
+      </section>
+
+      <VaultIntegrityCard />
+
+      <section className="neo-card mb-5 rounded-2xl p-5 sm:p-6">
+        <div className="mb-2 flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-vault-elevated text-vault-warm">
+            <FileText size={18} aria-hidden />
+          </div>
+          <h2 className="text-lg font-bold text-vault-text">{t('termsHeading')}</h2>
+        </div>
+        <p className="mb-4 text-xs text-vault-faint">{t('termsEffective')}</p>
+        <div className="divide-y divide-border rounded-xl border border-border px-4">
+          {termSections.map((section) => (
+            <AccordionSection key={section.title} title={section.title}>
+              {section.body}
+            </AccordionSection>
+          ))}
         </div>
       </section>
 
       <section className="rounded-2xl border border-vault-coral/35 bg-vault-elevated/40 p-5 sm:p-6">
-        <div className="mb-4 flex items-center gap-2.5">
+        <div className="mb-2 flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-vault-coral/15 text-vault-coral">
             <Scale size={18} aria-hidden />
           </div>
-          <h2 className="text-lg font-bold text-vault-text">Disclaimer</h2>
+          <h2 className="text-lg font-bold text-vault-text">{t('disclaimerHeading')}</h2>
         </div>
-        <div className="space-y-3 text-xs leading-relaxed text-vault-muted sm:text-sm">
-          <p className="font-semibold uppercase tracking-wide text-vault-coral">Read carefully</p>
-          <p>
-            SecureVault is provided <strong className="text-vault-text">&quot;as is&quot;</strong>{' '}
-            and <strong className="text-vault-text">&quot;as available&quot;</strong>, without
-            warranties to the fullest extent permitted by law. The developers and contributors are{' '}
-            <strong className="text-vault-text">not liable</strong> for loss or damage including
-            data loss, failed backups or restores, device or browser issues, forgotten passwords, or
-            software errors. To the maximum extent permitted by law, there is no liability for
-            indirect, consequential, or punitive damages.
-          </p>
-          <p>
-            Nothing here is legal, financial, or professional advice. This notice may be updated;
-            continued use means you accept revisions.
-          </p>
+        <div className="divide-y divide-border rounded-xl border border-vault-coral/20 px-4 mt-2">
+          <AccordionSection title={t('disclaimerReadCarefully')} defaultOpen>
+            <div className="space-y-3">
+              <p>
+                {t.rich('disclaimerP1', {
+                  asis: strongPlain,
+                  asavail: strongPlain,
+                  noliab: strongPlain,
+                })}
+              </p>
+              <p>{t('disclaimerP2')}</p>
+            </div>
+          </AccordionSection>
         </div>
       </section>
     </div>

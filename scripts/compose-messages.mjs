@@ -134,7 +134,7 @@ const STATIC_EN = {
     faceId: 'Face ID',
     offlineNote: '100% offline · stored on this device only',
     identityVerifiedHint: 'Identity verified. Enter your password to decrypt the vault.',
-    pwdMin: 'Password must be at least 4 characters',
+    pwdMin: 'Password must be at least 6 characters',
     pwdMismatch: 'Passwords do not match',
     incorrectPwd: 'Incorrect password. Please try again.',
     bioFailed: 'Biometric authentication failed. Use your password.',

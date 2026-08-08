@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -19,9 +18,10 @@ import {
 } from 'lucide-react';
 import { lockVaultAndReload } from '@/lib/vaultKeyPersist';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useTheme } from '@/context/ThemeContext';
 import { countRenewalBadgeDocuments } from '@/lib/notifications/reminderScheduler';
 import { DEFAULT_EXPIRY_WARN_DAYS } from '@/lib/documentExpiry';
+import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   href: string;
@@ -81,31 +81,20 @@ interface SidebarProps {
   activePath: string;
 }
 
-function navItemClasses(isActive: boolean, collapsed: boolean, pastel: boolean): string {
+function navItemClasses(isActive: boolean, collapsed: boolean): string {
   const base = `sidebar-item ${collapsed ? 'justify-center px-0' : ''}`;
   if (isActive) {
-    if (pastel) {
-      return `${base} font-semibold text-[#212121] pastel-sidebar-active`;
-    }
-    return `${base} bg-vault-elevated text-vault-text font-semibold`;
+    return `${base} font-semibold text-[#212121] pastel-sidebar-active`;
   }
-  if (pastel) {
-    return `${base} bg-transparent text-[#212121]/55 hover:bg-[#212121]/06`;
-  }
-  return `${base} text-vault-faint bg-transparent hover:bg-vault-elevated/45`;
+  return `${base} bg-transparent text-[#212121]/55 hover:bg-[#212121]/06`;
 }
 
-function navIconClass(isActive: boolean, pastel: boolean): string {
-  if (pastel) {
-    return isActive ? 'text-[color:var(--pastel-member-ink,#212121)]' : 'text-[#212121]/45';
-  }
-  return isActive ? 'text-vault-warm' : 'text-vault-faint';
+function navIconClass(isActive: boolean): string {
+  return isActive ? 'text-[color:var(--pastel-member-ink,#212121)]' : 'text-[#212121]/45';
 }
 
 export default function Sidebar({ collapsed, onToggleCollapse, activePath }: SidebarProps) {
   const t = useTranslations('nav');
-  const { theme } = useTheme();
-  const pastel = theme === 'pastel';
   const { vaultData, loading } = useVaultData();
   const renewalBadge = loading
     ? 0
@@ -120,19 +109,24 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
         width: collapsed ? 64 : 240,
       }}
     >
-      <div className="flex min-h-[72px] flex-shrink-0 items-center border-b border-[color:var(--color-border)] px-3 py-2">
+      <div
+        className={cn(
+          'flex min-h-[72px] flex-shrink-0 items-center border-b border-[color:var(--color-border)] py-2',
+          collapsed ? 'justify-center px-1.5' : 'px-3'
+        )}
+      >
         <Link
           href="/family-management"
-          className="flex min-w-0 items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50"
+          className={cn(
+            'flex min-w-0 items-center rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50',
+            collapsed ? 'justify-center' : 'gap-2.5'
+          )}
           title={t('familyMembers')}
         >
-          <Image
-            src="/brand/securevault-app-icon.png"
-            alt="SecureVault"
-            width={64}
-            height={64}
-            className="h-12 w-12 flex-shrink-0 rounded-2xl border border-neutral-200/80 bg-white object-contain p-1 shadow-[0_10px_24px_rgba(33,33,33,0.08)]"
-            priority
+          <BrandMarkSvg
+            size={collapsed ? 52 : 62}
+            className="flex-shrink-0 drop-shadow-sm"
+            aria-hidden
           />
           {!collapsed && (
             <div className="min-w-0 text-left">
@@ -167,7 +161,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                   ? `sidebar-item mt-1 ${collapsed ? 'justify-center px-0' : ''} ${
                       isActive ? 'text-white' : 'text-white hover:brightness-110'
                     }`
-                  : navItemClasses(isActive, collapsed, pastel)
+                  : navItemClasses(isActive, collapsed)
               }
               style={
                 isUpgrade
@@ -190,7 +184,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                 className={
                   isUpgrade
                     ? 'flex-shrink-0'
-                    : `flex-shrink-0 transition-colors ${navIconClass(isActive, pastel)}`
+                    : `flex-shrink-0 transition-colors ${navIconClass(isActive)}`
                 }
                 style={
                   isUpgrade
@@ -217,12 +211,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                   {item.badge}
                 </span>
               ) : null}
-              {/* FREE badge for free users */}
-              {isUpgrade && !collapsed && plan === 'free' && (
-                <span className="ml-auto rounded-full bg-yellow-300 px-1.5 py-0.5 text-[9px] font-extrabold text-[#4338C9]">
-                  FREE
-                </span>
-              )}
+              {/* FREE badge removed — Pro is a paid upgrade */}
             </Link>
           );
         })}

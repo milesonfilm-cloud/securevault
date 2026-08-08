@@ -3,6 +3,7 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useVaultData } from '@/context/VaultDataContext';
 import { CATEGORIES } from '@/lib/categories';
 
@@ -22,16 +23,20 @@ interface CustomTooltipProps {
 }
 
 function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
+  const t = useTranslations('settingsPanels');
   if (!active || !payload || !payload.length) return null;
   return (
     <div className="neo-card rounded-2xl px-3 py-2">
       <p className="text-xs font-600 text-vault-muted">{label}</p>
-      <p className="text-sm font-700 text-vault-text">{payload[0].value} documents</p>
+      <p className="text-sm font-700 text-vault-text">
+        {t('tooltipDocs', { count: payload[0].value })}
+      </p>
     </div>
   );
 }
 
 export default function VaultStatsPanel() {
+  const t = useTranslations('settingsPanels');
   const { vaultData } = useVaultData();
 
   const documents = vaultData.documents;
@@ -53,19 +58,19 @@ export default function VaultStatsPanel() {
           <TrendingUp size={20} className="text-vault-warm" />
         </div>
         <div>
-          <h3 className="text-base font-700 text-vault-text">Vault Overview</h3>
-          <p className="text-xs text-vault-muted">Documents stored per category</p>
+          <h3 className="text-base font-700 text-vault-text">{t('vaultOverview')}</h3>
+          <p className="text-xs text-vault-muted">{t('vaultOverviewSub')}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="bg-vault-elevated rounded-xl p-3 text-center border border-border">
           <p className="text-2xl font-800 text-vault-text tabular-nums">{totalDocs}</p>
-          <p className="text-xs font-600 mt-0.5 text-vault-muted">Total Documents</p>
+          <p className="text-xs font-600 mt-0.5 text-vault-muted">{t('totalDocuments')}</p>
         </div>
         <div className="bg-vault-elevated rounded-xl p-3 text-center border border-border">
           <p className="text-2xl font-800 text-vault-text tabular-nums">{totalMembers}</p>
-          <p className="text-xs font-600 mt-0.5 text-vault-muted">Family Members</p>
+          <p className="text-xs font-600 mt-0.5 text-vault-muted">{t('familyMembers')}</p>
         </div>
       </div>
 

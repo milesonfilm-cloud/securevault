@@ -16,3 +16,9 @@ export function isAuthIntroSessionComplete(): boolean {
     return false;
   }
 }
+
+/** True when the user already created a vault PIN — skip marketing intro and show unlock. */
+export function shouldShowAuthIntro(hasCredentials: boolean): boolean {
+  if (hasCredentials) return false;
+  return !isAuthIntroSessionComplete();
+}

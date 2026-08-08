@@ -10,6 +10,7 @@ export interface PlanLimits {
   auditLog: boolean;
   totp2fa: boolean;
   customCategories: boolean;
+  importBackup: boolean;
 }
 
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
@@ -23,6 +24,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     auditLog: false,
     totp2fa: false,
     customCategories: false,
+    importBackup: false,
   },
   pro: {
     maxMembers: Infinity,
@@ -34,6 +36,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     auditLog: true,
     totp2fa: true,
     customCategories: true,
+    importBackup: true,
   },
 };
 

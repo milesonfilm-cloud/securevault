@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { Crown, Plus, Search, X, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { Document, VaultData } from '@/lib/storage';
+import { useTranslations } from 'next-intl';
+import { Document, VaultData, type CategoryId } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
 import { idbDeletePhotosForDoc } from '@/lib/db';
 import CategoryCards from './CategoryCards';
@@ -17,15 +19,23 @@ import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import VaultPageHeading from '@/components/ui/VaultPageHeading';
 import { appendAuditEntry } from '@/lib/auditLog';
+import { buildDocumentPrefillFromOcr } from '@/lib/ocr/ocrExtract';
+import {
+  extractTextFromSharedFile,
+  hasPendingShareFlag,
+  takeNextSharedFile,
+} from '@/lib/shareIntake';
 import { documentMatchesStack, stackColorFromId } from '@/lib/documentStacks';
 import { resolveMemberProfileById, isResolvableMemberId } from '@/lib/pastelDisplayMembers';
 import { getBlockedCategory, isPro } from '@/lib/subscription';
 import { getCategoryById } from '@/lib/categories';
+import { resolveMemberColor } from '@/lib/memberAvatarColors';
 import ProUpgradeModal from '@/components/ui/ProUpgradeModal';
 
 export default function DocumentVaultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tv = useTranslations('documentVault');
   const stackId = searchParams.get('stack');
 
   const { vaultData, loading, persistVaultData } = useVaultData();
@@ -65,10 +75,107 @@ export default function DocumentVaultContent() {
   );
 
   const memberParam = searchParams.get('member');
+  const addParam = searchParams.get('add');
   const activeMember = useMemo((): string | null => {
     if (!memberParam) return null;
     return isResolvableMemberId(memberParam, vaultData.members) ? memberParam : null;
   }, [memberParam, vaultData.members]);
+
+  const sharedParam = searchParams.get('shared');
+
+  /** Share sheet / PWA share target → OCR + open add form */
+  useEffect(() => {
+    if (loading || readOnly) return;
+    if (sharedParam !== '1' && !hasPendingShareFlag()) return;
+
+    let cancelled = false;
+    void (async () => {
+      const next = await takeNextSharedFile();
+      if (cancelled) return;
+      const p = new URLSearchParams(searchParams.toString());
+      p.delete('shared');
+      const qs = p.toString();
+      router.replace(qs ? `/document-vault?${qs}` : '/document-vault');
+
+      if (!next) {
+        toast.message('No shared file waiting');
+        return;
+      }
+      if (!vaultData.members[0]?.id) {
+        toast.message('Add a family member first, then share again');
+        return;
+      }
+
+      toast.message(`Importing “${next.meta.name}”…`);
+      try {
+        let text = '';
+        try {
+          text = await extractTextFromSharedFile(next.file);
+        } catch {
+          text = next.meta.text?.trim() || '';
+        }
+        if (cancelled) return;
+        const fromOcr = text.trim() ? buildDocumentPrefillFromOcr(text) : null;
+        setEditDoc(null);
+        setFormPrefill({
+          memberId: vaultData.members[0].id,
+          categoryId: fromOcr?.categoryId,
+          title: fromOcr?.title?.trim() || next.meta.title || next.meta.name.replace(/\.[^.]+$/, ''),
+          fields: fromOcr?.fields ?? {},
+          fromOcr: Boolean(text.trim()),
+          notesAppend: [
+            fromOcr?.notesAppend,
+            `Shared into SecureVault from another app (${next.meta.name}). Review fields before saving.`,
+          ]
+            .filter(Boolean)
+            .join('\n'),
+        });
+        setShowAddModal(true);
+        toast.success('Shared file ready — review and save');
+      } catch {
+        toast.error('Could not read the shared file. Try Import file from Add document.');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sharedParam, loading, readOnly, vaultData.members, searchParams, router]);
+
+  /** Family card "Add Document" → open form with that member preselected */
+  useEffect(() => {
+    if (loading || readOnly) return;
+    if (addParam !== '1' && addParam !== 'true') return;
+    const memberId =
+      activeMember ??
+      (memberParam && isResolvableMemberId(memberParam, vaultData.members)
+        ? memberParam
+        : vaultData.members[0]?.id);
+    if (!memberId) {
+      toast.message('Add a family member first');
+      return;
+    }
+    setEditDoc(null);
+    setFormPrefill({
+      memberId,
+      title: '',
+      fields: {},
+    });
+    setShowAddModal(true);
+    const p = new URLSearchParams(searchParams.toString());
+    p.delete('add');
+    const qs = p.toString();
+    router.replace(qs ? `/document-vault?${qs}` : '/document-vault');
+  }, [
+    addParam,
+    activeMember,
+    memberParam,
+    loading,
+    readOnly,
+    vaultData.members,
+    searchParams,
+    router,
+  ]);
 
   const setMemberFilter = useCallback(
     (id: string | null) => {
@@ -139,6 +246,7 @@ export default function DocumentVaultContent() {
         actorMemberId: updatedDoc.memberId,
         targetId: updatedDoc.id,
         targetTitle: updatedDoc.title,
+        categoryId: updatedDoc.categoryId,
       });
     } else {
       const newDoc: Document = {
@@ -157,6 +265,7 @@ export default function DocumentVaultContent() {
         actorMemberId: newDoc.memberId,
         targetId: newDoc.id,
         targetTitle: newDoc.title,
+        categoryId: newDoc.categoryId,
       });
     }
 
@@ -179,6 +288,7 @@ export default function DocumentVaultContent() {
       actorMemberId: deleteDoc.memberId,
       targetId: deleteDoc.id,
       targetTitle: deleteDoc.title,
+      categoryId: deleteDoc.categoryId,
     });
     setDeleteDoc(null);
   };
@@ -195,8 +305,17 @@ export default function DocumentVaultContent() {
       toast.message('Emergency mode is on — vault is read-only.');
       return;
     }
+    const memberId = activeMember ?? vaultData.members[0]?.id;
+    if (!memberId) {
+      toast.message('Add a family member first');
+      return;
+    }
     setEditDoc(null);
-    setFormPrefill(null);
+    setFormPrefill({
+      memberId,
+      title: '',
+      fields: {},
+    });
     setShowAddModal(true);
   };
 
@@ -243,11 +362,14 @@ export default function DocumentVaultContent() {
             className="mb-4 rounded-2xl border border-vault-coral/40 bg-vault-coral/10 px-4 py-3 text-sm text-vault-text"
             role="status"
           >
-            <span className="font-800">Emergency mode</span> — read-only view. Turn off in{' '}
-            <Link href="/settings/emergency" className="text-vault-warm underline font-700">
-              Emergency settings
-            </Link>
-            .
+            {tv.rich('emergencyBanner', {
+              strong: (chunks) => <strong className="font-800">{chunks}</strong>,
+              link: (chunks) => (
+                <Link href="/settings/emergency" className="font-700 text-vault-warm underline">
+                  {chunks}
+                </Link>
+              ),
+            })}
           </div>
         )}
         <DocumentVaultNotificationStrip
@@ -265,8 +387,8 @@ export default function DocumentVaultContent() {
             }}
           >
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-vault-faint">
-                Folder filter
+              <p className="text-[10px] font-medium text-vault-faint">
+                {tv('folderFilterLabel')}
               </p>
               <p className="text-sm font-semibold text-vault-text">{activeStack.name}</p>
             </div>
@@ -276,7 +398,7 @@ export default function DocumentVaultContent() {
                 onClick={() => router.push('/document-vault')}
                 className="rounded-xl bg-vault-warm px-3 py-1.5 text-xs font-bold text-vault-ink"
               >
-                Clear folder
+                {tv('clearFolder')}
               </button>
             </div>
           </div>
@@ -284,45 +406,38 @@ export default function DocumentVaultContent() {
 
         <VaultPageHeading
           className="mb-5"
-          eyebrow="Documents"
-          title="Vault"
-          description={
-            <>
-              <span className="font-semibold tabular-nums text-vault-text">
-                {vaultData.documents.length}
-              </span>{' '}
-              total documents ·{' '}
-              <span className="font-semibold tabular-nums text-vault-text">
-                {vaultData.members.length}
-              </span>{' '}
-              family members
-            </>
-          }
+          eyebrow={tv('eyebrowDocuments')}
+          title={tv('titleVault')}
+          description={tv.rich('headingMeta', {
+            docs: (chunks) => (
+              <span className="font-semibold tabular-nums text-vault-text">{chunks}</span>
+            ),
+            members: (chunks) => (
+              <span className="font-semibold tabular-nums text-vault-text">{chunks}</span>
+            ),
+            docCount: vaultData.documents.length,
+            memberCount: vaultData.members.length,
+          })}
           meta={
             activeStack || activeMemberProfile ? (
               <>
                 {activeStack ? (
                   <p className="text-[12px] text-vault-faint">
-                    Showing documents in this folder only:{' '}
-                    <span className="font-semibold tabular-nums text-vault-muted">
-                      {stackFilteredDocuments.length}
-                    </span>{' '}
-                    of {vaultData.documents.length} total in vault
+                    {tv('folderMeta', {
+                      filtered: stackFilteredDocuments.length,
+                      total: vaultData.documents.length,
+                    })}
                   </p>
                 ) : null}
                 {activeMemberProfile ? (
                   <p className="text-[12px] text-vault-faint">
-                    Showing documents for{' '}
-                    <span className="font-semibold text-vault-muted">
-                      {activeMemberProfile.name}
-                    </span>
-                    .{' '}
+                    {tv('memberFilterLead', { memberName: activeMemberProfile.name })}{' '}
                     <button
                       type="button"
                       onClick={() => setMemberFilter(null)}
                       className="font-semibold text-vault-warm underline-offset-2 hover:underline"
                     >
-                      Show all members
+                      {tv('showAllMembers')}
                     </button>
                   </p>
                 ) : null}
@@ -334,10 +449,10 @@ export default function DocumentVaultContent() {
               <button
                 type="button"
                 onClick={openAdd}
-                className="flex flex-shrink-0 items-center gap-2 rounded-xl bg-vault-warm px-5 py-2.5 text-sm font-semibold text-vault-ink shadow-vault transition-all active:scale-[0.98]"
+                className="inline-flex flex-shrink-0 items-center gap-2 rounded-full bg-[#4338C9] px-5 py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(67,56,201,0.28)] transition-all hover:bg-[#372fb0] active:scale-[0.98]"
               >
-                <Plus size={18} strokeWidth={2.5} className="text-vault-ink" />
-                Add
+                <Plus size={18} strokeWidth={2.5} aria-hidden />
+                {tv('addDocument')}
               </button>
             ) : null
           }
@@ -356,12 +471,8 @@ export default function DocumentVaultContent() {
                 <Crown className="h-4 w-4 text-yellow-300" strokeWidth={2.4} />
               </div>
               <div className="min-w-0">
-                <p className="text-[12px] font-bold text-white">
-                  Free Plan — 1 document per category
-                </p>
-                <p className="text-[11px] text-white/80">
-                  Upgrade to Pro for unlimited documents in every category.
-                </p>
+                <p className="text-[12px] font-bold text-white">{tv('freePlanTitle')}</p>
+                <p className="text-[11px] text-white/80">{tv('freePlanBody')}</p>
               </div>
             </div>
             <button
@@ -369,7 +480,7 @@ export default function DocumentVaultContent() {
               onClick={() => setUpgradeModal({ open: true })}
               className="shrink-0 rounded-full bg-yellow-300 px-3.5 py-1.5 text-[11px] font-extrabold text-[#4338C9] shadow-[0_4px_12px_rgba(0,0,0,0.18)] transition-all active:scale-95"
             >
-              Upgrade
+              {tv('upgrade')}
             </button>
           </div>
         )}
@@ -378,26 +489,38 @@ export default function DocumentVaultContent() {
 
         <div className="rounded-[20px] p-4 sm:p-5 mb-4 bg-vault-panel border border-[color:var(--color-border)] shadow-vault relative z-0">
           <div className="relative z-[1] flex flex-col gap-3">
-            <div className="relative w-full">
-              <input
-                id="vault-search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search documents, fields, tags..."
-                className="w-full rounded-xl border-0 bg-vault-elevated text-vault-text text-sm placeholder:text-vault-faint py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-vault-warm/40 transition-shadow"
-              />
-              <Search
-                size={17}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-vault-faint pointer-events-none"
-              />
-              {search ? (
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
+                <input
+                  id="vault-search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder={tv('searchPlaceholder')}
+                  className="w-full rounded-xl border-0 bg-vault-elevated text-vault-text text-sm placeholder:text-vault-faint py-3 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-vault-warm/40 transition-shadow"
+                />
+                <Search
+                  size={17}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-vault-faint pointer-events-none"
+                />
+                {search ? (
+                  <button
+                    type="button"
+                    onClick={() => setSearch('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm p-1"
+                    aria-label={tv('clearSearchAria')}
+                  >
+                    <X size={14} />
+                  </button>
+                ) : null}
+              </div>
+              {!readOnly ? (
                 <button
                   type="button"
-                  onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm p-1"
-                  aria-label="Clear search"
+                  onClick={openAdd}
+                  className="inline-flex w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#4338C9] px-5 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(67,56,201,0.28)] transition-all hover:bg-[#372fb0] active:scale-[0.98] sm:w-auto"
                 >
-                  <X size={14} />
+                  <Plus size={18} strokeWidth={2.5} aria-hidden />
+                  {tv('addDocument')}
                 </button>
               ) : null}
             </div>
@@ -413,22 +536,23 @@ export default function DocumentVaultContent() {
                       : 'bg-vault-elevated text-vault-muted border border-border hover:bg-vault-panel'
                   }`}
                 >
-                  All
+                  {tv('filterAll')}
                 </button>
                 {vaultData.members.length === 0 ? (
                   <p className="self-center text-xs text-vault-muted">
-                    No family members yet —{' '}
+                    {tv('noMembersFilterLead')}{' '}
                     <Link
                       href="/family-management"
                       className="font-700 text-vault-warm hover:underline"
                     >
-                      add members
+                      {tv('addMembersLink')}
                     </Link>{' '}
-                    to filter by person.
+                    {tv('noMembersFilterTrail')}
                   </p>
                 ) : null}
                 {vaultData.members.map((m) => {
                   const isMemberActive = activeMember === m.id;
+                  const mc = resolveMemberColor(m.avatarColor);
                   return (
                     <button
                       key={`filter-member-${m.id}`}
@@ -436,14 +560,16 @@ export default function DocumentVaultContent() {
                       onClick={() => setMemberFilter(isMemberActive ? null : m.id)}
                       className={`inline-flex max-w-[200px] items-center gap-2 px-4 py-1.5 rounded-[20px] text-[13px] font-semibold transition-all duration-150 border ${
                         isMemberActive
-                          ? m.photoDataUrl
-                            ? 'bg-vault-elevated text-vault-warm border-vault-warm/50 shadow-vault ring-1 ring-vault-warm/35'
-                            : 'text-white border-transparent shadow-vault'
+                          ? 'shadow-vault ring-1'
                           : 'bg-vault-elevated text-vault-muted border border-border hover:bg-vault-panel'
                       }`}
                       style={
-                        isMemberActive && !m.photoDataUrl
-                          ? { backgroundColor: m.avatarColor }
+                        isMemberActive
+                          ? {
+                              backgroundColor: mc.bg,
+                              borderColor: mc.border,
+                              color: mc.text,
+                            }
                           : undefined
                       }
                     >
@@ -471,19 +597,18 @@ export default function DocumentVaultContent() {
                   className="flex items-center gap-1.5 text-sm text-vault-muted hover:text-vault-warm px-2 transition-colors flex-shrink-0"
                 >
                   <RefreshCw size={13} />
-                  Clear
+                  {tv('clearFilters')}
                 </button>
               )}
             </div>
 
             {activeFiltersCount > 0 && (
               <div className="flex items-center gap-2 pt-0.5">
-                <span className="text-xs text-vault-muted">Showing</span>
-                <span className="text-xs font-bold text-vault-text">
-                  {filteredDocuments.length}
-                </span>
                 <span className="text-xs text-vault-muted">
-                  of {stackFilteredDocuments.length} documents
+                  {tv('showingCount', {
+                    filtered: filteredDocuments.length,
+                    total: stackFilteredDocuments.length,
+                  })}
                 </span>
               </div>
             )}
@@ -503,12 +628,26 @@ export default function DocumentVaultContent() {
           }}
           onDelete={(doc) => setDeleteDoc(doc)}
           readOnly={readOnly}
+          onQuickAddCategory={(categoryId) => {
+            const memberId = activeMember ?? vaultData.members[0]?.id;
+            if (!memberId) {
+              toast.message('Add a family member first');
+              return;
+            }
+            setFormPrefill({
+              categoryId: categoryId as CategoryId,
+              memberId,
+              title: '',
+              fields: {},
+            });
+            setEditDoc(null);
+            setShowAddModal(true);
+          }}
+          onAddDocument={openAdd}
         />
 
         <div className="mt-8 border-t border-[color:var(--color-border)] pt-6">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-vault-muted">
-            Filter by category
-          </p>
+          <p className="mb-3 text-sm font-700 text-vault-muted">Filter by category</p>
           <CategoryCards
             documents={stackFilteredDocuments}
             activeCategory={activeCategory}

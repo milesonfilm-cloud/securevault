@@ -9,37 +9,29 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  Menu,
   Plus,
   RefreshCw,
-  FolderLock,
   StickyNote,
-  Users,
-  Settings,
-  Info,
-  LogOut,
-  CalendarClock,
-  Trophy,
   X,
 } from 'lucide-react';
-import { Link, usePathname } from '@/i18n/navigation';
-import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import { FamilyMember, Document } from '@/lib/storage';
 import { CATEGORIES, getCategoryById } from '@/lib/categories';
+import Modal from '@/components/ui/Modal';
 import CopyValueButton from '@/components/ui/CopyValueButton';
 import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
 import {
   pastelPaletteFromAvatarColor,
   PASTEL_ACCENT_PLACEHOLDER_PALETTE,
 } from '@/lib/memberPastelPalettes';
-import { lockVaultAndReload } from '@/lib/vaultKeyPersist';
 import { isDemoMemberId } from '@/lib/demoFamilyMembers';
+import { isDemoMode } from '@/lib/demoMode';
+import { resolveMemberColor } from '@/lib/memberAvatarColors';
 import MemberAvatar from '@/components/MemberAvatar';
 import { cn } from '@/lib/utils';
 import { useVaultData } from '@/context/VaultDataContext';
-import { useTheme } from '@/context/ThemeContext';
 import { usePastelMemberAccent } from '@/context/PastelMemberAccentContext';
-import { countRenewalBadgeDocuments } from '@/lib/notifications/reminderScheduler';
 import {
   DEFAULT_EXPIRY_WARN_DAYS,
   getDocumentExpiryUrgency,
@@ -130,6 +122,8 @@ function InlineDocDetail({
   catLabel: string;
   onBack: () => void;
 }) {
+  const t = useTranslations('pastelHome');
+  const locale = useLocale();
   const [revealedFields, setRevealedFields] = useState<Set<string>>(new Set());
   const urgency = getDocumentExpiryUrgency(doc, DEFAULT_EXPIRY_WARN_DAYS);
   const catConfig = getCategoryById(doc.categoryId);
@@ -144,7 +138,7 @@ function InlineDocDetail({
       today.setHours(0, 0, 0, 0);
       const daysUntil = Math.round((exp.getTime() - today.getTime()) / 86400000);
       if (daysUntil <= DEFAULT_EXPIRY_WARN_DAYS) {
-        return { label: key, summary: formatExpirySummary(daysUntil), daysUntil };
+        return { label: key, summary: formatExpirySummary(daysUntil, exp), daysUntil };
       }
     }
     return null;
@@ -203,12 +197,12 @@ function InlineDocDetail({
         {/* expiry/urgency badges */}
         {urgency === 'expired' && (
           <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-red-500 ring-1 ring-red-200">
-            Expired
+            {t('badgeExpired')}
           </span>
         )}
         {urgency === 'soon' && (
           <span className="shrink-0 rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-orange-500 ring-1 ring-orange-200">
-            Expiring
+            {t('badgeExpiring')}
           </span>
         )}
       </div>
@@ -241,7 +235,7 @@ function InlineDocDetail({
       {/* ── Fields ── */}
       <div className="px-4 pb-4 pt-3">
         {fieldEntries.length === 0 ? (
-          <p className="py-3 text-center text-[12px] text-[#212121]/40">No fields recorded.</p>
+          <p className="py-3 text-center text-[12px] text-[#212121]/40">{t('noFieldsRecorded')}</p>
         ) : (
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {fieldEntries.map(([key, value]) => {
@@ -270,7 +264,7 @@ function InlineDocDetail({
                           type="button"
                           onClick={() => toggleReveal(key)}
                           className="rounded-lg p-1 text-[#212121]/40 transition-colors hover:text-[#212121]/70"
-                          title={isRevealed ? 'Hide' : 'Reveal'}
+                          title={isRevealed ? t('hideField') : t('revealField')}
                         >
                           {isRevealed ? (
                             <EyeOff className="h-3.5 w-3.5" />
@@ -311,7 +305,7 @@ function InlineDocDetail({
           <div className="mt-2.5">
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#212121]/45">
-                Tags
+                {t('tagsHeading')}
               </p>
               <CopyValueButton value={doc.tags.join(', ')} compact />
             </div>
@@ -335,11 +329,12 @@ function InlineDocDetail({
 
         {/* Updated at */}
         <p className="mt-3 text-[10px] text-[#212121]/35">
-          Updated{' '}
-          {new Date(doc.updatedAt).toLocaleDateString('en-IN', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
+          {t('updatedLine', {
+            date: new Date(doc.updatedAt).toLocaleDateString(locale, {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            }),
           })}
         </p>
       </div>
@@ -356,8 +351,10 @@ function MemberCategorySection({
   docs: Document[];
   memberPalette: MemberPaletteType;
 }) {
+  const t = useTranslations('pastelHome');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
+  const memberFirstName = member.name.split(/\s+/)[0];
 
   const categoryGroups = useMemo(() => {
     const map = new Map<string, Document[]>();
@@ -415,24 +412,24 @@ function MemberCategorySection({
       <section className="pastel-enter mt-7" style={{ animationDelay: '300ms' }}>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[17px] font-bold text-[#212121]">
-            {member.name.split(/\s+/)[0]}&rsquo;s Categories
+            {t('memberCategoriesTitle', { name: memberFirstName })}
           </h2>
           <Link
-            href={`/document-vault?member=${encodeURIComponent(member.id)}`}
+            href={`/document-vault?member=${encodeURIComponent(member.id)}&add=1`}
             className="text-[13px] font-semibold text-[#212121]/55"
           >
-            Add docs
+            {t('addDocsShort')}
           </Link>
         </div>
         <div className="rounded-[20px] bg-white/70 px-4 py-6 text-center shadow-[0_4px_16px_rgba(33,33,33,0.06)]">
-          <p className="text-[13px] text-[#212121]/55">No documents yet for this member.</p>
+          <p className="text-[13px] text-[#212121]/55">{t('noDocsForMember')}</p>
           <Link
-            href={`/document-vault?member=${encodeURIComponent(member.id)}`}
+            href={`/document-vault?member=${encodeURIComponent(member.id)}&add=1`}
             className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(33,33,33,0.12)]"
             style={{ background: memberPalette.avatarInk }}
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-            Add Document
+            {t('addDocument')}
           </Link>
         </div>
       </section>
@@ -443,13 +440,13 @@ function MemberCategorySection({
     <section className="pastel-enter mt-7" style={{ animationDelay: '300ms' }}>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[17px] font-bold text-[#212121]">
-          {member.name.split(/\s+/)[0]}&rsquo;s Categories
+          {t('memberCategoriesTitle', { name: memberFirstName })}
         </h2>
         <Link
           href={`/document-vault?member=${encodeURIComponent(member.id)}`}
           className="text-[13px] font-semibold text-[#212121]/55"
         >
-          View all
+          {t('viewAll')}
         </Link>
       </div>
 
@@ -576,8 +573,7 @@ function MemberCategorySection({
                         {selectedGroup.cat.label}
                       </p>
                       <p className="text-[11px] text-[#212121]/50">
-                        {selectedGroup.catDocs.length}{' '}
-                        {selectedGroup.catDocs.length === 1 ? 'document' : 'documents'}
+                        {t('docCountInCategory', { count: selectedGroup.catDocs.length })}
                       </p>
                     </div>
                     <button
@@ -619,7 +615,7 @@ function MemberCategorySection({
                                 className="text-[11px] font-medium"
                                 style={{ color: urgency === 'expired' ? '#ef4444' : '#f97316' }}
                               >
-                                {urgency === 'expired' ? 'Expired' : 'Expiring soon'}
+                                {urgency === 'expired' ? t('badgeExpired') : t('docRowExpiringSoon')}
                               </p>
                             ) : doc.fields && Object.keys(doc.fields).length > 0 ? (
                               <p className="truncate text-[11px] text-[#212121]/45">
@@ -657,11 +653,13 @@ function PastelBentoGrid({
   docCount,
   categoryCount,
   barHeights,
+  onViewAllMembers,
 }: {
   memberCount: number;
   docCount: number;
   categoryCount: number;
   barHeights: number[];
+  onViewAllMembers: () => void;
 }) {
   const t = useTranslations('pastelHome');
   const m = usePastelCountUp(memberCount, true);
@@ -673,41 +671,34 @@ function PastelBentoGrid({
     <div className="grid grid-cols-2 gap-3">
       <div
         className={cn(
-          'pastel-enter rounded-[20px] p-4 shadow-[0_8px_24px_rgba(33,33,33,0.08)]',
-          'min-h-[140px]'
+          'pastel-enter rounded-[20px] border border-[#212121]/10 bg-white p-4 shadow-[0_8px_24px_rgba(33,33,33,0.06)]',
+          'min-h-[140px] border-l-[3px] border-l-[#7C3AED]'
         )}
-        style={{
-          background: '#cfdeca',
-          animationDelay: '450ms',
-        }}
+        style={{ animationDelay: '450ms' }}
       >
-        <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#212121]/70">
-          {t('membersLabel')}
-        </p>
-        <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#212121]">{m}</p>
+        <p className="text-xs font-medium text-[#212121]/55">{t('membersLabel')}</p>
+        <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#7C3AED]">{m}</p>
         <p className="mt-1 text-[13px] font-medium text-[#212121]/65">{t('membersSub')}</p>
-        <Link
-          href="/family-management"
-          onClick={pastelRipple}
-          className="relative mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-[#212121]"
+        <button
+          type="button"
+          onClick={(e) => {
+            pastelRipple(e);
+            onViewAllMembers();
+          }}
+          className="relative mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-[#4338C9] underline decoration-[#4338C9]/35 underline-offset-2"
         >
           {t('viewAll')}
           <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </Link>
+        </button>
       </div>
       <div
         className={cn(
-          'pastel-enter rounded-[20px] p-4 shadow-[0_8px_24px_rgba(33,33,33,0.08)]',
+          'pastel-enter rounded-[20px] border border-[#212121]/10 bg-white p-4 shadow-[0_8px_24px_rgba(33,33,33,0.06)]',
           'min-h-[140px]'
         )}
-        style={{
-          background: '#eff0a3',
-          animationDelay: '600ms',
-        }}
+        style={{ animationDelay: '600ms' }}
       >
-        <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#212121]/70">
-          {t('documentsLabel')}
-        </p>
+        <p className="text-xs font-medium text-[#212121]/55">{t('documentsLabel')}</p>
         <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#212121]">{d}</p>
         <p className="mt-1 text-[13px] font-medium text-[#212121]/65">{t('documentsSub')}</p>
         <Link
@@ -721,14 +712,12 @@ function PastelBentoGrid({
       </div>
       <div
         className={cn(
-          'pastel-enter col-span-2 flex min-h-[128px] gap-4 rounded-[20px] p-4 shadow-[0_8px_24px_rgba(33,33,33,0.08)]'
+          'pastel-enter col-span-2 flex min-h-[128px] gap-4 rounded-[20px] border border-[#212121]/10 bg-white p-4 shadow-[0_8px_24px_rgba(33,33,33,0.06)]'
         )}
-        style={{ background: '#d8dfe9', animationDelay: '750ms' }}
+        style={{ animationDelay: '750ms' }}
       >
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[1.5px] text-[#212121]/70">
-            {t('categoriesLabel')}
-          </p>
+          <p className="text-xs font-medium text-[#212121]/55">{t('categoriesLabel')}</p>
           <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#212121]">
             {c}
           </p>
@@ -746,104 +735,6 @@ function PastelBentoGrid({
               />
             </div>
           ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PastelNavDrawer({
-  open,
-  onClose,
-  activePath,
-}: {
-  open: boolean;
-  onClose: () => void;
-  activePath: string;
-}) {
-  const t = useTranslations('nav');
-  const ts = useTranslations('settings');
-  const { setTheme } = useTheme();
-  const { vaultData, loading } = useVaultData();
-  const badge = loading
-    ? 0
-    : countRenewalBadgeDocuments(vaultData.documents, DEFAULT_EXPIRY_WARN_DAYS);
-
-  const items = [
-    { href: '/family-management', label: t('family'), icon: Users },
-    { href: '/document-vault', label: t('vault'), icon: FolderLock },
-    { href: '/renewals', label: t('renew'), icon: CalendarClock, badge },
-    { href: '/progress', label: t('progress'), icon: Trophy },
-    { href: '/settings-export', label: t('settings'), icon: Settings },
-    { href: '/about', label: t('about'), icon: Info },
-  ];
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[80] lg:hidden" role="dialog" aria-modal="true">
-      <button
-        type="button"
-        aria-label="Close menu"
-        className="absolute inset-0 bg-[#212121]/25 backdrop-blur-[2px]"
-        onClick={onClose}
-      />
-      <div
-        className="absolute left-0 top-0 flex h-full w-[min(88vw,300px)] flex-col bg-white shadow-[8px_0_40px_rgba(33,33,33,0.12)]"
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
-      >
-        <div className="border-b border-[#212121]/10 px-4 py-4">
-          <p className="text-[11px] font-bold uppercase tracking-[2px] text-[#212121]/45">
-            {t('navigation')}
-          </p>
-        </div>
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {items.map(({ href, label, icon: Icon, badge: b }) => {
-            const active = activePath === href;
-            return (
-              <Link
-                key={href}
-                href={href}
-                onClick={onClose}
-                className={cn(
-                  'flex items-center gap-3 rounded-[18px] px-3 py-3 text-[15px] font-semibold transition-colors',
-                  active ? 'text-[#212121]' : 'text-[#212121]/75 hover:bg-[#f6f5fa]'
-                )}
-                style={active ? { backgroundColor: 'var(--pastel-member-avatar-bg)' } : undefined}
-              >
-                <Icon className="h-[18px] w-[18px] shrink-0" strokeWidth={2} />
-                <span className="min-w-0 flex-1 truncate">{label}</span>
-                {b && b > 0 ? (
-                  <span className="rounded-full bg-[#c62828] px-2 py-0.5 text-[10px] font-bold text-white">
-                    {b > 9 ? '9+' : b}
-                  </span>
-                ) : null}
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="space-y-2 border-t border-[#212121]/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={() => {
-              setTheme('neon');
-              onClose();
-            }}
-            className="relative flex w-full items-center justify-center gap-2 rounded-[18px] border border-[#212121]/12 bg-[#f6f5fa] px-3 py-3 text-[13px] font-semibold text-[#212121]"
-          >
-            {ts('themeNeon')}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              lockVaultAndReload();
-            }}
-            className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-[18px] bg-[#212121]/06 px-3 py-3 text-[14px] font-semibold text-[#c62828]"
-          >
-            <LogOut className="h-4 w-4" />
-            {t('lockVaultButton')}
-          </button>
         </div>
       </div>
     </div>
@@ -900,19 +791,18 @@ export default function FamilyPastelHome({
 }: FamilyPastelHomeProps) {
   const t = useTranslations('pastelHome');
   const tc = useTranslations('common');
-  const tn = useTranslations('nav');
-  const activePath = usePathname();
   const noiseFilterId = useId().replace(/:/g, '');
   const { refreshVaultData } = useVaultData();
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [docCountsRefreshing, setDocCountsRefreshing] = useState(false);
+  const [showAllMembers, setShowAllMembers] = useState(false);
   const { accentMemberId, setAccentMemberId, accentHydrated } = usePastelMemberAccent();
   const n = displayMembers.length;
   const [activeIndex, setActiveIndex] = useState(0);
   const [navDir, setNavDir] = useState(1);
   const touchRef = useRef<{ x: number } | null>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const profilesSectionRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (n === 0) return;
@@ -925,6 +815,22 @@ export default function FamilyPastelHome({
       setNavDir(computeSwipeDir(activeIndex, i, n));
       setActiveIndex(i);
       setAccentMemberId(displayMembers[i]?.id ?? null);
+    },
+    [n, activeIndex, displayMembers, setAccentMemberId]
+  );
+
+  const focusMemberProfile = useCallback(
+    (index: number) => {
+      if (n <= 0) return;
+      if (index !== activeIndex) {
+        setNavDir(computeSwipeDir(activeIndex, index, n));
+        setActiveIndex(index);
+        setAccentMemberId(displayMembers[index]?.id ?? null);
+      }
+      setShowAllMembers(false);
+      requestAnimationFrame(() => {
+        profilesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     },
     [n, activeIndex, displayMembers, setAccentMemberId]
   );
@@ -1013,29 +919,13 @@ export default function FamilyPastelHome({
 
   return (
     <div className="font-urbanist min-h-full bg-[#F6F5FA] pb-6 lg:pb-10">
-      <PastelNavDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        activePath={activePath}
-      />
-
       <header
         className="pastel-enter px-4 pt-[env(safe-area-inset-top)]"
         style={{ animationDelay: '0ms' }}
       >
-        <div className="flex items-center justify-between gap-3 py-3">
-          <button
-            type="button"
-            aria-label={tn('navigation')}
-            className={cn(headerIconBtn, 'relative overflow-hidden')}
-            onClick={(e) => {
-              pastelRipple(e);
-              setDrawerOpen(true);
-            }}
-          >
-            <Menu className="h-5 w-5 text-[#212121]" strokeWidth={2} />
-          </button>
-          <div className="min-w-0 flex-1 text-center">
+        <div className="grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-3 py-3">
+          <span className="h-11 w-11 shrink-0" aria-hidden />
+          <div className="min-w-0 text-center">
             <h1 className="truncate text-[17px] font-bold leading-tight text-[#212121]">
               {t('title')}
             </h1>
@@ -1075,7 +965,9 @@ export default function FamilyPastelHome({
         ) : (
           <>
             <div
-              className="pastel-enter relative mx-auto mt-2 w-full"
+              ref={profilesSectionRef}
+              id="family-member-profiles"
+              className="pastel-enter relative mx-auto mt-2 w-full scroll-mt-4"
               style={{ animationDelay: '150ms', maxWidth: PASTEL_CARD_MAX_W + 24 }}
             >
               <div
@@ -1255,7 +1147,7 @@ export default function FamilyPastelHome({
                                 <div
                                   className="absolute inset-0 rounded-full"
                                   style={{
-                                    boxShadow: `0 0 0 6px rgba(255,255,255,0.18), 0 0 0 12px rgba(255,255,255,0.08)`,
+                                    boxShadow: `0 0 0 3px ${resolveMemberColor(member.avatarColor).border}, 0 0 0 6px rgba(255,255,255,0.18), 0 0 0 12px rgba(255,255,255,0.08)`,
                                     borderRadius: '50%',
                                   }}
                                 />
@@ -1270,7 +1162,7 @@ export default function FamilyPastelHome({
 
                               {/* Doc count pushed below the avatar */}
                               <div className="text-center">
-                                <p className="text-[10px] font-bold uppercase tracking-[2px] text-white/70">
+                                <p className="text-[10px] font-medium text-white/70">
                                   {t('totalDocuments')}
                                 </p>
                                 <motion.p
@@ -1295,7 +1187,7 @@ export default function FamilyPastelHome({
 
                             <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                               <Link
-                                href={`/document-vault?member=${encodeURIComponent(member.id)}`}
+                                href={`/document-vault?member=${encodeURIComponent(member.id)}&add=1`}
                                 onClick={pastelRipple}
                                 className="relative inline-flex max-w-[58%] overflow-hidden rounded-full bg-white px-3 py-2 text-[11px] font-bold text-[#212121] shadow-[0_4px_16px_rgba(33,33,33,0.12)]"
                               >
@@ -1311,6 +1203,7 @@ export default function FamilyPastelHome({
                                   }}
                                   disabled={docCountsRefreshing}
                                   aria-label={t('refreshDocumentCounts')}
+                                  title={t('refreshDocumentCounts')}
                                   className={cn(
                                     headerIconBtn,
                                     'relative h-10 w-10 overflow-hidden border-0 disabled:opacity-50'
@@ -1328,6 +1221,7 @@ export default function FamilyPastelHome({
                                   href={`/document-vault?member=${encodeURIComponent(member.id)}`}
                                   onClick={pastelRipple}
                                   aria-label={t('viewMemberDocuments')}
+                                  title={t('viewMemberDocuments')}
                                   className={cn(
                                     headerIconBtn,
                                     'relative h-10 w-10 overflow-hidden border-0'
@@ -1345,7 +1239,7 @@ export default function FamilyPastelHome({
                 </div>
               </div>
 
-              {member && !isDemoMemberId(member.id) ? (
+              {member && (!isDemoMemberId(member.id) || isDemoMode()) ? (
                 <div className="mt-3 flex justify-center">
                   <button
                     type="button"
@@ -1385,17 +1279,93 @@ export default function FamilyPastelHome({
               <MemberCategorySection member={member} docs={docs} memberPalette={palette} />
             )}
 
-            <section className="pastel-enter mt-8" style={{ animationDelay: '380ms' }}>
+            <section className="pastel-enter mt-5" style={{ animationDelay: '380ms' }}>
               <PastelBentoGrid
                 memberCount={memberCount}
                 docCount={docCount}
                 categoryCount={categoryCount}
                 barHeights={categoryHistogram}
+                onViewAllMembers={() => setShowAllMembers(true)}
               />
             </section>
           </>
         )}
       </div>
+
+      <Modal
+        isOpen={showAllMembers}
+        onClose={() => setShowAllMembers(false)}
+        title={t('allMembersTitle')}
+        subtitle={t('allMembersSubtitle')}
+      >
+        <ul className="max-h-[60vh] space-y-2 overflow-y-auto">
+          {displayMembers.map((m, i) => {
+            const docs = documentsByMemberId(m.id);
+            const mc = resolveMemberColor(m.avatarColor);
+            const isActive = i === activeIndex;
+            return (
+              <li key={m.id}>
+                <div
+                  className={cn(
+                    'flex items-center gap-3 rounded-2xl border px-3 py-3 transition-colors',
+                    isActive
+                      ? 'border-[#4338C9]/35 bg-[#4338C9]/06'
+                      : 'border-[#212121]/08 bg-white'
+                  )}
+                >
+                  <button
+                    type="button"
+                    onClick={() => focusMemberProfile(i)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    <div
+                      className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2"
+                      style={{ borderColor: mc.border }}
+                    >
+                      <MemberAvatar
+                        name={m.name}
+                        avatarColor={m.avatarColor}
+                        photoDataUrl={m.photoDataUrl}
+                        className="h-full w-full rounded-full"
+                        textClassName="text-sm"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-[#212121]">{m.name}</p>
+                      <p className="truncate text-xs text-[#212121]/55">
+                        {m.relationship}
+                        {m.dob ? ` · ${m.dob}` : ''}
+                        {` · ${docs.length} doc${docs.length === 1 ? '' : 's'}`}
+                      </p>
+                    </div>
+                  </button>
+                  <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row">
+                    <button
+                      type="button"
+                      onClick={() => focusMemberProfile(i)}
+                      className="rounded-full bg-[#4338C9] px-3 py-1.5 text-[11px] font-bold text-white"
+                    >
+                      {t('viewProfile')}
+                    </button>
+                    {!isDemoMemberId(m.id) || isDemoMode() ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAllMembers(false);
+                          onEditMember(m);
+                        }}
+                        className="rounded-full border border-[#212121]/12 px-3 py-1.5 text-[11px] font-semibold text-[#212121]"
+                      >
+                        {tc('edit')}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </Modal>
     </div>
   );
 }

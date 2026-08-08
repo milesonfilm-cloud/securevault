@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Camera, ImagePlus, Trash2, X, ZoomIn, Loader2 } from 'lucide-react';
 import { idbGetPhotosForDoc, idbAddPhoto, idbDeletePhoto, PhotoEntry } from '@/lib/db';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface PhotoAttachmentsProps {
   docId: string;
@@ -14,6 +15,7 @@ const MAX_PHOTOS = 10;
 const MAX_SIZE_MB = 5;
 
 export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
+  const t = useTranslations('photoAttachments');
   const [photos, setPhotos] = useState<PhotoEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -34,7 +36,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     if (photos.length >= MAX_PHOTOS) {
-      toast.error(`Maximum ${MAX_PHOTOS} photos per document`);
+      toast.error(t('maxPhotos', { max: MAX_PHOTOS }));
       return;
     }
 
@@ -42,11 +44,11 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
     let added = 0;
     for (const file of Array.from(files)) {
       if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image`);
+        toast.error(t('notImage', { name: file.name }));
         continue;
       }
       if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        toast.error(`${file.name} exceeds ${MAX_SIZE_MB} MB limit`);
+        toast.error(t('exceedsSize', { name: file.name, mb: MAX_SIZE_MB }));
         continue;
       }
       if (photos.length + added >= MAX_PHOTOS) break;
@@ -65,7 +67,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
     }
 
     if (added > 0) {
-      toast.success(`${added} photo${added > 1 ? 's' : ''} added`);
+      toast.success(t('photosAdded', { count: added }));
       await loadPhotos();
     }
     setUploading(false);
@@ -75,7 +77,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
   const handleDelete = async (photo: PhotoEntry) => {
     await idbDeletePhoto(photo.id);
     setPhotos((prev) => prev.filter((p) => p.id !== photo.id));
-    toast.success('Photo removed');
+    toast.success(t('photoRemoved'));
   };
 
   const openLightbox = (photo: PhotoEntry) => {
@@ -95,7 +97,9 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
         <div className="flex items-center gap-1.5">
           <Camera size={13} className="text-vault-warm" />
           <span className="text-xs font-600 text-vault-faint">
-            Photos {photos.length > 0 && `(${photos.length}/${MAX_PHOTOS})`}
+            {photos.length > 0
+              ? t('photosWithCount', { current: photos.length, max: MAX_PHOTOS })
+              : t('photosLabel')}
           </span>
         </div>
         {photos.length < MAX_PHOTOS && (
@@ -105,7 +109,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
             className="flex items-center gap-1 text-xs text-vault-faint hover:text-vault-warm font-500 transition-colors disabled:opacity-50"
           >
             {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} />}
-            {uploading ? 'Adding…' : 'Add Photo'}
+            {uploading ? t('adding') : t('addPhoto')}
           </button>
         )}
       </div>
@@ -122,7 +126,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
       {loading ? (
         <div className="flex items-center gap-2 py-2">
           <Loader2 size={12} className="animate-spin text-vault-faint" />
-          <span className="text-xs text-vault-muted">Loading photos…</span>
+          <span className="text-xs text-vault-muted">{t('loadingPhotos')}</span>
         </div>
       ) : photos.length === 0 ? (
         <button
@@ -169,7 +173,7 @@ export default function PhotoAttachments({ docId }: PhotoAttachmentsProps) {
           </button>
           <Image
             src={lightbox}
-            alt="Document photo"
+            alt={t('documentPhotoAlt')}
             width={1600}
             height={1200}
             unoptimized
@@ -191,6 +195,7 @@ interface PhotoThumbProps {
 }
 
 function PhotoThumb({ photo, onDelete, onOpen }: PhotoThumbProps) {
+  const t = useTranslations('photoAttachments');
   const [url, setUrl] = useState<string>('');
 
   useEffect(() => {
@@ -209,14 +214,14 @@ function PhotoThumb({ photo, onDelete, onOpen }: PhotoThumbProps) {
         <button
           onClick={() => onOpen(photo)}
           className="w-7 h-7 rounded-full bg-vault-warm flex items-center justify-center text-vault-ink hover:opacity-90 transition-colors shadow-vault"
-          title="View full size"
+          title={t('viewFullSize')}
         >
           <ZoomIn size={13} />
         </button>
         <button
           onClick={() => onDelete(photo)}
           className="w-7 h-7 rounded-full bg-red-500/90 flex items-center justify-center text-white hover:bg-red-600 transition-colors shadow"
-          title="Remove photo"
+          title={t('removePhotoTitle')}
         >
           <Trash2 size={13} />
         </button>

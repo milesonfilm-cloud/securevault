@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-o" x1="6" y1="4" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#5c5488"/>
+      <stop offset="0.45" stop-color="#48426D"/>
+      <stop offset="1" stop-color="#312C51"/>
+    </linearGradient>
+    <linearGradient id="g-i" x1="32" y1="16" x2="32" y2="46" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1AA9B"/>
+      <stop offset="0.4" stop-color="#F0C38E"/>
+      <stop offset="1" stop-color="#D4A574"/>
+    </linearGradient>
+    <linearGradient id="g-c" x1="44" y1="40" x2="56" y2="56">
+      <stop stop-color="#F1AA9B"/>
+      <stop offset="1" stop-color="#E07D6A"/>
+    </linearGradient>
+    <radialGradient id="g-g" cx="32" cy="26" r="18" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0C38E" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#F0C38E" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="26" fill="url(#g-g)"/>
+  <path d="M18 3.5h28L56.5 18v28L46 56.5H18L3.5 46V18L18 3.5z" fill="none" stroke="#F0C38E" stroke-width="2.5" stroke-linejoin="round" opacity="0.45"/>
+  <path d="M18 5h28l13 13v28l-13 13H18L5 46V18L18 5z" fill="url(#g-o)" stroke="#F0C38E" stroke-width="2.15" stroke-linejoin="round"/>
+  <path d="M22 12h20l9 9v22l-9 9H22l-9-9V21l9-9z" fill="#3D3666" stroke="#BFB4DF" stroke-width="0.85" stroke-opacity="0.55"/>
+  <path d="M32 17.5c-3.6 0-6.5 2.7-6.5 6 0 2.1 1 4 2.6 5.1V41.5h7.8V28.6c1.6-1.1 2.6-3 2.6-5.1 0-3.3-2.9-6-6.5-6z" fill="url(#g-i)"/>
+  <path d="M32 20.2a3.3 3.3 0 100 6.6 3.3 3.3 0 000-6.6zm-1.4 7.1h2.8v9.2h-2.8v-9.2z" fill="#312C51" fill-opacity="0.92"/>
+  <path d="M32 12v8M22 20l10 8 10-8" stroke="#F0C38E" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+  <circle cx="47.5" cy="45.5" r="4.25" fill="url(#g-c)" stroke="#312C51" stroke-width="0.65" opacity="0.98"/>
+</svg>

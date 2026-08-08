@@ -3,8 +3,19 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/index.ts');
 
+const isMobileBuild =
+  process.env.MOBILE_BUILD === '1' || process.env.CAPACITOR_BUILD === '1';
+
+const defaultLocale = 'en';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  ...(isMobileBuild
+    ? {
+        output: 'export',
+        trailingSlash: true,
+      }
+    : {}),
   /**
    * Dev-only: allow other hostnames (e.g. LAN IP) to load `/_next/*` without cross-origin warnings
    * when you open the app as http://192.168.x.x:4028 instead of localhost.
@@ -33,23 +44,18 @@ const nextConfig = {
   images: {
     remotePatterns: imageHosts,
     minimumCacheTTL: 60,
+    ...(isMobileBuild ? { unoptimized: true } : {}),
   },
   async redirects() {
+    const home = `/${defaultLocale}/family-management`;
     return [
-      {
-        source: '/',
-        destination: '/family-management',
-        permanent: false,
-      },
-      {
-        source: '/stack-board',
-        destination: '/family-management',
-        permanent: false,
-      },
+      { source: '/', destination: home, permanent: false },
+      { source: '/stack-board', destination: home, permanent: false },
     ];
   },
 
   async headers() {
+    if (isMobileBuild) return [];
     const isProd = process.env.NODE_ENV === 'production';
     const csp = [
       "default-src 'self'",
@@ -58,7 +64,7 @@ const nextConfig = {
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
       "media-src 'self' blob:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com https://www.googleapis.com https://oauth2.googleapis.com https://digilocker.gov.in https://meripehchaan.gov.in https://*.firebase.com https://*.firebaseapp.com https://api.resend.com https://cdn.jsdelivr.net https://unpkg.com",
+      `connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com${isMobileBuild ? '' : ' https://www.googleapis.com https://oauth2.googleapis.com'}`,
       "worker-src 'self' blob:",
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -94,16 +100,19 @@ const nextConfig = {
   },
 
   webpack(config, { dev, isServer }) {
-    /** Root layout is on the critical path; skipping the tagger here speeds dev compiles and avoids chunk load timeouts. */
-    config.module.rules.push({
-      test: /\.(jsx|tsx)$/,
-      exclude: [/node_modules/, /[/\\]app[/\\]layout\.tsx$/],
-      use: [
-        {
-          loader: '@dhiwise/component-tagger/nextLoader',
-        },
-      ],
-    });
+    // Skip the tagger for mobile exports to reduce build memory.
+    if (!isMobileBuild) {
+      /** Root layout is on the critical path; skipping the tagger here speeds dev compiles and avoids chunk load timeouts. */
+      config.module.rules.push({
+        test: /\.(jsx|tsx)$/,
+        exclude: [/node_modules/, /[/\\]app[/\\]layout\.tsx$/],
+        use: [
+          {
+            loader: '@dhiwise/component-tagger/nextLoader',
+          },
+        ],
+      });
+    }
     if (!isServer && dev && config.output) {
       config.output.chunkLoadTimeout = 300000;
     }

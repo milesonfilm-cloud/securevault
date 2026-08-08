@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Link } from '@/i18n/navigation';
 import Sidebar from './Sidebar';
-import MobileNav from './MobileNav';
-import AppLogo from './ui/AppLogo';
+import MobileFabMenu from '@/components/MobileFabMenu';
 import DocumentExpiryAlerts from './DocumentExpiryAlerts';
 import GamificationCheckIn from '@/components/gamification/GamificationCheckIn';
 import PastelAccentCssSync from '@/components/PastelAccentCssSync';
-import { useTheme } from '@/context/ThemeContext';
+import DemoModeBanner from '@/components/DemoModeBanner';
+import ShareIntakeListener from '@/components/ShareIntakeListener';
+import TrustFooter from '@/components/trust/TrustFooter';
 import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
@@ -18,13 +18,13 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children, activePath }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { theme } = useTheme();
 
   return (
-    <div className={cn('relative flex h-screen overflow-hidden', 'neon-vault-bg')}>
+    <div className={cn('relative flex h-screen overflow-hidden', 'vault-app-bg')}>
       <PastelAccentCssSync />
       <GamificationCheckIn />
-      {/* Desktop Sidebar */}
+      <ShareIntakeListener />
+      {/* Desktop Sidebar — logo lives here; hidden on mobile/tablet */}
       <div className="hidden lg:flex flex-shrink-0">
         <Sidebar
           collapsed={sidebarCollapsed}
@@ -33,48 +33,25 @@ export default function AppLayout({ children, activePath }: AppLayoutProps) {
         />
       </div>
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <header
-          className={cn(
-            'flex h-14 shrink-0 items-center justify-center border-b border-[color:var(--color-border)] bg-vault-panel/95 px-4 backdrop-blur-sm',
-            'lg:hidden pt-[env(safe-area-inset-top)]'
-          )}
-          style={
-            theme === 'pastel'
-              ? {
-                  borderBottomColor:
-                    'color-mix(in srgb, var(--pastel-member-ink) 24%, transparent)',
-                }
-              : undefined
-          }
-        >
-          <Link
-            href="/family-management"
-            aria-label="SecureVault home"
-            className="flex items-center justify-center rounded-lg py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50"
-          >
-            <AppLogo size={40} />
-          </Link>
-        </header>
+      {/* Main content — no centered logo header on mobile/tablet */}
+      <div className="flex flex-1 flex-col overflow-hidden pt-[env(safe-area-inset-top)] lg:pt-0">
         <main
           id="main-content"
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden lg:pb-0"
-          style={{
-            paddingBottom:
-              // Keep scrollable content clear of the fixed bottom nav + safe-area.
-              // (MobileNav is ~52px tall; add extra breathing room for touch targets.)
-              'calc(92px + env(safe-area-inset-bottom))',
-          }}
+          className={cn(
+            'flex min-h-0 flex-1 flex-col overflow-hidden',
+            /* Single FAB + margin + safe area (see MobileFabMenu) */
+            'max-lg:pb-[calc(4.75rem+env(safe-area-inset-bottom,0px))]',
+            'lg:pb-0'
+          )}
         >
-          {activePath !== '/document-vault' && <DocumentExpiryAlerts />}
-          <div className="min-h-0 flex-1">{children}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+            <DemoModeBanner />
+            {activePath === '/family-management' && <DocumentExpiryAlerts />}
+            <div className="min-h-0">{children}</div>
+          </div>
+          <TrustFooter />
         </main>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-        <MobileNav activePath={activePath} />
+        <MobileFabMenu activePath={activePath} />
       </div>
     </div>
   );

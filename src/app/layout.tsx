@@ -5,14 +5,12 @@ import {
   JetBrains_Mono,
   DM_Sans,
   DM_Serif_Display,
-  Roboto_Condensed,
   Urbanist,
 } from 'next/font/google';
 import '../styles/tailwind.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { PastelMemberAccentProvider } from '@/context/PastelMemberAccentContext';
 import VaultToaster from '@/components/VaultToaster';
-import SupabaseSessionBootstrap from '@/components/SupabaseSessionBootstrap';
 import { cn } from '@/lib/utils';
 
 /** Bundled at build time — no runtime request to font CDNs (offline-capable after `next build`). */
@@ -48,16 +46,7 @@ const fontWellnessSerif = DM_Serif_Display({
   fallback: ['Georgia', 'serif'],
 });
 
-/** Matches reference dashboard: condensed geometric sans (Roboto Condensed). */
-const fontNeonStack = Roboto_Condensed({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-neon-stack',
-  display: 'swap',
-  fallback: ['system-ui', 'sans-serif'],
-});
-
-/** Urbanist — Pastel / light “Family Vault” home theme. */
+/** Urbanist — Family Vault light theme. */
 const fontUrbanist = Urbanist({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800', '900'],
@@ -70,16 +59,13 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f6f5fa' },
-    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
-  ],
+  themeColor: '#f6f5fa',
 };
 
 export const metadata: Metadata = {
   title: 'SecureVault — Private Document Storage for Families',
   description:
-    'SecureVault app — store and organize family documents offline on your device. Zero cloud vault sync, zero tracking.',
+    'SecureVault — Android and iOS app for encrypted family document storage on your device. No cloud vault sync.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -115,16 +101,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         fontMono.variable,
         fontWellnessSans.variable,
         fontWellnessSerif.variable,
-        fontNeonStack.variable,
         fontUrbanist.variable,
         'font-sans'
       )}
-      data-theme="neon"
+      data-theme="pastel"
     >
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var k='sv_ui_theme';var t=localStorage.getItem(k);document.documentElement.setAttribute('data-theme',t==='pastel'?'pastel':'neon');}catch(e){document.documentElement.setAttribute('data-theme','neon');}})();`,
+            __html: `(function(){try{localStorage.setItem('sv_ui_theme','pastel');}catch(e){}document.documentElement.setAttribute('data-theme','pastel');})();`,
           }}
         />
       </head>
@@ -137,7 +122,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <ThemeProvider>
           <PastelMemberAccentProvider>
-            <SupabaseSessionBootstrap />
             {children}
           </PastelMemberAccentProvider>
         </ThemeProvider>

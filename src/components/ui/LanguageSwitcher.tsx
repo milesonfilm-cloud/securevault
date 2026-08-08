@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { locales, type AppLocale, LOCALE_STORAGE_KEY } from '@/i18n/routing';
 
@@ -15,16 +15,18 @@ export default function LanguageSwitcher({ className = '' }: { className?: strin
   const t = useTranslations('language');
   const locale = useLocale() as AppLocale;
   const router = useRouter();
+  const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const isMobileBuild = process.env.NEXT_PUBLIC_MOBILE_BUILD === '1';
 
   useEffect(() => {
     setMounted(true);
     const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as AppLocale | null;
     if (stored && locales.includes(stored) && stored !== locale) {
       setLocaleCookie(stored);
-      router.refresh();
+      router.replace(pathname, { locale: stored });
     }
-  }, [locale, router]);
+  }, [locale, pathname, router]);
 
   const labels: Record<AppLocale, string> = {
     en: t('en'),
@@ -35,7 +37,7 @@ export default function LanguageSwitcher({ className = '' }: { className?: strin
     ml: t('ml'),
   };
 
-  return (
+  return isMobileBuild ? null : (
     <div className={className}>
       <select
         aria-label={t('label')}
@@ -46,7 +48,7 @@ export default function LanguageSwitcher({ className = '' }: { className?: strin
           const next = e.target.value as AppLocale;
           localStorage.setItem(LOCALE_STORAGE_KEY, next);
           setLocaleCookie(next);
-          router.refresh();
+          router.replace(pathname, { locale: next });
         }}
       >
         {locales.map((loc) => (

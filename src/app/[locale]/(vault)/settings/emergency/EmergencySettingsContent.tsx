@@ -1,18 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { ShieldAlert, FileDown, Link2, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, FileDown, ArrowLeft } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { useVaultData } from '@/context/VaultDataContext';
 import EmergencyContactSetup from '@/components/emergency/EmergencyContactSetup';
 import EmergencyPDFModal from '@/components/emergency/EmergencyPDFModal';
-import VaultHandoverModal from '@/components/emergency/VaultHandoverModal';
 import VaultPageHeading from '@/components/ui/VaultPageHeading';
 
 export default function EmergencySettingsContent() {
   const { vaultData, persistVaultData } = useVaultData();
+  const t = useTranslations('emergencySettingsPage');
   const [pdfOpen, setPdfOpen] = useState(false);
-  const [handoverOpen, setHandoverOpen] = useState(false);
   const emergencyOn = vaultData.settings.emergencyModeEnabled;
 
   const toggleMode = async () => {
@@ -29,7 +29,7 @@ export default function EmergencySettingsContent() {
         className="inline-flex items-center gap-2 text-xs font-700 text-vault-warm hover:text-vault-text"
       >
         <ArrowLeft size={16} />
-        Back to settings
+        {t('backLink')}
       </Link>
 
       <VaultPageHeading
@@ -38,8 +38,8 @@ export default function EmergencySettingsContent() {
             <ShieldAlert size={24} aria-hidden />
           </div>
         }
-        title="Emergency access"
-        description="Trusted contact, encrypted exports, and time-limited read-only handover links."
+        title={t('pageTitle')}
+        description={t('pageDescription')}
         titleClassName="mt-0.5 text-[28px] font-bold tracking-tight text-vault-text sm:text-[32px]"
       />
 
@@ -51,40 +51,24 @@ export default function EmergencySettingsContent() {
           className="rounded border-border"
         />
         <div>
-          <p className="text-sm font-800 text-vault-text">Emergency mode (read-only vault)</p>
-          <p className="text-xs text-vault-muted mt-0.5">
-            Hides edits in the vault UI — use when you want view-only access on this device.
-          </p>
+          <p className="text-sm font-800 text-vault-text">{t('modeTitle')}</p>
+          <p className="text-xs text-vault-muted mt-0.5">{t('modeDescription')}</p>
         </div>
       </label>
 
       <EmergencyContactSetup />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => setPdfOpen(true)}
-          className="neo-card rounded-2xl p-5 text-left hover:bg-vault-elevated/30 transition-colors"
-        >
-          <FileDown className="text-vault-warm mb-2" size={22} />
-          <p className="text-sm font-800 text-vault-text">Emergency PDF bundle</p>
-          <p className="text-xs text-vault-muted mt-1">
-            Select documents, optional AES-wrapped export.
-          </p>
-        </button>
-        <button
-          type="button"
-          onClick={() => setHandoverOpen(true)}
-          className="neo-card rounded-2xl p-5 text-left hover:bg-vault-elevated/30 transition-colors"
-        >
-          <Link2 className="text-vault-warm mb-2" size={22} />
-          <p className="text-sm font-800 text-vault-text">Handover link (72h)</p>
-          <p className="text-xs text-vault-muted mt-1">Encrypted snapshot; key in URL fragment.</p>
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => setPdfOpen(true)}
+        className="neo-card rounded-2xl p-5 text-left hover:bg-vault-elevated/30 transition-colors w-full sm:max-w-md"
+      >
+        <FileDown className="text-vault-warm mb-2" size={22} />
+        <p className="text-sm font-800 text-vault-text">{t('pdfBundleTitle')}</p>
+        <p className="text-xs text-vault-muted mt-1">{t('pdfHint')}</p>
+      </button>
 
       <EmergencyPDFModal isOpen={pdfOpen} onClose={() => setPdfOpen(false)} />
-      <VaultHandoverModal isOpen={handoverOpen} onClose={() => setHandoverOpen(false)} />
     </div>
   );
 }

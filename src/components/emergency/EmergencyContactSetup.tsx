@@ -14,7 +14,6 @@ export default function EmergencyContactSetup() {
   const [name, setName] = useState(existing?.name ?? '');
   const [email, setEmail] = useState(existing?.email ?? '');
   const [days, setDays] = useState<7 | 14 | 30>(existing?.inactivityDays ?? 14);
-  const [busy, setBusy] = useState(false);
 
   const save = async () => {
     if (!name.trim() || !email.trim() || !email.includes('@')) {
@@ -28,7 +27,7 @@ export default function EmergencyContactSetup() {
       lastCheckInAt: existing?.lastCheckInAt ?? new Date().toISOString(),
     };
     await persistVaultData({ ...vaultData, emergencyContact: contact });
-    toast.success('Emergency contact saved');
+    toast.success('Emergency contact saved on this device');
   };
 
   const doCheckIn = async () => {
@@ -41,36 +40,6 @@ export default function EmergencyContactSetup() {
     toast.success('Check-in recorded — timer reset');
   };
 
-  const sendTestNotify = async () => {
-    if (!existing?.email) {
-      toast.error('Save a contact first');
-      return;
-    }
-    setBusy(true);
-    try {
-      const res = await fetch('/api/emergency/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: existing.email,
-          name: existing.name,
-          subject: 'SecureVault — test emergency notice',
-          message:
-            'This is a test notification from SecureVault. No action is required. If you received this, email delivery is working.',
-        }),
-      });
-      if (!res.ok) throw new Error('notify_failed');
-      const j = (await res.json()) as { dev?: boolean };
-      toast.success(
-        j.dev ? 'Logged in dev mode (configure RESEND_API_KEY to send email)' : 'Email sent'
-      );
-    } catch {
-      toast.error('Could not send test email');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const expired = isTimerExpired(existing);
   const ms = msUntilDeadline(existing);
 
@@ -79,8 +48,8 @@ export default function EmergencyContactSetup() {
       <div>
         <h3 className="text-sm font-800 text-vault-text">Trusted emergency contact</h3>
         <p className="text-xs text-vault-muted mt-1">
-          If you stop opening the app for longer than the inactivity window, notify your contact
-          (MVP: use Test email; production: configure Resend).
+          Stored only on this device. Use the emergency PDF export to share details with your
+          contact when needed — nothing is emailed from SecureVault servers.
         </p>
       </div>
 
@@ -130,7 +99,7 @@ export default function EmergencyContactSetup() {
         <div className="rounded-xl border border-border bg-vault-elevated/40 px-4 py-3 text-xs">
           <p className={expired ? 'text-red-300 font-700' : 'text-vault-muted'}>
             {expired
-              ? 'Inactivity window elapsed — send notice from your recovery workflow.'
+              ? 'Inactivity window elapsed — export your emergency PDF and contact them directly.'
               : ms != null
                 ? `Next deadline in approximately ${Math.max(0, Math.round(ms / 86400000))} day(s).`
                 : 'Timer active.'}
@@ -152,14 +121,6 @@ export default function EmergencyContactSetup() {
           onClick={() => void doCheckIn()}
         >
           Check in now
-        </button>
-        <button
-          type="button"
-          className="btn-secondary text-sm py-2 px-4"
-          onClick={() => void sendTestNotify()}
-          disabled={busy}
-        >
-          Test email
         </button>
       </div>
     </div>

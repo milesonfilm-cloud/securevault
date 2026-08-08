@@ -1,21 +1,33 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 /**
- * `webDir` is copied into the native shell. For this Next.js app (API routes, SSR):
- * - **Recommended:** set `CAP_SERVER_URL` to your **HTTPS** production URL, run `npm run cap:sync`,
- *   then build the APK/AAB in Android Studio (or `android/gradlew assembleDebug`).
- * - **Local dev on device:** `CAP_SERVER_URL=http://YOUR_LAN_IP:4028` (HTTP → `cleartext: true`;
- *   you may need a network-security config for production use of HTTP).
- * - **Pure offline bundle:** only if you add `output: 'export'` and a static-compatible build,
- *   then copy the export into `www/`.
+ * SecureVault ships as Android + iOS only. The UI is a static Next export in `www/`
+ * (run `npm run build:mobile`).
+ *
+ * By default this is local-only: it will NOT load any remote server URL.
+ * If you explicitly want remote dev loading, set `CAP_ALLOW_REMOTE=1` and `CAP_SERVER_URL`.
  */
 const serverUrl = process.env.CAP_SERVER_URL?.trim();
+const allowRemote = process.env.CAP_ALLOW_REMOTE === '1';
 
 const config: CapacitorConfig = {
   appId: 'com.securevault.app',
   appName: 'SecureVault',
   webDir: 'www',
-  ...(serverUrl
+  android: {
+    allowMixedContent: false,
+  },
+  ios: {
+    contentInset: 'automatic',
+    scheme: 'SecureVault',
+  },
+  plugins: {
+    CapacitorShareTarget: {
+      /** Must match App Group on App + ShareExtension entitlements */
+      appGroupId: 'group.com.securevault.app',
+    },
+  },
+  ...(serverUrl && allowRemote
     ? {
         server: {
           url: serverUrl.replace(/\/$/, ''),

@@ -15,10 +15,10 @@ interface ProUpgradeModalProps {
 
 const HIGHLIGHTS = [
   'Unlimited documents in every category',
-  'Google Drive encrypted backup',
-  'Secure document sharing links',
-  'AI-powered document scanning',
+  'Photo attachments on documents',
   'Export vault as PDF or JSON',
+  'Local OCR import from PDF and Word',
+  'Audit log and priority support',
 ];
 
 export default function ProUpgradeModal({

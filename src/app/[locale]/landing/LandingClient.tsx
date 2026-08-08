@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, Sparkles } from 'lucide-react';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
-import { BRAND_LOGO_HEIGHT, BRAND_LOGO_SRC, BRAND_LOGO_WIDTH } from '@/lib/brandLogo';
+import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
+import ComplianceBadgeStrip from '@/components/trust/ComplianceBadgeStrip';
 import { getStoredVerifier } from '@/lib/vaultSession';
 import { completeAuthIntroSession } from '@/lib/authIntroSession';
 
@@ -159,13 +159,9 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
               transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
               className="drop-shadow-[0_20px_40px_rgba(33,33,33,0.14)]"
             >
-              <Image
-                src={BRAND_LOGO_SRC}
-                alt=""
-                width={BRAND_LOGO_WIDTH}
-                height={BRAND_LOGO_HEIGHT}
-                className="h-[min(300px,64vw)] w-auto max-h-[360px] object-contain"
-                priority
+              <BrandMarkSvg
+                className="mx-auto drop-shadow-[0_20px_40px_rgba(33,33,33,0.14)]"
+                size={220}
               />
             </motion.div>
           </motion.div>
@@ -242,6 +238,18 @@ function LandingHero({ onContinue }: { onContinue: () => void }) {
           Encrypted, offline-first document management for you and your family — one vault, zero
           cloud.
         </motion.p>
+
+        <motion.div
+          className="mt-6 w-full max-w-md"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.25, duration: 0.45 }}
+        >
+          <ComplianceBadgeStrip />
+          <p className="mt-3 text-center text-[10px] leading-relaxed text-neutral-500">
+            Your data never leaves your device. DPDP Act 2023 aligned.
+          </p>
+        </motion.div>
 
         <AnimatePresence>
           {showCta && (

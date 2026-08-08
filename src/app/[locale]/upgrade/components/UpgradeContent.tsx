@@ -18,8 +18,10 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import { useVaultData } from '@/context/VaultDataContext';
 import { isPro, PRO_FEATURES, PLAY_STORE_URL } from '@/lib/subscription';
+import { isNativeApp } from '@/lib/platform';
 import { cn } from '@/lib/utils';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
@@ -44,10 +46,21 @@ const PASTEL_CARD_COLORS = [
   '#d5f7f7',
 ];
 
+const COMPARE_ORDER = [
+  'docsPerCat',
+  'familyProfiles',
+  'expiryReminders',
+  'exportVault',
+  'photos',
+  'support',
+] as const;
+
 export default function UpgradeContent() {
+  const t = useTranslations('upgrade');
   const { vaultData, persistVaultData } = useVaultData();
   const pro = isPro(vaultData.settings);
   const [activating, setActivating] = useState(false);
+  const nativeApp = isNativeApp();
 
   const handleActivatePro = async () => {
     setActivating(true);
@@ -56,7 +69,7 @@ export default function UpgradeContent() {
         ...vaultData,
         settings: { ...vaultData.settings, plan: 'pro' },
       });
-      toast.success('🎉 Pro activated! Enjoy unlimited access.');
+      toast.success(t('toastActivated'));
     } finally {
       setActivating(false);
     }
@@ -67,7 +80,7 @@ export default function UpgradeContent() {
       ...vaultData,
       settings: { ...vaultData.settings, plan: 'free' },
     });
-    toast('Switched back to Free plan.');
+    toast(t('toastSwitchedFree'));
   };
 
   return (
@@ -97,14 +110,13 @@ export default function UpgradeContent() {
                 className="inline-flex items-center gap-1.5 rounded-full bg-yellow-400/25 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-yellow-200 ring-1 ring-yellow-400/40"
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
-                Active Subscription
+                {t('activeSubscriptionBadge')}
               </motion.div>
               <h1 className="mt-3 text-[26px] font-extrabold leading-tight">
-                You&rsquo;re on <span className="text-yellow-300">SecureVault Pro</span>
+                {t('heroOnProLead')}{' '}
+                <span className="text-yellow-300">{t('planName')}</span>
               </h1>
-              <p className="mt-2 text-[14px] text-white/75">
-                All premium features are unlocked. Thank you for supporting the app!
-              </p>
+              <p className="mt-2 text-[14px] text-white/75">{t('heroOnProSub')}</p>
             </>
           ) : (
             <>
@@ -115,15 +127,12 @@ export default function UpgradeContent() {
                 className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/80 ring-1 ring-white/30"
               >
                 <Sparkles className="h-3.5 w-3.5 text-yellow-300" />
-                Upgrade to Pro
+                {t('upgradeBadge')}
               </motion.div>
               <h1 className="mt-3 text-[26px] font-extrabold leading-tight">
-                Unlock the full <span className="text-yellow-300">SecureVault</span>
+                {t('heroUnlockLead')}
               </h1>
-              <p className="mt-2 text-[14px] text-white/75">
-                Everything you need to manage your family&rsquo;s documents — unlimited, secure, and
-                always at hand.
-              </p>
+              <p className="mt-2 text-[14px] text-white/75">{t('heroUnlockSub')}</p>
             </>
           )}
         </div>
@@ -141,28 +150,36 @@ export default function UpgradeContent() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-[12px] font-bold uppercase tracking-[1.5px] text-[#4338C9]">
-                  SecureVault Pro
+                  {t('planName')}
                 </p>
                 <p className="mt-0.5 text-[22px] font-extrabold text-[#212121]">
-                  ₹199<span className="text-[14px] font-semibold text-[#212121]/50"> / year</span>
+                  ₹199
+                  <span className="text-[14px] font-semibold text-[#212121]/50">{t('pricePerYear')}</span>
                 </p>
-                <p className="text-[11px] text-[#212121]/45">One-time yearly subscription</p>
+                <p className="text-[11px] text-[#212121]/45">{t('subscriptionNote')}</p>
               </div>
               <a
-                href={PLAY_STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={nativeApp ? PLAY_STORE_URL : undefined}
+                onClick={nativeApp ? undefined : (e) => e.preventDefault()}
+                target={nativeApp ? '_blank' : undefined}
+                rel={nativeApp ? 'noopener noreferrer' : undefined}
                 className="flex shrink-0 items-center gap-2 rounded-full bg-[#4338C9] px-5 py-3 text-[13px] font-bold text-white shadow-[0_8px_24px_rgba(67,56,201,0.35)] transition-all active:scale-95"
               >
-                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" aria-hidden>
-                  <path d="M3.18 23.73c.3.17.64.22.98.14l11.65-11.65L12.48 9l-9.3 14.73zM20.5 10.02l-2.83-1.63-3.4 3.39 3.4 3.39 2.86-1.64A1.99 1.99 0 0020.5 10.02zM1.05 1.44a2 2 0 000 1.84l9.14 9.14 3.27-3.27L2.01.78a1.5 1.5 0 00-.96.66zM12.48 13.78l-9.3 9.31c.34.08.68.03.98-.15l11.65-11.65-3.33-3.51z" />
-                </svg>
-                Get Pro
-                <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                {nativeApp ? (
+                  <>
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" aria-hidden>
+                      <path d="M3.18 23.73c.3.17.64.22.98.14l11.65-11.65L12.48 9l-9.3 14.73zM20.5 10.02l-2.83-1.63-3.4 3.39 3.4 3.39 2.86-1.64A1.99 1.99 0 0020.5 10.02zM1.05 1.44a2 2 0 000 1.84l9.14 9.14 3.27-3.27L2.01.78a1.5 1.5 0 00-.96.66zM12.48 13.78l-9.3 9.31c.34.08.68.03.98-.15l11.65-11.65-3.33-3.51z" />
+                    </svg>
+                    {t('getProCta')}
+                    <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                  </>
+                ) : (
+                  t('upgradeCtaWeb', { defaultValue: 'Upgrade to Pro' })
+                )}
               </a>
             </div>
             <p className="mt-4 text-center text-[11px] text-[#212121]/40">
-              Purchase securely through Google Play Store
+              {nativeApp ? t('purchaseNote') : t('webPurchaseNote')}
             </p>
           </motion.div>
         </div>
@@ -177,10 +194,8 @@ export default function UpgradeContent() {
                 <Crown className="h-6 w-6 text-[#4338C9]" />
               </div>
               <div>
-                <p className="font-bold text-[#212121]">Pro is Active</p>
-                <p className="text-[12px] text-[#212121]/50">
-                  All features unlocked via Google Play
-                </p>
+                <p className="font-bold text-[#212121]">{t('proIsActive')}</p>
+                <p className="text-[12px] text-[#212121]/50">{t('proActiveSub')}</p>
               </div>
               <CheckCircle2 className="ml-auto h-6 w-6 text-emerald-500" />
             </div>
@@ -190,22 +205,25 @@ export default function UpgradeContent() {
 
       {/* ── Pro features grid ── */}
       <div className="mx-auto mt-8 max-w-lg px-4">
-        <h2 className="mb-4 text-[17px] font-bold text-[#212121]">What&rsquo;s included in Pro</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <h2 className="mb-4 text-[17px] font-bold text-[#212121]">{t('whatsIncluded')}</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {PRO_FEATURES.map((feat, i) => (
             <motion.div
               key={feat.icon}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 * i, type: 'spring', stiffness: 300, damping: 24 }}
-              className="rounded-[18px] p-4 shadow-[0_4px_16px_rgba(33,33,33,0.06)]"
-              style={{ background: PASTEL_CARD_COLORS[i % PASTEL_CARD_COLORS.length] }}
+              className="flex min-h-[148px] flex-col rounded-[18px] border border-[#212121]/08 bg-white p-4 shadow-[0_4px_16px_rgba(33,33,33,0.06)]"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/70">
                 <span className="text-[#4338C9]">{ICON_MAP[feat.icon]}</span>
               </div>
-              <p className="mt-2.5 text-[13px] font-bold text-[#212121]">{feat.title}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-[#212121]/60">{feat.body}</p>
+              <p className="mt-2.5 text-[13px] font-bold text-[#212121]">
+                {t(`features.${feat.icon}.title` as Parameters<typeof t>[0])}
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#212121]/60">
+                {t(`features.${feat.icon}.body` as Parameters<typeof t>[0])}
+              </p>
             </motion.div>
           ))}
         </div>
@@ -213,50 +231,46 @@ export default function UpgradeContent() {
 
       {/* ── Free vs Pro comparison ── */}
       <div className="mx-auto mt-8 max-w-lg px-4">
-        <h2 className="mb-4 text-[17px] font-bold text-[#212121]">Free vs Pro</h2>
+        <h2 className="mb-4 text-[17px] font-bold text-[#212121]">{t('freeVsPro')}</h2>
         <div className="overflow-hidden rounded-[20px] bg-white shadow-[0_4px_20px_rgba(33,33,33,0.08)]">
           {/* Header row */}
           <div className="grid grid-cols-3 border-b border-[#212121]/06 px-4 py-3">
             <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">
-              Feature
+              {t('tableFeature')}
             </p>
             <p className="text-center text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">
-              Free
+              {t('tableFree')}
             </p>
             <p className="text-center text-[11px] font-extrabold uppercase tracking-[1.5px] text-[#4338C9]">
-              Pro
+              {t('tablePro')}
             </p>
           </div>
-          {[
-            ['Documents per category', '1', 'Unlimited'],
-            ['Family member profiles', '✓', '✓'],
-            ['Expiry reminders', 'Basic', 'Smart'],
-            ['Google Drive backup', '—', '✓'],
-            ['Secure sharing links', '—', '✓'],
-            ['Export vault (PDF/JSON)', '—', '✓'],
-            ['Photo attachments', '—', '✓'],
-            ['AI document scan', '—', '✓'],
-            ['Priority support', '—', '✓'],
-          ].map(([feat, free, proval], i) => (
+          {COMPARE_ORDER.map((rowKey, i) => {
+            const free = t(`compare.${rowKey}.free` as Parameters<typeof t>[0]);
+            const pro = t(`compare.${rowKey}.pro` as Parameters<typeof t>[0]);
+            return (
             <div
-              key={feat}
+              key={rowKey}
               className={cn(
                 'grid grid-cols-3 items-center px-4 py-3',
                 i % 2 === 1 ? 'bg-[#F6F5FA]' : ''
               )}
             >
-              <p className="text-[12px] font-semibold text-[#212121]">{feat}</p>
+              <p className="text-[12px] font-semibold text-[#212121]">
+                {t(`compare.${rowKey}.feature` as Parameters<typeof t>[0])}
+              </p>
               <p className="text-center text-[12px] text-[#212121]/50">{free}</p>
               <p
                 className={cn(
                   'text-center text-[12px] font-bold',
-                  proval === '—' ? 'text-[#212121]/30' : 'text-[#4338C9]'
+                  pro === '—' ? 'text-[#212121]/30' : 'text-[#4338C9]'
                 )}
               >
-                {proval === '✓' ? <Check className="mx-auto h-4 w-4 text-emerald-500" /> : proval}
+                {pro === '✓' ? <Check className="mx-auto h-4 w-4 text-emerald-500" /> : pro}
               </p>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -264,26 +278,36 @@ export default function UpgradeContent() {
       {!pro && (
         <div className="mx-auto mt-8 max-w-lg px-4">
           <a
-            href={PLAY_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={nativeApp ? PLAY_STORE_URL : undefined}
+            onClick={nativeApp ? undefined : (e) => e.preventDefault()}
+            target={nativeApp ? '_blank' : undefined}
+            rel={nativeApp ? 'noopener noreferrer' : undefined}
             className="flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#4338C9] py-4 text-[15px] font-extrabold text-white shadow-[0_12px_32px_rgba(67,56,201,0.35)] transition-all active:scale-[0.98]"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white" aria-hidden>
-              <path d="M3.18 23.73c.3.17.64.22.98.14l11.65-11.65L12.48 9l-9.3 14.73zM20.5 10.02l-2.83-1.63-3.4 3.39 3.4 3.39 2.86-1.64A1.99 1.99 0 0020.5 10.02zM1.05 1.44a2 2 0 000 1.84l9.14 9.14 3.27-3.27L2.01.78a1.5 1.5 0 00-.96.66zM12.48 13.78l-9.3 9.31c.34.08.68.03.98-.15l11.65-11.65-3.33-3.51z" />
-            </svg>
-            Get SecureVault Pro on Google Play
-            <ExternalLink className="h-4 w-4 opacity-70" />
+            {nativeApp ? (
+              <>
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white" aria-hidden>
+                  <path d="M3.18 23.73c.3.17.64.22.98.14l11.65-11.65L12.48 9l-9.3 14.73zM20.5 10.02l-2.83-1.63-3.4 3.39 3.4 3.39 2.86-1.64A1.99 1.99 0 0020.5 10.02zM1.05 1.44a2 2 0 000 1.84l9.14 9.14 3.27-3.27L2.01.78a1.5 1.5 0 00-.96.66zM12.48 13.78l-9.3 9.31c.34.08.68.03.98-.15l11.65-11.65-3.33-3.51z" />
+                </svg>
+                {t('getProPlayCta')}
+                <ExternalLink className="h-4 w-4 opacity-70" />
+              </>
+            ) : (
+              t('upgradeCtaWeb')
+            )}
           </a>
+          {!nativeApp ? (
+            <p className="mt-2 text-center text-[11px] text-[#212121]/40">{t('webPurchaseNote')}</p>
+          ) : null}
           <p className="mt-3 text-center text-[11px] text-[#212121]/40">
-            Already purchased?{' '}
+            {t('alreadyPurchased')}{' '}
             <button
               type="button"
               disabled={activating}
               onClick={handleActivatePro}
               className="font-bold text-[#4338C9] underline decoration-[#4338C9]/30 underline-offset-2"
             >
-              {activating ? 'Activating…' : 'Tap here to activate'}
+              {activating ? t('activating') : t('tapActivate')}
             </button>
           </p>
         </div>
@@ -297,7 +321,7 @@ export default function UpgradeContent() {
             onClick={handleDowngradeFree}
             className="text-[11px] text-[#212121]/35 underline decoration-[#212121]/20 underline-offset-2"
           >
-            Cancel subscription / switch to Free
+            {t('cancelSubscription')}
           </button>
         </div>
       )}

@@ -2,24 +2,20 @@
 
 import React, {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
   useState,
 } from 'react';
 
-export type AppTheme = 'neon' | 'pastel';
+/** Single app theme — light / family vault styling. Neon vault has been removed. */
+export type AppTheme = 'pastel';
 
 const STORAGE_KEY = 'sv_ui_theme';
 
-function parseStoredTheme(raw: string | null): AppTheme {
-  if (raw === 'pastel') return 'pastel';
-  return 'neon';
-}
-
 type ThemeContextValue = {
   theme: AppTheme;
+  /** No-op kept for call-site compatibility; theme is always pastel. */
   setTheme: (t: AppTheme) => void;
   mounted: boolean;
 };
@@ -27,39 +23,32 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<AppTheme>('neon');
   const [mounted, setMounted] = useState(false);
 
   useLayoutEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const next = parseStoredTheme(raw);
-      setThemeState(next);
-      document.documentElement.dataset.theme = next;
-    } catch {
-      document.documentElement.dataset.theme = 'neon';
-    }
-    setMounted(true);
-  }, []);
-
-  const setTheme = useCallback((t: AppTheme) => {
-    setThemeState(t);
-    try {
-      localStorage.setItem(STORAGE_KEY, t);
+      localStorage.setItem(STORAGE_KEY, 'pastel');
     } catch {
       /* ignore */
     }
-    document.documentElement.dataset.theme = t;
+    document.documentElement.dataset.theme = 'pastel';
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.dataset.theme = theme;
-  }, [theme, mounted]);
+    document.documentElement.dataset.theme = 'pastel';
+  }, []);
 
   const value: ThemeContextValue = {
-    theme,
-    setTheme,
+    theme: 'pastel',
+    setTheme: () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, 'pastel');
+      } catch {
+        /* ignore */
+      }
+      document.documentElement.dataset.theme = 'pastel';
+    },
     mounted,
   };
 

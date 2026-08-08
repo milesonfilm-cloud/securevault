@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { CalendarClock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useVaultData } from '@/context/VaultDataContext';
 import { collectRenewalItems } from '@/lib/documentExpiry';
 import RenewalTimeline from '@/components/renewals/RenewalTimeline';
@@ -10,6 +11,7 @@ import VaultPageHeading from '@/components/ui/VaultPageHeading';
 const HORIZON_DAYS = 90;
 
 export default function RenewalsContent() {
+  const t = useTranslations('renewalsPage');
   const { vaultData, loading } = useVaultData();
 
   const items = useMemo(
@@ -35,9 +37,9 @@ export default function RenewalsContent() {
             <CalendarClock size={24} aria-hidden />
           </div>
         }
-        eyebrow="Planning"
-        title="Renewals"
-        description={`Timeline of document expiries in the next ${HORIZON_DAYS} days — with UPI shortcuts for eligible categories.`}
+        eyebrow={t('eyebrow')}
+        title={t('title')}
+        description={t('description', { days: HORIZON_DAYS })}
         titleClassName="mt-0.5 text-[28px] font-bold tracking-tight leading-tight text-vault-text sm:text-[32px]"
       />
 

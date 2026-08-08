@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { HardDrive, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { getStorageSizeAsync } from '@/lib/storage';
 
 function formatBytes(bytes: number): string {
@@ -11,6 +12,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function StorageMeter() {
+  const t = useTranslations('settingsPanels');
   const [storageInfo, setStorageInfo] = useState({ used: 0, total: 50 * 1024 * 1024, percent: 0 });
 
   useEffect(() => {
@@ -37,17 +39,15 @@ export default function StorageMeter() {
           )}
         </div>
         <div>
-          <h3 className="text-base font-700 text-vault-text">Local Storage (IndexedDB)</h3>
-          <p className="text-xs text-vault-faint">
-            Data persists in IndexedDB — survives cache clearing
-          </p>
+          <h3 className="text-base font-700 text-vault-text">{t('storageTitle')}</h3>
+          <p className="text-xs text-vault-faint">{t('storageMeterSubtitle')}</p>
         </div>
       </div>
 
       <div className="mb-3">
         <div className="flex justify-between text-xs text-vault-muted mb-1.5">
-          <span>{formatBytes(storageInfo.used)} used</span>
-          <span>{formatBytes(storageInfo.total)} available</span>
+          <span>{t('storageUsed', { used: formatBytes(storageInfo.used) })}</span>
+          <span>{t('storageAvailable', { available: formatBytes(storageInfo.total) })}</span>
         </div>
         <div className="h-3 bg-vault-elevated rounded-full overflow-hidden border border-border">
           <div
@@ -55,22 +55,22 @@ export default function StorageMeter() {
             style={{ width: `${storageInfo.percent}%`, backgroundColor: barColor }}
           />
         </div>
-        <p className="text-xs text-vault-faint mt-1.5 text-right">{storageInfo.percent}% used</p>
+        <p className="text-xs text-vault-faint mt-1.5 text-right">{t('storagePercentUsed', { percent: storageInfo.percent })}</p>
       </div>
 
       {isDanger && (
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2 text-xs text-red-300 font-600">
-          Storage nearly full — export and clear old data to free space
+          {t('storageDanger')}
         </div>
       )}
       {isWarning && !isDanger && (
         <div className="bg-[rgba(241,170,155,0.12)] border border-[rgba(241,170,155,0.25)] rounded-xl px-3 py-2 text-xs text-vault-coral font-600">
-          Storage above 70% — consider exporting a backup soon
+          {t('storageWarning')}
         </div>
       )}
       {!isWarning && (
         <div className="bg-[rgba(240,195,142,0.12)] border border-[rgba(240,195,142,0.25)] rounded-xl px-3 py-2 text-xs text-vault-warm font-600">
-          Storage healthy — all documents saved in IndexedDB
+          {t('storageHealthy')}
         </div>
       )}
     </div>

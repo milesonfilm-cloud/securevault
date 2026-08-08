@@ -34,16 +34,6 @@ export const PRO_FEATURES = [
     body: 'Store as many documents as you need in every category — no caps.',
   },
   {
-    icon: 'CloudUpload',
-    title: 'Google Drive Backup',
-    body: 'Automatically back up your encrypted vault to Google Drive.',
-  },
-  {
-    icon: 'Share2',
-    title: 'Secure Sharing',
-    body: 'Share individual documents via time-limited, encrypted links.',
-  },
-  {
     icon: 'Download',
     title: 'Export Vault',
     body: 'Export your entire vault as an encrypted PDF or JSON bundle.',
@@ -52,11 +42,6 @@ export const PRO_FEATURES = [
     icon: 'Camera',
     title: 'Photo Attachments',
     body: 'Attach scanned images and photos directly to any document.',
-  },
-  {
-    icon: 'Scan',
-    title: 'AI Document Scan',
-    body: 'Auto-fill document fields by scanning with your camera using AI.',
   },
   {
     icon: 'Bell',

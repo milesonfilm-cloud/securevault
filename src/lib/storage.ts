@@ -10,6 +10,8 @@ import {
   SESSION_UNLOCKED_KEY,
 } from './vaultSession';
 import { clearPersistedVaultKey } from './vaultKeyPersist';
+import { isDemoMode } from './demoMode';
+import { ensureDemoVaultSeeded, saveDemoVaultToSession } from './demoVaultSeed';
 
 export type CategoryId =
   | 'government-ids'
@@ -22,6 +24,9 @@ export type CategoryId =
   | 'passport'
   | 'drivers-license'
   | 'insurance'
+  | 'investment'
+  | 'loan'
+  | 'income'
   | 'visa'
   | 'medical-record'
   | 'certificate'
@@ -67,7 +72,7 @@ export interface ShareViewEvent {
 
 export interface ShareLink {
   id: string;
-  /** Short id used in /share/[shareId] fetch; decryption key lives in URL hash. */
+  /** Legacy field from removed share-link feature; kept for import compatibility. */
   shareId: string;
   docId: string;
   docTitle: string;
@@ -89,8 +94,9 @@ export interface VaultSettings {
   cloudSyncEnabled: boolean;
   notificationsEnabled: boolean;
   expiryWarnDays: number;
-  theme: 'neon';
-  /** Read-only vault UI for owner; pair with handover link for trusted access. */
+  /** Legacy field — UI theme is always light; kept for vault JSON compatibility. */
+  theme: 'light';
+  /** Read-only vault UI for owner (emergency mode). */
   emergencyModeEnabled: boolean;
   /** Subscription plan. Free = 1 document per category. */
   plan: 'free' | 'pro';
@@ -132,7 +138,7 @@ export function defaultVaultSettings(): VaultSettings {
     cloudSyncEnabled: false,
     notificationsEnabled: true,
     expiryWarnDays: 30,
-    theme: 'neon',
+    theme: 'light',
     emergencyModeEnabled: false,
     plan: 'free',
   };
@@ -203,19 +209,8 @@ function stripLegacyDocumentFields(d: Document): Document {
   };
 }
 
-function normalizeStoredTheme(raw: unknown): VaultSettings['theme'] {
-  const s = typeof raw === 'string' ? raw : '';
-  if (s === 'neon') return s;
-  if (
-    s === 'vault' ||
-    s === 'pastel' ||
-    s === 'voyager' ||
-    s === 'wellness' ||
-    s === 'cinema' ||
-    s === 'spectrum'
-  )
-    return 'neon';
-  return 'neon';
+function normalizeStoredTheme(_raw: unknown): VaultSettings['theme'] {
+  return 'light';
 }
 
 export function normalizeVaultData(data: VaultData): VaultData {
@@ -235,7 +230,7 @@ export function normalizeVaultData(data: VaultData): VaultData {
   const streakData = { ...defaultStreakData(), ...data.streakData };
   return {
     ...data,
-    shareLinks: Array.isArray(data.shareLinks) ? data.shareLinks : [],
+    shareLinks: [],
     emergencyContact: data.emergencyContact ?? null,
     settings,
     streakData,
@@ -262,6 +257,10 @@ const ENCRYPTION_MIGRATED_KEY = 'securevault_encryption_migrated_v1';
 
 export async function loadVaultDataAsync(): Promise<VaultData> {
   if (typeof window === 'undefined') return getDefaultData();
+
+  if (isDemoMode()) {
+    return normalizeVaultData(ensureDemoVaultSeeded());
+  }
 
   // One-time migration from localStorage → IndexedDB
   if (!localStorage.getItem(MIGRATED_KEY)) {
@@ -304,6 +303,10 @@ export async function loadVaultDataAsync(): Promise<VaultData> {
 }
 
 export async function saveVaultDataAsync(data: VaultData): Promise<void> {
+  if (isDemoMode()) {
+    saveDemoVaultToSession(normalizeVaultData(data));
+    return;
+  }
   await idbSaveVaultData(data);
 }
 

@@ -1,6 +1,7 @@
 import { CategoryId } from '@/lib/storage';
 
 export interface DocumentPrefill {
+  memberId?: string;
   categoryId?: CategoryId;
   title?: string;
   fields?: Record<string, string>;

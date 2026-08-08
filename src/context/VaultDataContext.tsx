@@ -10,7 +10,6 @@ import {
 } from '@/lib/storage';
 import { checkBadgeUnlocks } from '@/lib/gamification/badges';
 import { checkInStreak } from '@/lib/gamification/streaks';
-import { scheduleDriveSyncDebounced } from '@/lib/cloudSync/syncManager';
 import { setStoredTier } from '@/lib/featureFlags';
 import { toast } from 'sonner';
 import {
@@ -131,7 +130,6 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
     setStoredTier(toSave.settings.plan ?? 'free');
     await saveVaultDataAsync(toSave);
     setVaultData(toSave);
-    scheduleDriveSyncDebounced(toSave.settings.cloudSyncEnabled);
     unlocked.forEach((b) =>
       toast.success(`${b.icon} Badge unlocked: ${b.name}`, { description: b.description })
     );

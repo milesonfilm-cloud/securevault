@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   FolderLock,
@@ -22,13 +21,15 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useMessages } from 'next-intl';
 import { useTranslations } from 'next-intl';
-import { BRAND_LOGO_HEIGHT, BRAND_LOGO_SRC, BRAND_LOGO_WIDTH } from '@/lib/brandLogo';
+import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
 import { paletteForMemberIndex } from '@/lib/memberPastelPalettes';
 import { subscribeMatchMedia } from '@/lib/matchMediaSubscribe';
 
 interface AuthWelcomePanelProps {
   phase: 'setup' | 'login';
   onFinish: () => void;
+  /** First-run only — explore sample vault before creating a passcode. */
+  onTryDemo?: () => void;
 }
 
 type SlideId = 'welcome' | 'vault' | 'family' | 'backup';
@@ -328,14 +329,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
                 />
               </motion.div>
             )}
-            <Image
-              src={BRAND_LOGO_SRC}
-              alt=""
-              width={BRAND_LOGO_WIDTH}
-              height={BRAND_LOGO_HEIGHT}
-              className="relative z-10 mx-auto h-[min(180px,48vw)] w-auto object-contain"
-              priority
-            />
+            <BrandMarkSvg className="relative z-10 mx-auto drop-shadow-md" size={140} />
           </motion.div>
           {!reducedMotion && (
             <motion.div
@@ -554,7 +548,7 @@ function SlideVisual({ id, reducedMotion }: { id: SlideId; reducedMotion: boolea
   }
 }
 
-export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelProps) {
+export default function AuthWelcomePanel({ phase, onFinish, onTryDemo }: AuthWelcomePanelProps) {
   const tw = useTranslations('welcome');
   const reducedMotion = usePrefersReducedMotion();
   const slides = useMemo((): SlideDef[] => {
@@ -665,41 +659,53 @@ export default function AuthWelcomePanel({ phase, onFinish }: AuthWelcomePanelPr
             </AnimatePresence>
           </div>
 
-          <div className="mt-4 flex shrink-0 items-center justify-between gap-4 border-t border-neutral-100/90 pt-4">
-            <div className="flex gap-1.5">
-              {slides.map((s, i) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    setDir(i > index ? 1 : -1);
-                    setIndex(i);
-                  }}
-                  className="group p-1"
-                  aria-label={`Go to slide ${i + 1}`}
-                >
-                  <motion.span
-                    className="block h-1.5 rounded-full bg-neutral-200/90"
-                    animate={{
-                      width: i === index ? 22 : 6,
-                      backgroundColor: i === index ? WELCOME_ACCENT_SOFT : 'rgba(33, 33, 33, 0.12)',
+          <div className="mt-4 flex shrink-0 flex-col gap-3 border-t border-neutral-100/90 pt-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex gap-1.5">
+                {slides.map((s, i) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => {
+                      setDir(i > index ? 1 : -1);
+                      setIndex(i);
                     }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                  />
-                </button>
-              ))}
-            </div>
+                    className="group p-1"
+                    aria-label={`Go to slide ${i + 1}`}
+                  >
+                    <motion.span
+                      className="block h-1.5 rounded-full bg-neutral-200/90"
+                      animate={{
+                        width: i === index ? 22 : 6,
+                        backgroundColor:
+                          i === index ? WELCOME_ACCENT_SOFT : 'rgba(33, 33, 33, 0.12)',
+                      }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  </button>
+                ))}
+              </div>
 
-            <motion.button
-              type="button"
-              onClick={goNext}
-              className="inline-flex items-center gap-2 rounded-[12px] bg-gradient-to-br from-[#7B6FD4] to-[#4338C9] px-5 py-3 text-sm font-700 text-white shadow-[0_14px_32px_rgba(67,56,201,0.28)] transition-transform hover:brightness-[1.03] active:scale-[0.98]"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              {isLast ? (phase === 'setup' ? tw('createPassword') : tw('signIn')) : tw('next')}
-              <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden />
-            </motion.button>
+              <motion.button
+                type="button"
+                onClick={goNext}
+                className="inline-flex items-center gap-2 rounded-[12px] bg-gradient-to-br from-[#7B6FD4] to-[#4338C9] px-5 py-3 text-sm font-700 text-white shadow-[0_14px_32px_rgba(67,56,201,0.28)] transition-transform hover:brightness-[1.03] active:scale-[0.98]"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isLast ? (phase === 'setup' ? tw('createPassword') : tw('signIn')) : tw('next')}
+                <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden />
+              </motion.button>
+            </div>
+            {phase === 'setup' && onTryDemo ? (
+              <button
+                type="button"
+                onClick={onTryDemo}
+                className="w-full rounded-[12px] border border-[#4338C9]/25 bg-[#4338C9]/06 px-4 py-2.5 text-sm font-700 text-[#4338C9] transition-colors hover:bg-[#4338C9]/12"
+              >
+                {tw('tryDemo')}
+              </button>
+            ) : null}
           </div>
         </div>
       </motion.div>

@@ -43,11 +43,11 @@ test.describe('Authentication flow', () => {
     await expect(page).toHaveURL(/family-management|document-vault/, { timeout: 20000 });
   });
 
-  test('shows error for PIN shorter than 4 characters', async ({ page }) => {
+  test('shows error for PIN shorter than 6 characters', async ({ page }) => {
     await page.waitForSelector('input[type="password"]', { timeout: 20000 });
     const inputs = await page.locator('input[type="password"]').all();
-    await inputs[0].fill('abc');
-    if (inputs.length > 1) await inputs[1].fill('abc');
+    await inputs[0].fill('abcde');
+    if (inputs.length > 1) await inputs[1].fill('abcde');
     await page.locator('button[type="submit"]').click();
     await expect(page.locator('[role="alert"]').first()).toBeVisible({ timeout: 10000 });
   });

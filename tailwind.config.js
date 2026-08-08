@@ -14,7 +14,6 @@ module.exports = {
         display: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
         'wellness-sans': ['var(--font-wellness-sans)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
         'wellness-serif': ['var(--font-wellness-serif)', 'Georgia', 'serif'],
-        'neon-stack': ['var(--font-neon-stack)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
         urbanist: ['var(--font-urbanist)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
       },
       fontWeight: {
@@ -39,7 +38,7 @@ module.exports = {
           coral: '#E07070',
           nav: '#1A1A2E',
         },
-        /* Theme tokens — values switch via [data-theme] on <html> (see tailwind.css) */
+        /* Theme tokens — light Family Vault palette (see tailwind.css) */
         vault: {
           bg: 'var(--vault-c-bg)',
           panel: 'var(--vault-c-panel)',
