@@ -49,7 +49,7 @@ export default function ConfirmModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="sm">
-      <div className="p-6 text-center">
+      <div className="p-4 text-center sm:p-6">
         <div
           className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 border border-border ${isDanger ? 'bg-red-500/15' : 'bg-vault-warm/15'}`}
         >
@@ -100,14 +100,14 @@ export default function ConfirmModal({
           </div>
         )}
 
-        <div className="flex gap-3 justify-center">
-          <button onClick={onClose} className="btn-secondary" disabled={isLoading}>
+        <div className="flex flex-col-reverse justify-center gap-2 sm:flex-row sm:gap-3">
+          <button onClick={onClose} className="btn-secondary w-full justify-center sm:w-auto" disabled={isLoading}>
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={confirmDisabled}
-            className={`${isDanger ? 'btn-danger' : 'btn-primary'} min-w-[100px] justify-center disabled:cursor-not-allowed disabled:opacity-50`}
+            className={`${isDanger ? 'btn-danger' : 'btn-primary'} w-full min-w-0 justify-center sm:w-auto sm:min-w-[100px] disabled:cursor-not-allowed disabled:opacity-50`}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">

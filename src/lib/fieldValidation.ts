@@ -7,13 +7,14 @@ export const FIELD_FORMAT_HINTS: Record<FieldFormat, string> = {
   'expiry-mmyyyy': 'Use MM/YYYY (e.g. 08/2028)',
   'account-number': 'Enter 9–20 digits',
   phone: 'Enter a valid phone number (at least 10 digits)',
-  ifsc: 'Use IFSC format: ABCD0123456',
+  ifsc: 'Use IFSC (e.g. SBIN0001234) or SWIFT (e.g. HDFCINBB)',
   aadhaar: 'Enter 12-digit Aadhaar (e.g. 1234 5678 9012)',
   pan: 'Use PAN format: AAAAA9999A',
-  'alpha-upper': 'Use letters only',
+  'alpha-upper': 'Use letters and numbers (e.g. KA 03 AB 1234)',
   email: 'Use a valid email (e.g. name@example.com)',
   url: 'Use a valid URL (e.g. https://example.com)',
-  'login-id': 'Enter a username or a valid email',
+  'login-id': 'Enter a username or a valid email (e.g. name@example.com)',
+  cvv: 'Enter 3 or 4 digits (e.g. 123)',
 };
 
 function digitsOnly(value: string): string {
@@ -70,7 +71,9 @@ export function isValidPhone(value: string): boolean {
 }
 
 export function isValidIfsc(value: string): boolean {
-  return /^[A-Z]{4}0[A-Z0-9]{6}$/.test(value.trim().toUpperCase());
+  const v = value.trim().toUpperCase();
+  if (/^[A-Z]{4}0[A-Z0-9]{6}$/.test(v)) return true;
+  return /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(v);
 }
 
 export function isValidAadhaar(value: string): boolean {
@@ -129,7 +132,12 @@ export function validateFormattedValue(
       return isValidAadhaar(trimmed) ? null : FIELD_FORMAT_HINTS.aadhaar;
     case 'pan':
       return isValidPan(trimmed) ? null : FIELD_FORMAT_HINTS.pan;
+    case 'cvv':
+      return /^\d{3,4}$/.test(digitsOnly(trimmed)) ? null : FIELD_FORMAT_HINTS.cvv;
     case 'alpha-upper':
+      if (trimmed.length > 16) {
+        return 'Keep it to 16 characters or fewer (e.g. KA 03 AB 1234)';
+      }
       return /^[A-Z0-9][A-Z0-9\s\-./]*$/i.test(trimmed)
         ? null
         : FIELD_FORMAT_HINTS['alpha-upper'];
@@ -163,11 +171,40 @@ export function validateGovernmentIdNumber(
     return isValidPan(trimmed) ? null : FIELD_FORMAT_HINTS.pan;
   }
   // Passport / Voter / DL / Other — require meaningful alphanumeric, reject pure junk
-  if (trimmed.length < 4) return 'Enter a valid ID number (at least 4 characters)';
+  if (trimmed.length < 4) return 'Enter a valid ID number (at least 4 characters, e.g. A1234567)';
   if (!/^[A-Za-z0-9][A-Za-z0-9\s\-\/]*$/.test(trimmed)) {
-    return 'Use letters and numbers only — no special junk characters';
+    return 'Use letters and numbers only (e.g. A1234567)';
   }
   return null;
+}
+
+/**
+ * Required + format check for a single category field.
+ * Returns `true` when valid, otherwise an error message (with an example).
+ */
+export function validateCategoryFieldValue(
+  field: FieldConfig,
+  value: string,
+  allValues: Record<string, string>,
+  requiredMessage: string
+): true | string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return field.required ? requiredMessage : true;
+  }
+
+  if (field.key === 'Password') {
+    if (trimmed.length < 4) return 'Enter at least 4 characters (e.g. Abcd1)';
+    if (trimmed.length > 128) return 'Keep it to 128 characters or fewer';
+  }
+
+  if (field.key === 'ID / Document Number') {
+    const err = validateGovernmentIdNumber(value, allValues['Document Type']);
+    if (err) return err;
+  }
+
+  const err = validateFormattedValue(value, field.format);
+  return err ?? true;
 }
 
 /** Validate all category fields in a form payload. Empty optional fields are skipped. */
@@ -188,6 +225,25 @@ export function collectFieldFormatErrors(
 
     const err = validateFormattedValue(raw, field.format);
     if (err) errors[field.key] = err;
+  }
+  return errors;
+}
+
+/** Required + format errors for a category form payload. */
+export function collectCategoryFieldErrors(
+  fields: FieldConfig[],
+  values: Record<string, string>,
+  requiredMessage: (field: FieldConfig) => string
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const field of fields) {
+    const result = validateCategoryFieldValue(
+      field,
+      values[field.key] ?? '',
+      values,
+      requiredMessage(field)
+    );
+    if (result !== true) errors[field.key] = result;
   }
   return errors;
 }

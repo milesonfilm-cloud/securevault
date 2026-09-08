@@ -169,7 +169,7 @@ const STATIC_EN = {
     kickerYourData: 'Your data',
     kickerOrganize: 'Organize',
     kickerStaySafe: 'Stay safe',
-    titleSecureVault: 'SecureVault',
+    titleStrongVault: 'Strong Vault',
     titlePrivateVault: 'Private document vault',
     titleBuiltFamilies: 'Built for families',
     titleBackup: 'Back up regularly',

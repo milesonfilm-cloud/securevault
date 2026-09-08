@@ -1,17 +1,15 @@
 /**
- * Brand color tokens (shield / coral accent in UI).
- * Primary in-app artwork: `BrandMarkSvg` (icon) and `BrandLogoFull` (full lockup PNG).
+ * Canonical Strong Vault brand artwork under `/public/brand/`.
  */
-export const BRAND_CORAL = '#F25C54';
-export const BRAND_TEAL = '#80D8DA';
-export const BRAND_ORANGE = '#FFB366';
+// Versioned path prevents Capacitor WebView from reusing an older square-backed logo.
+export const BRAND_MARK_SRC = '/brand/strongvault-mark-v8.png' as const;
+export const BRAND_LOGO_SRC = '/brand/strongvault-logo-v7.png' as const;
+export const BRAND_APP_ICON_SRC = '/brand/strongvault-app-icon.png' as const;
+export const BRAND_LOGO_ANIMATION_SRC = '/brand/strongvault-logo-animation.webm' as const;
+export const BRAND_LOGO_ANIMATION_MP4_SRC = '/brand/strongvault-logo-animation.mp4' as const;
 
-/** Icon artwork (shield mark). Served from /public/brand. */
-export const BRAND_MARK_SRC = '/brand/securevault-icon.png';
-export const BRAND_MARK_WIDTH = 1024;
-export const BRAND_MARK_HEIGHT = 1024;
-
-/** Full lockup: icon + SECUREVAULT wordmark + tagline. */
-export const BRAND_LOGO_SRC = '/brand/securevault-logo.png';
-export const BRAND_LOGO_WIDTH = 512;
-export const BRAND_LOGO_HEIGHT = 521;
+/** Intrinsic pixel size of brand mark artwork (approx; rendered with object-contain). */
+export const BRAND_MARK_WIDTH = 512;
+export const BRAND_MARK_HEIGHT = 512;
+export const BRAND_LOGO_WIDTH = 677;
+export const BRAND_LOGO_HEIGHT = 785;

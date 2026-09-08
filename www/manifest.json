@@ -1,6 +1,6 @@
 {
-  "name": "SecureVault",
-  "short_name": "SecureVault",
+  "name": "Strong Vault",
+  "short_name": "Strong Vault",
   "description": "Private offline document storage for families",
   "start_url": "/family-management",
   "scope": "/",
@@ -26,13 +26,13 @@
   },
   "icons": [
     {
-      "src": "/brand/securevault-app-icon.png",
+      "src": "/brand/strongvault-app-icon.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "/brand/securevault-app-icon.png",
+      "src": "/brand/strongvault-app-icon.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"

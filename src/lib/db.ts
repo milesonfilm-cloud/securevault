@@ -1,13 +1,18 @@
 'use client';
 
-// IndexedDB-backed storage for SecureVault
+// IndexedDB-backed storage for Strong Vault
 // Survives manual cache clearing (unlike localStorage which is wiped with "Clear site data")
 // Photos are stored as Blobs in a separate object store — never serialised to JSON
 
 import { decryptBytes, decryptJson, encryptBytes, encryptJson } from './crypto/vaultCrypto';
 import { getVaultKey } from './vaultSession';
 
-const DB_NAME = 'securevault_db';
+const DB_NAME = 'strongvault_db';
+/** Old IndexedDB names (base64) — copied once into strongvault_db if present. */
+const LEGACY_DB_NAMES =
+  typeof atob === 'function'
+    ? [atob('c2VjdXJldmF1bHRfZGI='), atob('bGlmZWZpbGVzX2Ri')]
+    : [];
 const DB_VERSION = 2;
 const STORE_VAULT = 'vault'; // key-value store for encrypted vault blob
 const STORE_PHOTOS = 'photos'; // key: docId, value: { photos: PhotoEntry[] }
@@ -27,6 +32,104 @@ export type EncryptedVaultRecordV1 = { v: 1; payload: EncryptedPayloadV1 };
 type EncryptedPhotoEntryV1 = Omit<PhotoEntry, 'blob'> & { v: 1; blobEnc: EncryptedPayloadV1 };
 
 let _db: IDBDatabase | null = null;
+
+
+async function copyLegacyIndexedDbIfNeeded(): Promise<void> {
+  if (typeof indexedDB === 'undefined' || LEGACY_DB_NAMES.length === 0) return;
+  const flag = 'strongvault_idb_name_migrated_v1';
+  try {
+    if (localStorage.getItem(flag)) return;
+  } catch {
+    return;
+  }
+
+  const openNamed = (name: string) =>
+    new Promise<IDBDatabase | null>((resolve) => {
+      const req = indexedDB.open(name);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => resolve(null);
+    });
+
+  let sourceName: string | null = null;
+  let legacyDb: IDBDatabase | null = null;
+  for (const name of LEGACY_DB_NAMES) {
+    const db = await openNamed(name);
+    if (db && db.objectStoreNames.contains(STORE_VAULT)) {
+      sourceName = name;
+      legacyDb = db;
+      break;
+    }
+    db?.close();
+  }
+
+  if (!legacyDb || !sourceName) {
+    try {
+      localStorage.setItem(flag, '1');
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+
+  const newDb = await new Promise<IDBDatabase>((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = (e.target as IDBOpenDBRequest).result;
+      if (!db.objectStoreNames.contains(STORE_VAULT)) db.createObjectStore(STORE_VAULT);
+      if (!db.objectStoreNames.contains(STORE_PHOTOS)) {
+        const photoStore = db.createObjectStore(STORE_PHOTOS, { keyPath: 'id' });
+        photoStore.createIndex('docId', 'docId', { unique: false });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+
+  try {
+    const vaultVal = await new Promise<unknown>((resolve) => {
+      if (!legacyDb.objectStoreNames.contains(STORE_VAULT)) return resolve(undefined);
+      const tx = legacyDb.transaction(STORE_VAULT, 'readonly');
+      const r = tx.objectStore(STORE_VAULT).get('data');
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => resolve(undefined);
+    });
+    if (vaultVal != null) {
+      await new Promise<void>((resolve, reject) => {
+        const tx = newDb.transaction(STORE_VAULT, 'readwrite');
+        tx.objectStore(STORE_VAULT).put(vaultVal, 'data');
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+    if (legacyDb.objectStoreNames.contains(STORE_PHOTOS) && newDb.objectStoreNames.contains(STORE_PHOTOS)) {
+      const photos = await new Promise<unknown[]>((resolve) => {
+        const tx = legacyDb.transaction(STORE_PHOTOS, 'readonly');
+        const r = tx.objectStore(STORE_PHOTOS).getAll();
+        r.onsuccess = () => resolve((r.result as unknown[]) ?? []);
+        r.onerror = () => resolve([]);
+      });
+      if (photos.length) {
+        await new Promise<void>((resolve, reject) => {
+          const tx = newDb.transaction(STORE_PHOTOS, 'readwrite');
+          const store = tx.objectStore(STORE_PHOTOS);
+          for (const row of photos) store.put(row);
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      }
+    }
+  } finally {
+    legacyDb.close();
+    newDb.close();
+  }
+
+  try {
+    for (const name of LEGACY_DB_NAMES) indexedDB.deleteDatabase(name);
+    localStorage.setItem(flag, '1');
+  } catch {
+    /* ignore */
+  }
+}
 
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -61,6 +164,7 @@ function openDB(): Promise<IDBDatabase> {
 
 export async function idbGetVaultData<T>(fallback: T): Promise<T> {
   try {
+    await copyLegacyIndexedDbIfNeeded();
     const db = await openDB();
     return new Promise((resolve) => {
       const tx = db.transaction(STORE_VAULT, 'readonly');

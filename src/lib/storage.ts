@@ -1,4 +1,4 @@
-// SecureVault — storage layer
+// Strong Vault — storage layer
 // Primary: IndexedDB (survives manual cache clearing)
 // Fallback seed: localStorage (migrated on first load)
 
@@ -10,8 +10,7 @@ import {
   SESSION_UNLOCKED_KEY,
 } from './vaultSession';
 import { clearPersistedVaultKey } from './vaultKeyPersist';
-import { isDemoMode } from './demoMode';
-import { ensureDemoVaultSeeded, saveDemoVaultToSession } from './demoVaultSeed';
+import { clearAppWalkthroughSeen } from './appWalkthrough';
 
 export type CategoryId =
   | 'government-ids'
@@ -24,9 +23,6 @@ export type CategoryId =
   | 'passport'
   | 'drivers-license'
   | 'insurance'
-  | 'investment'
-  | 'loan'
-  | 'income'
   | 'visa'
   | 'medical-record'
   | 'certificate'
@@ -94,12 +90,20 @@ export interface VaultSettings {
   cloudSyncEnabled: boolean;
   notificationsEnabled: boolean;
   expiryWarnDays: number;
-  /** Legacy field — UI theme is always light; kept for vault JSON compatibility. */
-  theme: 'light';
+  theme: 'glass';
   /** Read-only vault UI for owner (emergency mode). */
   emergencyModeEnabled: boolean;
   /** Subscription plan. Free = 1 document per category. */
   plan: 'free' | 'pro';
+  /**
+   * Proof of a paid Play/App Store purchase. Pro must only activate when this
+   * exists with a real transaction id — never from a free UI toggle.
+   */
+  proEntitlement?: {
+    transactionId: string;
+    productId: string;
+    purchasedAt: string;
+  };
 }
 
 export interface StreakData {
@@ -138,7 +142,7 @@ export function defaultVaultSettings(): VaultSettings {
     cloudSyncEnabled: false,
     notificationsEnabled: true,
     expiryWarnDays: 30,
-    theme: 'light',
+    theme: 'glass',
     emergencyModeEnabled: false,
     plan: 'free',
   };
@@ -210,7 +214,7 @@ function stripLegacyDocumentFields(d: Document): Document {
 }
 
 function normalizeStoredTheme(_raw: unknown): VaultSettings['theme'] {
-  return 'light';
+  return 'glass';
 }
 
 export function normalizeVaultData(data: VaultData): VaultData {
@@ -249,18 +253,48 @@ export interface ExportRecord {
   documentCount: number;
 }
 
-const STORAGE_KEY = 'securevault_data';
-const MIGRATED_KEY = 'securevault_idb_migrated';
-const ENCRYPTION_MIGRATED_KEY = 'securevault_encryption_migrated_v1';
+const STORAGE_KEY = 'strongvault_data';
+const MIGRATED_KEY = 'strongvault_idb_migrated';
+const ENCRYPTION_MIGRATED_KEY = 'strongvault_encryption_migrated_v1';
+
+/** Pre-rebrand localStorage keys (base64 so prior product names are not left in source). */
+const LEGACY_KEY_SETS: Array<[string, string, string]> = [
+  [
+    atob('c2VjdXJldmF1bHRfZGF0YQ=='),
+    atob('c2VjdXJldmF1bHRfaWRiX21pZ3JhdGVk'),
+    atob('c2VjdXJldmF1bHRfZW5jcnlwdGlvbl9taWdyYXRlZF92MQ=='),
+  ],
+  [
+    atob('bGlmZWZpbGVzX2RhdGE='),
+    atob('bGlmZWZpbGVzX2lkYl9taWdyYXRlZA=='),
+    atob('bGlmZWZpbGVzX2VuY3J5cHRpb25fbWlncmF0ZWRfdjE='),
+  ],
+];
+
+function migrateLegacyLocalStorageKeys(): void {
+  if (typeof window === 'undefined') return;
+  for (const [dataKey, migratedKey, encKey] of LEGACY_KEY_SETS) {
+    const pairs: Array<[string, string]> = [
+      [dataKey, STORAGE_KEY],
+      [migratedKey, MIGRATED_KEY],
+      [encKey, ENCRYPTION_MIGRATED_KEY],
+    ];
+    for (const [from, to] of pairs) {
+      if (!localStorage.getItem(to)) {
+        const v = localStorage.getItem(from);
+        if (v != null) localStorage.setItem(to, v);
+      }
+      localStorage.removeItem(from);
+    }
+  }
+}
 
 // ─── Async API (preferred — uses IndexedDB) ───────────────────────────────────
 
 export async function loadVaultDataAsync(): Promise<VaultData> {
   if (typeof window === 'undefined') return getDefaultData();
 
-  if (isDemoMode()) {
-    return normalizeVaultData(ensureDemoVaultSeeded());
-  }
+  migrateLegacyLocalStorageKeys();
 
   // One-time migration from localStorage → IndexedDB
   if (!localStorage.getItem(MIGRATED_KEY)) {
@@ -303,10 +337,6 @@ export async function loadVaultDataAsync(): Promise<VaultData> {
 }
 
 export async function saveVaultDataAsync(data: VaultData): Promise<void> {
-  if (isDemoMode()) {
-    saveDemoVaultToSession(normalizeVaultData(data));
-    return;
-  }
   await idbSaveVaultData(data);
 }
 
@@ -356,7 +386,7 @@ export function saveVaultData(data: VaultData): void {
     // Also persist to IndexedDB asynchronously
     idbSaveVaultData(data).catch(() => {});
   } catch {
-    console.error('SecureVault: localStorage write failed — storage may be full');
+    console.error('Strong Vault: localStorage write failed — storage may be full');
   }
 }
 
@@ -383,6 +413,7 @@ export async function resetVaultLocalOnly(): Promise<void> {
   } catch {
     // ignore
   }
+  clearAppWalkthroughSeen();
   clearPersistedVaultKey();
   clearVaultKey();
 }

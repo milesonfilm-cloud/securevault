@@ -1,5 +1,5 @@
 {
-  "name": "securevault",
+  "name": "strongvault",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -65,7 +65,11 @@
   },
   "dependencies": {
     "@capacitor/core": "7.6.2",
+    "@capacitor/filesystem": "^7.1.8",
+    "@capacitor/share": "^7.0.4",
+    "@capgo/capacitor-native-biometric": "^7.6.0",
     "@capgo/capacitor-share-target": "^7.0.8",
+    "@capgo/native-purchases": "^7.1.29",
     "@dhiwise/component-tagger": "^1.0.15",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-dialog": "^1.1.15",

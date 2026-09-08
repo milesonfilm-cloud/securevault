@@ -85,7 +85,7 @@ export default function OnboardingChecklist({ vaultData, className }: Onboarding
   return (
     <div
       className={cn(
-        'relative rounded-2xl border border-[color:var(--color-border)] bg-vault-panel p-4 shadow-vault',
+        'relative neo-card rounded-2xl p-4',
         className
       )}
     >

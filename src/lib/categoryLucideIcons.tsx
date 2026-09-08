@@ -58,12 +58,23 @@ export function CategoryLucideIcon({
   size = 16,
   className,
   style,
+  strokeWidth = 1.75,
 }: {
   name: string;
   size?: number;
   className?: string;
   style?: React.CSSProperties;
+  strokeWidth?: number;
 }) {
   const Icon = CATEGORY_LUCIDE[name] ?? FileText;
-  return <Icon size={size} className={className} style={style} aria-hidden />;
+  return (
+    <Icon
+      size={size}
+      className={className}
+      style={style}
+      strokeWidth={strokeWidth}
+      fill="none"
+      aria-hidden
+    />
+  );
 }

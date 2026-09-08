@@ -17,7 +17,7 @@ export default function DemoModeBanner() {
 
   return (
     <div
-      className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-amber-300/50 bg-amber-50 px-4 py-2.5 text-[#212121]"
+      className="sticky top-0 z-40 flex flex-wrap items-center justify-between gap-3 border-b border-amber-400/35 bg-amber-100/80 px-4 py-2.5 text-amber-950 backdrop-blur-xl"
       role="status"
     >
       <div className="flex min-w-0 items-center gap-2">

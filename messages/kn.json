@@ -23,6 +23,22 @@
     "collapse": "ಸಂಕುಚಿಸಿ",
     "expandSidebar": "ಸೈಡ್‌ಬಾರ್ ವಿಸ್ತರಿಸಿ"
   },
+  "walkthrough": {
+    "skip": "ಬಿಟ್ಟುಬಿಡಿ",
+    "next": "ಮುಂದೆ",
+    "done": "ಅರ್ಥವಾಯಿತು",
+    "stepOf": "{current} / {total}",
+    "familyTitle": "ಕುಟುಂಬ ಕಾರ್ಡ್‌ಗಳು",
+    "familyBody": "ಸದಸ್ಯರನ್ನು ಬದಲಾಯಿಸಲು ಎಡ ಅಥವಾ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ. ಪ್ರತಿ ಕಾರ್ಡ್ ನಿಮ್ಮ ವಾಲ್ಟ್‌ನ ಒಬ್ಬ ವ್ಯಕ್ತಿ.",
+    "familyEmptyBody": "ಇದು ಹೋಮ್. ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿದರೆ ಅವರ ಕಾರ್ಡ್ ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತದೆ.",
+    "addTitle": "ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+    "addBody": "ಯಾರನ್ನಾದರೂ ಸೇರಿಸಲು ಪ್ಲಸ್ ಟ್ಯಾಪ್ ಮಾಡಿ. ಅವರ ದಾಖಲೆಗಳು ಅವರ ಪ್ರೊಫೈಲ್ ಕೆಳಗೆ ಇರುತ್ತವೆ.",
+    "menuTitle": "ಆ್ಯಪ್ ಮೆನು",
+    "menuBody": "ವಾಲ್ಟ್, ನವೀಕರಣಗಳು, ಪ್ರಗತಿ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಇಲ್ಲಿವೆ — ಮುಗಿದ ನಂತರ ಲಾಕ್ ಕೂಡ.",
+    "docsTitle": "ದಾಖಲೆಗಳು",
+    "docsBody": "ಪ್ರತಿ ಸದಸ್ಯರ ದಾಖಲೆಗಳು ಅವರ ಕಾರ್ಡ್ ಕೆಳಗೆ ಇರುತ್ತವೆ. ID, ಕಾರ್ಡ್‌ಗಳು, ಫೈಲ್‌ಗಳನ್ನು ಸೇರಿಸಿ — ಅವು ಅದೇ ವ್ಯಕ್ತಿಗೆ ಜೋಡಿಯಾಗಿರುತ್ತವೆ.",
+    "docsEmptyBody": "ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿದ ನಂತರ ಅವರ ದಾಖಲೆಗಳು ಮತ್ತು ದಾಖಲೆ ಸೇರಿಸಿ ಬಟನ್ ಕಾರ್ಡ್ ಕೆಳಗೆ ಕಾಣಿಸುತ್ತವೆ."
+  },
   "familyManagement": {
     "heroTitle": "ಕುಟುಂಬ ಸದಸ್ಯರು",
     "addMemberFab": "ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
@@ -68,6 +84,12 @@
     "emptyTitle": "ಇನ್ನೂ ಕುಟುಂಬ ಸದಸ್ಯರಿಲ್ಲ",
     "emptyBody": "ಕಾರ್ಡ್ ಸ್ಟಾಕ್ ಮತ್ತು ತ್ವರಿತ ಪ್ರವೇಶ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನೋಡಲು ಯಾರನ್ನಾದರೂ ಸೇರಿಸಿ.",
     "addMember": "ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+    "addMemberFab": "ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ",
+    "searchAria": "ಸದಸ್ಯರು ಮತ್ತು ದಾಖಲೆಗಳನ್ನು ಹುಡುಕಿ",
+    "searchPlaceholder": "ಸದಸ್ಯರು ಅಥವಾ ದಾಖಲೆಗಳನ್ನು ಹುಡುಕಿ",
+    "noSearchResults": "ಆ ಹುಡುಕಾಟಕ್ಕೆ ಹೊಂದುವ ಸದಸ್ಯರಿಲ್ಲ.",
+    "swipeCardsHint": "ಕಾರ್ಡ್‌ಗಳನ್ನು ಸ್ವೈಪ್ ಮಾಡಿ",
+    "categoriesHeading": "ವರ್ಗಗಳು ({count})",
     "privacy": "ಗೌಪ್ಯತೆ ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
     "openVault": "ದಾಖಲೆ ತಿಜೋರಿ ತೆರೆಯಿರಿ",
     "refreshDocumentCounts": "ದಾಖಲೆ ಎಣಿಕೆಗಳನ್ನು ರಿಫ್ರೆಶ್ ಮಾಡಿ",
@@ -135,16 +157,17 @@
     "fieldPlaceholder": "{field} ಅನ್ನು ನಮೂದಿಸಿ",
     "saveLocalSubtitle": "ಎಲ್ಲಾ ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಸ್ಥಳೀಯವಾಗಿ ಉಳಿಸಲಾಗುತ್ತದೆ",
     "scanTitle": "ಕ್ಯಾಮೆರಾ ಬಳಸಿ ದಾಖಲೆಯನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ ಮತ್ತು ಫೀಲ್ಡ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಭರ್ತಿ ಮಾಡಿ",
-    "familyMemberLabel": "ಕುಟುಂಬ ಸದಸ್ಯ *",
+    "familyMemberLabel": "ಕುಟುಂಬ ಸದಸ್ಯ",
     "selectFamilyMember": "ಒಬ್ಬ ಕುಟುಂಬ ಸದಸ್ಯರನ್ನು ಆಯ್ಕೆಮಾಡಿ",
-    "categoryLabel": "ವರ್ಗ *",
+    "categoryLabel": "ವರ್ಗ",
     "selectCategory": "ಒಂದು ವರ್ಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
     "folderLabel": "ಫೋಲ್ಡರ್",
     "folderHint": "ಐಚ್ಛಿಕ — ಈ ದಾಖಲೆಯನ್ನು ಒಂದು ಫೋಲ್ಡರ್‌ಗೆ ನಿಯೋಜಿಸಿ, ಅಥವಾ \"ಫೋಲ್ಡರ್ ಇಲ್ಲ\" ಎಂದು ಬಿಡಿ.",
     "noFolders": "ನಿಮ್ಮ ತಿಜೋರಿಯಲ್ಲಿ ಇನ್ನೂ ಫೋಲ್ಡರ್‌ಗಳಿಲ್ಲ.",
-    "titleLabel": "ದಾಖಲೆ ಶೀರ್ಷಿಕೆ *",
+    "titleLabel": "ದಾಖಲೆ ಶೀರ್ಷಿಕೆ",
     "titleHint": "ನೆನಪಿಡಬಹುದಾದ ಹೆಸರು — ಉದಾ. \"ಆಧಾರ್ ಕಾರ್ಡ್\"",
     "titleRequired": "ದಾಖಲೆ ಶೀರ್ಷಿಕೆ ಅಗತ್ಯವಿದೆ",
+    "titleTooShort": "ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳನ್ನು ನಮೂದಿಸಿ",
     "titlePlaceholder": "ಉದಾ. ಆಧಾರ್ ಕಾರ್ಡ್",
     "reviewOcrTitle": "ಹೊರತೆಗೆದ ಫೀಲ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ",
     "reviewOcrBody": "ಪಠ್ಯವನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಗುರುತಿಸಲಾಗಿದೆ. ಉಳಿಸುವ ಮೊದಲು ID ಗಳು ಮತ್ತು ದಿನಾಂಕಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
@@ -177,10 +200,6 @@
     "emergencySubtitle": "ವಿಶ್ವಾಸಾರ್ಹ ಸಂಪರ್ಕ, PDF ಬಂಡಲ್, ಹಸ್ತಾಂತರ ಲಿಂಕ್‌ಗಳು →",
     "language": "ಭಾಷೆ",
     "languageSubtitle": "ನಿಮ್ಮ ಆದ್ಯತೆಯ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.",
-    "appearance": "ರೂಪ",
-    "appearanceSubtitle": "ಲೈಟ್ ಪಾಸ್ಟಲ್ ಹೋಮ್ ಅಥವಾ ನಿಯಾನ್ ತಿಜೋರಿ ಶೈಲಿ. ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.",
-    "themeNeon": "ನಿಯಾನ್ ತಿಜೋರಿ",
-    "themePastel": "ಪಾಸ್ಟಲ್ ಕುಟುಂಬ",
     "permissions": "ಅನುಮತಿಗಳು",
     "logout": "ಲಾಗ್ ಔಟ್",
     "privacyTitle": "ಗೌಪ್ಯತೆ",
@@ -235,15 +254,15 @@
     "kickerYourData": "ನಿಮ್ಮ ಡೇಟಾ",
     "kickerOrganize": "ಸಂಘಟಿಸಿ",
     "kickerStaySafe": "ಸುರಕ್ಷಿತವಾಗಿರಿ",
-    "titleSecureVault": "SecureVault",
+    "titleStrongVault": "Strong Vault",
     "titlePrivateVault": "ಖಾಸಗಿ ದಾಖಲೆ ತಿಜೋರಿ",
     "titleBuiltFamilies": "ಕುಟುಂಬಗಳಿಗಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ",
     "titleBackup": "ನಿಯಮಿತವಾಗಿ ಬ್ಯಾಕಪ್ ಮಾಡಿ",
-    "bodySetup": "ನಿಮ್ಮ ತಿಜೋರಿಯನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲು ಬಲವಾದ ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ. ಏನೂ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ — ನಿಮ್ಮ ರಹಸ್ಯಗಳು ಈ ಸಾಧನದಲ್ಲಿಯೇ ಉಳಿಯುತ್ತವೆ.",
-    "bodyLogin": "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ನೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ. ಎಲ್ಲವೂ ಸ್ಥಳೀಯ ಮತ್ತು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಉಳಿಯುತ್ತದೆ.",
-    "bodyVault": "ಸರ್ಕಾರಿ ID ಗಳು, ಬ್ಯಾಂಕ್ ವಿವರಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಹೆಚ್ಚಿನವು — ವರ್ಗೀಕರಿಸಲ್ಪಟ್ಟಿವೆ ಮತ್ತು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿವೆ.",
-    "bodyFamily": "ಮನೆಯ ದಾಖಲೆಗಳು ಸಂಘಟಿತವಾಗಿರಲು ದಾಖಲೆಗಳನ್ನು ಕುಟುಂಬ ಸದಸ್ಯರಿಗೆ ಲಿಂಕ್ ಮಾಡಿ.",
-    "bodyBackup": "ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ ಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ JSON ಬ್ಯಾಕಪ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಿ.",
+    "bodySetup": "Create a strong password to encrypt your vault. Nothing leaves this phone — your secrets stay on-device.",
+    "bodyLogin": "Sign in with your password to decrypt your vault. Everything stays local and offline on this device.",
+    "bodyVault": "Store government IDs, bank details, passwords, and more — organized by category and encrypted at rest.",
+    "bodyFamily": "Link documents to family members so household records stay structured and easy to find.",
+    "bodyBackup": "Export encrypted JSON backups from Settings to a file you keep. There is no cloud sync — you control every copy.",
     "skip": "ಪರಿಚಯವನ್ನು ಬಿಟ್ಟುಬಿಡಿ",
     "next": "ಮುಂದೆ",
     "createPassword": "ಪಾಸ್‌ವರ್ಡ್ ರಚಿಸಿ",
@@ -251,58 +270,58 @@
     "cards": {
       "welcome": [
         {
-          "t": "ಸ್ಥಳೀಯ-ಮೊದಲ ತಿಜೋರಿ",
-          "b": "ನಿಮ್ಮ ಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ ಡೇಟಾ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಯುತ್ತದೆ — ಡೀಫಾಲ್ಟ್ ಆಗಿ ಏನೂ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ."
+          "t": "On this device only",
+          "b": "Your vault never syncs to the cloud. Encrypted data stays in this app on your phone."
         },
         {
-          "t": "ಬಲವಾದ ಎನ್‌ಕ್ರಿಪ್ಷನ್",
-          "b": "ಇಂಡಸ್ಟ್ರಿ-ಸ್ಟಾಂಡರ್ಡ್ AES ದಾಖಲೆಗಳನ್ನು ರೆಸ್ಟ್‌ನಲ್ಲಿ ರಕ್ಷಿಸುತ್ತದೆ."
+          "t": "Strong encryption",
+          "b": "AES encryption locks records at rest. Only your password can unlock them on this device."
         },
         {
-          "t": "ವಿಶ್ವಾಸಕ್ಕಾಗಿ ನಿರ್ಮಿಸಲಾಗಿದೆ",
-          "b": "ಯಾವಾಗ ಬೇಕಾದರೂ ಟೂರ್ ಬಿಟ್ಟುಬಿಡಿ ಅಥವಾ ಮತ್ತೆ ನೋಡಿ; ನಿಮ್ಮ ತಿಜೋರಿ ಖಾಸಗಿ ಮತ್ತು ಆಫ್‌ಲೈನ್."
+          "t": "Private by design",
+          "b": "No account server for vault contents. Skip or replay this tour anytime."
         }
       ],
       "vault": [
         {
-          "t": "ವರ್ಗಗಳು ಮತ್ತು ಸ್ಪಷ್ಟತೆ",
-          "b": "ID, ಹಣಕಾಸು, ವೈದ್ಯಕೀಯ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಗುಂಪು ಮಾಡಿ ಸುಲಭವಾಗಿ ಹುಡುಕಿ."
+          "t": "Categories & clarity",
+          "b": "Group IDs, finance, medical, and passwords so everything is easy to find."
         },
         {
-          "t": "ನೀವು ಅನ್‌ಲಾಕ್ ಮಾಡುವವರೆಗೆ ಲಾಕ್",
-          "b": "ನೀವು ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸುವವರೆಗೆ ಸಂವೇದನಶೀಲ ಫೀಲ್ಡ್‌ಗಳು ಸೈಫರ್‌ಟೆಕ್ಸ್ಟ್ ಆಗಿರುತ್ತವೆ."
+          "t": "Locked until you unlock",
+          "b": "Sensitive fields stay encrypted until you enter your password on this device."
         },
         {
-          "t": "ನವೀಕರಣಗಳು ಮತ್ತು ದಿನಾಂಕಗಳು",
-          "b": "ಪ್ರಮುಖ ದಾಖಲೆಗಳು ತಪ್ಪಿಹೋಗದಂತೆ ಅವಧಿ ಮೀರುವಿಕೆ ಮತ್ತು ನವೀಕರಣಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ."
+          "t": "Renewals & dates",
+          "b": "Track expiries and renewals so important documents never sneak up on you."
         }
       ],
       "family": [
         {
-          "t": "ಸದಸ್ಯ-ವಾರು ಸ್ಥಳಗಳು",
-          "b": "ರಚನಾತ್ಮಕ ಮನೆಯ ನೋಟಕ್ಕಾಗಿ ದಾಖಲೆಗಳನ್ನು ಕುಟುಂಬ ಸದಸ್ಯರಿಗೆ ಲಿಂಕ್ ಮಾಡಿ."
+          "t": "Per-member spaces",
+          "b": "Link documents to family members for a structured household view."
         },
         {
-          "t": "ಮನೆಯ ಮುಖಪುಟ",
-          "b": "ಸದಸ್ಯರ ಪುಟ ನಿಮ್ಮ ಲ್ಯಾಂಡಿಂಗ್ ಸ್ಪಾಟ್ — ಪ್ರೊಫೈಲ್‌ಗಳು, ಟೈಲ್‌ಗಳು ಮತ್ತು ಚಟುವಟಿಕೆ."
+          "t": "Household home",
+          "b": "The members page is your landing spot — profiles, tiles, and activity at a glance."
         },
         {
-          "t": "ಹಂಚಿದ ಮನಸ್ಸಿನ ಶಾಂತಿ",
-          "b": "ಗೊಂದಲ ಶೇರ್ಡ್ ಫೋಲ್ಡರ್‌ಗಳಿಲ್ಲದೆ ಎಲ್ಲರ ಅಗತ್ಯವಸ್ತುಗಳನ್ನು ಸಂಘಟಿತವಾಗಿಡಿ."
+          "t": "Shared peace of mind",
+          "b": "Keep everyone’s essentials organized without messy shared folders or cloud accounts."
         }
       ],
       "backup": [
         {
-          "t": "ಎನ್‌ಕ್ರಿಪ್ಟೆಡ್ ರಫ್ತುಗಳು",
-          "b": "ನಿಮಗೆ ಬೇಕಾದಾಗ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಂದ JSON ಬ್ಯಾಕಪ್‌ಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ."
+          "t": "Encrypted file exports",
+          "b": "From Settings, download an encrypted JSON backup you can store offline yourself."
         },
         {
-          "t": "ರಿಕವರಿ ಯೋಜನೆ",
-          "b": "ನೀವು ರೀಸೆಟ್ ಮಾಡಿದರೆ ಅಥವಾ ಸಾಧನವನ್ನು ಬದಲಾಯಿಸಿದರೆ, ಇತ್ತೀಚಿನ ಬ್ಯಾಕಪ್ ನಿಮ್ಮ ಸುರಕ್ಷತೆ ಜಾಲ."
+          "t": "Your recovery plan",
+          "b": "If you reset the app or change phones, restore from a backup file you saved earlier."
         },
         {
-          "t": "ನೀವು ಸಮಯವನ್ನು ನಿಯಂತ್ರಿಸುತ್ತೀರಿ",
-          "b": "ಐಚ್ಛಿಕ ಕ್ಲೌಡ್ ಸಿಂಕ್ — ಡೀಫಾಲ್ಟ್ ಆಗಿ ಅಲ್ಲ, ನಿಮ್ಮ ಆಯ್ಕೆಯಂತೆ."
+          "t": "No cloud sync",
+          "b": "Strong Vault does not upload or sync your vault. Backups only happen when you export a file."
         }
       ]
     }
@@ -317,7 +336,7 @@
     "ml": "🇮🇳 മലയാളം"
   },
   "brand": {
-    "wordmarkSecure": "SECURE",
+    "wordmarkSecure": "STRONG",
     "wordmarkVault": "VAULT",
     "tagline": "ಮುಖ್ಯವಾದುದನ್ನು ರಕ್ಷಿಸಿ",
     "ariaWordmark": "ಸಿಕ್ಯೂರ್‌ವಾಲ್ಟ್",
@@ -326,8 +345,8 @@
   "aboutPage": {
     "title": "ಬಗ್ಗೆ",
     "intro": "ನಿಮ್ಮ ಕುಟುಂಬಕ್ಕಾಗಿ ಖಾಸಗಿ ದಾಖಲೆಗಳ ವಾಲ್ಟ್ — ಈ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹಿತ, ನಿಮ್ಮ ನಿಯಂತ್ರಣದಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿದೆ.",
-    "whatHeading": "SecureVault ಎಂದರೇನು",
-    "whatP1a": "SecureVault ಸೂಕ್ಷ್ಮ ವೈಯಕ್ತಿಕ ಮತ್ತು ಕುಟುಂಬದ ಡೇಟಾವನ್ನು ",
+    "whatHeading": "Strong Vault ಎಂದರೇನು",
+    "whatP1a": "Strong Vault ಸೂಕ್ಷ್ಮ ವೈಯಕ್ತಿಕ ಮತ್ತು ಕುಟುಂಬದ ಡೇಟಾವನ್ನು ",
     "whatP1b": "ಈ ಸಾಧನದಲ್ಲಿ",
     "whatP1c": " ಸಂಗ್ರಹಿಸುತ್ತದೆ ಮತ್ತು ವ್ಯವಸ್ಥೆಗೊಳಿಸುತ್ತದೆ, ಈ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಆಗಿದೆ. ವಾಲ್ಟ್ ವಿಷಯವನ್ನು ಅಪ್ಲಿಕೇಶನ್-ನಡೆಸುವ ಕ್ಲೌಡ್‌ಗೆ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ — ನೀವು ಆಯ್ಕೆಮಾಡಿದಾಗ ಮಾತ್ರ ಬ್ಯಾಕಪ್ ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮಾಡುತ್ತೀರಿ (ಉದಾ. JSON ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಅಥವಾ ನೀವು ಸಕ್ರಿಯಗೊಳಿಸಿದ ಐಚ್ಛಿಕ ಸಿಂಕ್).",
     "whatP2a": "ನೀವು ",
@@ -339,9 +358,9 @@
     "termsHeading": "ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು",
     "termsEffective": "ಅಪ್ಲಿಕೇಶನ್ ಬಳಕೆಯಿಂದ ಪ್ರಭಾವಿ · ಈ ಬಿಲ್ಡ್‌ನೊಂದಿಗೆ ಕೊನೆಯ ನವೀಕರಣ",
     "t1Title": "೧. ಒಪ್ಪಿಗೆ",
-    "t1Body": "SecureVault ಅನ್ನು ಸ್ಥಾಪಿಸುವುದು, ಪ್ರವೇಶಿಸುವುದು ಅಥವಾ ಬಳಸುವುದರ ದ್ವಾರಾ ನೀವು ಈ ನಿಯಮಗಳು ಮತ್ತು ಗೌಪ್ಯತಾ ನೀತಿಗೆ ಒಪ್ಪುತ್ತೀರಿ. ಒಪ್ಪದಿದ್ದರೆ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಬೇಡಿ.",
+    "t1Body": "Strong Vault ಅನ್ನು ಸ್ಥಾಪಿಸುವುದು, ಪ್ರವೇಶಿಸುವುದು ಅಥವಾ ಬಳಸುವುದರ ದ್ವಾರಾ ನೀವು ಈ ನಿಯಮಗಳು ಮತ್ತು ಗೌಪ್ಯತಾ ನೀತಿಗೆ ಒಪ್ಪುತ್ತೀರಿ. ಒಪ್ಪದಿದ್ದರೆ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಬೇಡಿ.",
     "t2Title": "೨. ಸೇವೆ",
-    "t2Body": "SecureVault ಕ್ಲೈಂಟ್-ಸೈಡ್ ಸಾಫ್ಟ್‌ವೇರ್ ಆಗಿದ್ದು ಸ್ಥಳೀಯವಾಗಿ ದಾಖಲೆಗಳು ಮತ್ತು ಮೆಟಾಡೇಟಾವನ್ನು ಸಂಗ್ರಹಿಸಲು ಮತ್ತು ವ್ಯವಸ್ಥೆಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ. ವೈಶಿಷ್ಟ್ಯಗಳಲ್ಲಿ ಎಕ್ಸ್‌ಪೋರ್ಟ್‌ಗಳು, ಐಚ್ಛಿಕ ಸಂಯೋಜನೆಗಳು ಅಥವಾ ಚಂದಾದಾರಿಕೆ ಹಂತಗಳು (ಉದಾ. Pro) ಇರಬಹುದು. ನಿಖರ ವೈಶಿಷ್ಟ್ಯಗಳು ನೀವು ಚಲಾಯಿಸುವ ಆವೃತ್ತಿಯನ್ನು ಅವಲಂಬಿಸಿವೆ.",
+    "t2Body": "Strong Vault ಕ್ಲೈಂಟ್-ಸೈಡ್ ಸಾಫ್ಟ್‌ವೇರ್ ಆಗಿದ್ದು ಸ್ಥಳೀಯವಾಗಿ ದಾಖಲೆಗಳು ಮತ್ತು ಮೆಟಾಡೇಟಾವನ್ನು ಸಂಗ್ರಹಿಸಲು ಮತ್ತು ವ್ಯವಸ್ಥೆಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ. ವೈಶಿಷ್ಟ್ಯಗಳಲ್ಲಿ ಎಕ್ಸ್‌ಪೋರ್ಟ್‌ಗಳು, ಐಚ್ಛಿಕ ಸಂಯೋಜನೆಗಳು ಅಥವಾ ಚಂದಾದಾರಿಕೆ ಹಂತಗಳು (ಉದಾ. Pro) ಇರಬಹುದು. ನಿಖರ ವೈಶಿಷ್ಟ್ಯಗಳು ನೀವು ಚಲಾಯಿಸುವ ಆವೃತ್ತಿಯನ್ನು ಅವಲಂಬಿಸಿವೆ.",
     "t3Title": "೩. ನಿಮ್ಮ ಜವಾಬ್ದಾರಿಗಳು",
     "t3Body": "ನಿಮ್ಮ ಸಾಧನಗಳು, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಯಾವುದೇ ಬ್ಯಾಕಪ್‌ಗಳಿಗೆ ನೀವು ಜವಾಬ್ದಾರರು. ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಅಕ್ರಮ ಉದ್ದೇಶಗಳಿಗೆ ಅಥವಾ ಮೂರನೇ ವ್ಯಕ್ತಿಯ ಹಕ್ಕುಗಳ ಉಲ్లಂಘನೆಯಾಗಿ ಬಳಸ ಬಾರದು. ನೀವು ಹೊಂದಲು ಮತ್ತು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲು ಅನುಮತಿಸಲಾದ ಡೇಟಾವನ್ನು ಮಾತ್ರ ಸಂಗ್ರಹಿಸಿ.",
     "t4Title": "೪. ಬಳಕೆಯ ಪರವಾನಗಿ",
@@ -356,7 +375,7 @@
     "t8Body": "ಗೌಪ್ಯತೆ ಸಂಬಂಧಿತ ವಿನಂತಿಗಳಿಗೆ ಗೌಪ್ಯತಾ ನೀತಿಯಲ್ಲಿ ಸಂಪರ್ಕ ಮಾಹಿತಿ ನೋಡಿ. ಇತರ ಹಕ್ಕುಪತ್ರ ಸೂಚನೆಗಳಿಗೆ ಅಪ್ಲಿಕೇಶನ್ ಅಥವಾ ವಿತರಣಾ ಪಟ್ಟಿಯಲ್ಲಿ ಪ್ರಕಟಿಸಿದ ಚಾನಲ್ ಬಳಸಿ.",
     "disclaimerHeading": "ಹಿನಾಯ",
     "disclaimerReadCarefully": "ಎಚ್ಚರಿಕೆಯಿಂದ ಓದಿ",
-    "disclaimerP1": "SecureVault <asis>«ಯಥಾವತ್»</asis> ಮತ್ತು <asavail>«ಲಭ್ಯವಿರುವಂತೆ»</asis> ಒದಗಿಸಲಾಗಿದೆ, ಕಾನೂನು ಅನುಮತಿಸುವ ಪೂರ್ಣ ವ್ಯಾಪ್ತಿಗೆ ಯಾವುದೇ ಖಾತರಿ ಇಲ್ಲದೆ. ಡೆವಲಪರ್‌ಗಳು ಮತ್ತು ಕೊಡುಗೆದಾರರು ಡೇಟಾ ಕಳೆದುಹೋಗುವಿಕೆ, ವಿಫಲ ಬ್ಯಾಕಪ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ, ಸಾಧನ ಅಥವಾ ಬ್ರೌಸರ್ ಸಮಸ್ಯೆಗಳು, ಮರೆತ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಥವಾ ಸಾಫ್ಟ್‌ವೇರ್ ದೋಷಗಳು ಸೇರಿದಂತೆ ನಷ್ಟಕ್ಕೆ <noliab>ಹೊಣೆಗಾರರಲ್ಲ</noliab>. ಕಾನೂನು ಅನುಮತಿಸುವ ಗರಿಷ್ಠ ಮಟ್ಟದವರೆಗೆ ಪರೋಕ್ಷ, ಪ್ರತಿಫಲ ಅಥವಾ ಶಿಕ್ಷಾತ್ಮಕ ನಷ್ಟಗಳಿಗೆ ಯಾವುದೇ ಹೊಣೆಗಾರಿಕೆ ಇಲ್ಲ.",
+    "disclaimerP1": "Strong Vault <asis>«ಯಥಾವತ್»</asis> ಮತ್ತು <asavail>«ಲಭ್ಯವಿರುವಂತೆ»</asis> ಒದಗಿಸಲಾಗಿದೆ, ಕಾನೂನು ಅನುಮತಿಸುವ ಪೂರ್ಣ ವ್ಯಾಪ್ತಿಗೆ ಯಾವುದೇ ಖಾತರಿ ಇಲ್ಲದೆ. ಡೆವಲಪರ್‌ಗಳು ಮತ್ತು ಕೊಡುಗೆದಾರರು ಡೇಟಾ ಕಳೆದುಹೋಗುವಿಕೆ, ವಿಫಲ ಬ್ಯಾಕಪ್ ಅಥವಾ ಮರುಸ್ಥಾಪನೆ, ಸಾಧನ ಅಥವಾ ಬ್ರೌಸರ್ ಸಮಸ್ಯೆಗಳು, ಮರೆತ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಅಥವಾ ಸಾಫ್ಟ್‌ವೇರ್ ದೋಷಗಳು ಸೇರಿದಂತೆ ನಷ್ಟಕ್ಕೆ <noliab>ಹೊಣೆಗಾರರಲ್ಲ</noliab>. ಕಾನೂನು ಅನುಮತಿಸುವ ಗರಿಷ್ಠ ಮಟ್ಟದವರೆಗೆ ಪರೋಕ್ಷ, ಪ್ರತಿಫಲ ಅಥವಾ ಶಿಕ್ಷಾತ್ಮಕ ನಷ್ಟಗಳಿಗೆ ಯಾವುದೇ ಹೊಣೆಗಾರಿಕೆ ಇಲ್ಲ.",
     "disclaimerP2": "ಇಲ್ಲಿ ಯಾವುದೂ ಕಾನೂನು, ಹಣಕಾಸು ಅಥವಾ ವೃತ್ತಿಪರ ಸಲಹೆ ಅಲ್ಲ. ಮೇಲಿನ ನಿಯಮಗಳು ಈ ಸಾರಾಂಶದ ಸಾಮಾನ್ಯ ಪೂರಕ; ವಿರೋಧವಿದ್ದರೆ ಸ್ಪಷ್ಟ ಅಪಾಯ ಹೇಳಿಕೆಗಳು ಮತ್ತು ಅನ್ವಯವಾಗುವ ಕಾನೂನು ಆಳಿಕೆ ನೀಡುತ್ತದೆ."
   },
   "categories": {
@@ -404,6 +423,7 @@
         "card_number_last_4": "ಕೊನೆಯ 4 ಅಂಕೆಗಳು",
         "card_network": "ಕಾರ್ಡ್ ನೆಟ್‌ವರ್ಕ್",
         "expiry": "ಮುಕ್ತಾಯ (MM/YYYY)",
+        "cvv": "CVV",
         "credit_limit": "ಕ್ರೆಡಿಟ್ ಮಿತಿ",
         "billing_cycle": "ಬಿಲ್ಲಿಂಗ್ ಸೈಕಲ್ ದಿನಾಂಕ",
         "customer_care": "ಗ್ರಾಹಕ ಸೇವೆ ಸಂಖ್ಯೆ"
@@ -649,7 +669,7 @@
     "upgradeBadge": "Pro ಗೆ ಅಪ್‌ಗ್ರೇಡ್",
     "heroUnlock": "ಪೂರ್ಣ {brand} ಅನ್ಲಾಕ್",
     "heroUnlockSub": "ಕುಟುಂಬ ದಾಖಲೆಗಳಿಗೆ ಬೇಕಾದುದೆಲ್ಲ — ಅನಿಯಮಿತ, ಸುರಕ್ಷಿತ, ಯಾವಾಗಲೂ ಹತ್ತಿರ.",
-    "planName": "SecureVault Pro",
+    "planName": "Strong Vault Pro",
     "pricePerYear": "/ ವರ್ಷ",
     "subscriptionNote": "ವಾರ್ಷಿಕ ಚಂದಾದಾರಿಕೆ",
     "getProCta": "Pro ಪಡೆಯಿರಿ",
@@ -661,7 +681,7 @@
     "tableFeature": "ವೈಶಿಷ್ಟ್ಯ",
     "tableFree": "ಉಚಿತ",
     "tablePro": "Pro",
-    "getProPlayCta": "Google Play ನಲ್ಲಿ SecureVault Pro",
+    "getProPlayCta": "Google Play ನಲ್ಲಿ Strong Vault Pro",
     "alreadyPurchased": "ಈಗಾಗಲೇ ಖರೀದಿಸಿದ್ದೀರಾ?",
     "activating": "ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ…",
     "tapActivate": "ಸಕ್ರಿಯಗೊಳಿಸಲು ಇಲ್ಲಿ ಟ್ಯಾಪ್",
@@ -749,7 +769,7 @@
     },
     "heroOnProLead": "ನೀವು ಇದ್ದೀರಿ",
     "heroUnlockLead": "ಪೂರ್ಣ ಅನ್ಲಾಕ್",
-    "brandShort": "SecureVault"
+    "brandShort": "Strong Vault"
   },
   "dangerZone": {
     "title": "ಅಪಾಯ ಪ್ರದೇಶ",
@@ -795,12 +815,16 @@
     "addPhotoBtn": "ಫೋಟೋ ಸೇರಿಸಿ",
     "removePhoto": "ತೆಗೆದುಹಾಕಿ",
     "photoHint": "ಫೋಟೋಗಳು ನಿಮ್ಮ ವಾಲ್ಟ್‌ನಲ್ಲಿ ಸ್ಥಳೀಯವಾಗಿ ಇರುತ್ತವೆ ಮತ್ತು ಗಾತ್ರ ಕಡಿಮೆ ಮಾಡಲಾಗುತ್ತದೆ।",
-    "fullNameLabel": "ಪೂರ್ಣ ಹೆಸರು *",
+    "fullNameLabel": "ಪೂರ್ಣ ಹೆಸರು",
     "namePlaceholder": "ಉದಾ. ಅರ್ಜುನ್ ಶರ್ಮ",
     "nameRequired": "ಪೂರ್ಣ ಹೆಸರು ಅಗತ್ಯ",
-    "relationshipLabel": "ಬಾಂಧವ್ಯ *",
+    "nameTooShort": "ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳನ್ನು ನಮೂದಿಸಿ",
+    "nameFormat": "ಅಕ್ಷರ, ಸ್ಪೇಸ್, ಹೈಫನ್ ಅಥವಾ ಅಪಾಸ್ಟ್ರಫಿ ಬಳಸಿ (ಉದಾ. ಅರ್ಜುನ್ ಶರ್ಮ)",
+    "relationshipLabel": "ಬಾಂಧವ್ಯ",
     "relationshipRequired": "ಬಾಂಧವೇಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
     "dobLabel": "ಜನ್ಮ ದಿನಾಂಕ",
+    "dobInvalid": "ಮಾನ್ಯವಾದ ಜನ್ಮ ದಿನಾಂಕ ನಮೂದಿಸಿ (ವರ್ಷ 1900 ಅಥವಾ ನಂತರ)",
+    "dobFuture": "ಜನ್ಮ ದಿನಾಂಕ ಭವಿಷ್ಯದ್ದಾಗಿರಬಾರದು",
     "profileColorHint": "ಫೋಟೋ ಇಲ್ಲದಿದ್ದಾಗ ಮತ್ತು ದಾಖಲೆ ಬ್ಯಾಜ್‌ಗಳಿಗೆ ಬಳಸಲಾಗುತ್ತದೆ",
     "saving": "ಉಳಿಸಲಾಗುತ್ತಿದೆ…",
     "saveChanges": "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ",
@@ -854,7 +878,7 @@
     "removePhotoTitle": "ಫೋಟೋ ತೆಗೆದುಹಾಕಿ"
   },
   "sharePage": {
-    "brandStamp": "SecureVault",
+    "brandStamp": "Strong Vault",
     "viewOnlySubtitle": "ಹಂಚಿದ ದಾಖಲೆ (ನೋಡು ಮಾತ್ರ)",
     "openFailed": "ಈ ಹಂಚಿದ ದಾಖಲೆ ತೆರೆಯಲಾಗಲಿಲ್ಲ.",
     "missingKey": "ಈ ಲಿಂಕ್ ಅಪೂರ್ಣ — # ನಂತರದ ಭಾಗ ಸೇರಿದಂತೆ ಪೂರ್ಣ URL ತೆರೆಯಿರಿ।",
@@ -863,11 +887,11 @@
   "handoverPage": {
     "subtitle": "ತುರ್ತು ಹ್ಯಾಂಡ್ಓವರ್ (ಓದು ಮಾತ್ರ)",
     "notesLabel": "ಟಿಪ್ಪಣಿಗಳು:",
-    "brandStamp": "SecureVault",
+    "brandStamp": "Strong Vault",
     "missingKey": "# ಸೇರಿದಂತೆ ಪूರ್ಣ ಲಿಂಕ್ ತೆರೆಯಿರಿ।",
     "notFound": "ಈ ಹ್ಯಾಂಡ್ಓವರ್ ಲಿಂಕ್ ಅವಧಿ ಮುಗಿದಿದೆ ಅಥವಾ ಬದಲಾಯಿಸಲಾಗಿದೆ।",
     "openFailed": "ಈ ಹ್ಯಾಂಡ್ಓವರ್ ಬಂಡಲ್ ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ।",
-    "footerLine": "SecureVault ನಿಂದ ಹಂಚಿದೆ — ಓದು ಮಾತ್ರ · ರಚಿಸಲಾಗಿದೆ {date}"
+    "footerLine": "Strong Vault ನಿಂದ ಹಂಚಿದೆ — ಓದು ಮಾತ್ರ · ರಚಿಸಲಾಗಿದೆ {date}"
   },
   "progressPage": {
     "addMembersForRings": "ವ್ಯಕ್ತಿಗತ ಉಂಗುರಗಳಿಗೆ ಸದಸ್ಯರನ್ನು ಸೇರಿಸಿ.",
@@ -909,7 +933,7 @@
   "consentBanner": {
     "ariaLabel": "ಗೌಪ್ಯತೆ ಆದ್ಯತೆಗಳು",
     "title": "ಗೌಪ್ಯತೆ ಮತ್ತು ಡೇಟಾ ಆದ್ಯತೆಗಳು",
-    "body": "SecureVault ನಿಮ್ಮ ಎಲ್ಲಾ ದಾಖಲೆಗಳನ್ನು <device>ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಗೂಢಲಿಪೀಕೃತ</device>ವಾಗಿ ಸಂಗ್ರಹಿಸುತ್ತದೆ। AI ದಾಖಲೆ ಸ್ಕ್ಯಾನ್ ಬಳಸುವಾಗ OCR ಪಠ್ಯವನ್ನು Anthropic ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ। ಅನಾಲಿಟಿಕ್ಸ್ ಅಪ್ಲಿಕೇಶನ್ ಸುಧಾರಣೆಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ। ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗಲೂ ಬದಲಾಯಿಸಿ।",
+    "body": "Strong Vault ನಿಮ್ಮ ಎಲ್ಲಾ ದಾಖಲೆಗಳನ್ನು <device>ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಗೂಢಲಿಪೀಕೃತ</device>ವಾಗಿ ಸಂಗ್ರಹಿಸುತ್ತದೆ। AI ದಾಖಲೆ ಸ್ಕ್ಯಾನ್ ಬಳಸುವಾಗ OCR ಪಠ್ಯವನ್ನು Anthropic ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ। ಅನಾಲಿಟಿಕ್ಸ್ ಅಪ್ಲಿಕೇಶನ್ ಸುಧಾರಣೆಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ। ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಯಾವಾಗಲೂ ಬದಲಾಯಿಸಿ।",
     "essential": "ಅಗತ್ಯ — ಸ್ಥಳೀಯ ಗೂಢಲಿಪಿ ಸಂಗ್ರಹಣೆ, ದೃಢೀಕರಣ, ಆಫ್‌ಲೈನ್ (ಅಗತ್ಯ)",
     "aiProcessing": "AI ಪ್ರಕ್ರಿಯೆ — ದಾಖಲೆ ಕ್ಷೇತ್ರಗಳಿಗೆ OCR ಪಠ್ಯ Anthropic Claude ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ। ಚಿತ್ರಗಳು ಸಾಧನ ಬಿಟ್ಟು ಹೊರಹೋಗುವುದಿಲ್ಲ।",
     "analytics": "ಅನಾಲಿಟಿಕ್ಸ್ — Google Analytics ಮೂಲಕ ಅನಾಮಧೇಯ ಅಂಕಿಅಂಶಗಳು।",

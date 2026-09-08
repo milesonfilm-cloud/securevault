@@ -1,4 +1,4 @@
-# Threat Model (SecureVault)
+# Threat Model (Strong Vault)
 
 This document defines what we’re protecting, realistic attacker capabilities, and **measurable acceptance criteria** for: anti-tamper/anti-replacement, anti-copy, and supply-chain hardening.
 

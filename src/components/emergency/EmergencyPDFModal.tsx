@@ -54,13 +54,13 @@ export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModal
       const stamp = new Date().toISOString().slice(0, 10);
       if (password.trim()) {
         const bundle = await encryptPdfBytesWithPassword(pdfBytes, password.trim());
-        downloadBlob(
+        await downloadBlob(
           encryptedBundleToDownloadBlob(bundle),
-          `SecureVault_Emergency_${stamp}.pdf.enc.json`
+          `Strong Vault_Emergency_${stamp}.pdf.enc.json`
         );
       } else {
         const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
-        downloadBlob(blob, `SecureVault_Emergency_${stamp}.pdf`);
+        await downloadBlob(blob, `Strong Vault_Emergency_${stamp}.pdf`);
       }
       appendAuditEntry({
         action: 'emergency_pdf_generated',
@@ -123,7 +123,7 @@ export default function EmergencyPDFModal({ isOpen, onClose }: EmergencyPDFModal
           />
         </label>
         <p className="text-xs text-vault-faint">
-          With a password, you download a JSON envelope (.pdf.enc.json) compatible with SecureVault
+          With a password, you download a JSON envelope (.pdf.enc.json) compatible with Strong Vault
           decryption (PBKDF2 + AES-GCM).
         </p>
         <div className="flex justify-end gap-2 pt-2">

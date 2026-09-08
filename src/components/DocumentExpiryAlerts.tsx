@@ -84,7 +84,7 @@ export default function DocumentExpiryAlerts() {
   const upcomingCount = alerts.length - expiredCount;
 
   return (
-    <div className="shrink-0 border-b border-border bg-amber-500/12 px-4 py-3 lg:px-6" role="alert">
+    <div className="shrink-0 border-b border-border bg-amber-500/12 px-3 py-2.5 sm:px-4 sm:py-3 lg:px-6" role="alert">
       <div className="max-w-screen-2xl mx-auto flex gap-3">
         <AlertTriangle
           className={`mt-0.5 flex-shrink-0 ${expiredCount > 0 ? 'text-red-400' : 'text-amber-300'}`}
@@ -123,10 +123,10 @@ export default function DocumentExpiryAlerts() {
               Renewals timeline →
             </Link>
             <Link
-              href="/document-vault"
+              href="/family-management"
               className="text-xs font-700 text-vault-muted hover:text-vault-text transition-colors"
             >
-              Document Vault →
+              View documents →
             </Link>
             <button
               type="button"

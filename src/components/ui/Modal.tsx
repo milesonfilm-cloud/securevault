@@ -40,27 +40,27 @@ export default function Modal({
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-3xl',
+    sm: 'sm:max-w-sm',
+    md: 'sm:max-w-lg',
+    lg: 'sm:max-w-2xl',
+    xl: 'sm:max-w-3xl',
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 animate-fade-in sm:items-center sm:p-4">
       <div
         className="absolute inset-0 bg-vault-ink/80 backdrop-blur-md"
         onClick={onClose}
         aria-hidden="true"
       />
       <div
-        className={`relative w-full ${sizeClasses[size]} neo-card rounded-2xl animate-scale-in overflow-hidden max-h-[90vh] flex flex-col shadow-vault`}
+        className={`relative flex w-full max-h-[min(92dvh,100%)] flex-col overflow-hidden rounded-t-[24px] pb-[env(safe-area-inset-bottom,0px)] neo-card shadow-vault animate-scale-in sm:max-h-[min(90dvh,100%)] sm:rounded-2xl sm:pb-0 ${sizeClasses[size]}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 p-6 border-b border-[color:var(--color-border)] flex-shrink-0">
+        <div className="flex flex-shrink-0 items-start justify-between gap-3 border-b border-[color:var(--color-border)] p-4 sm:p-6">
           <div className="min-w-0 flex-1">
             <h2 id="modal-title" className="text-lg font-700 text-vault-text">
               {title}
@@ -71,7 +71,7 @@ export default function Modal({
             {headerActions}
             <button
               onClick={onClose}
-              className="p-1.5 rounded-[10px] hover:bg-white/10 text-vault-faint hover:text-vault-warm transition-colors"
+              className="p-1.5 rounded-[10px] hover:bg-black/5 text-vault-faint hover:text-vault-warm transition-colors"
               aria-label="Close modal"
             >
               <X size={18} />
@@ -79,7 +79,7 @@ export default function Modal({
           </div>
         </div>
         {/* Body */}
-        <div className="flex-1 overflow-y-auto">{children}</div>
+        <div className="flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">{children}</div>
       </div>
     </div>
   );

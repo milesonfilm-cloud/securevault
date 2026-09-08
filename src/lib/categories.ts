@@ -23,15 +23,13 @@ export interface CategoryConfig {
  * - 'ifsc'          →  upper-case, XXXX0XXXXXX pattern hint
  * - 'aadhaar'       →  XXXX XXXX XXXX
  * - 'pan'           →  AAAAA9999A
- * - 'alpha-upper'   →  convert to upper-case
- * - 'email'         →  name@domain.tld
- * - 'url'           →  https://… or domain.tld
- * - 'login-id'      →  username or email
+ * - 'cvv'           →  3–4 digits
  */
 export type FieldFormat =
   | 'date-dmy'
   | 'card-number'
   | 'expiry-mmyyyy'
+  | 'cvv'
   | 'account-number'
   | 'phone'
   | 'ifsc'
@@ -181,7 +179,7 @@ export const CATEGORIES: CategoryConfig[] = [
       },
       {
         key: 'IFSC Code',
-        label: 'IFSC Code',
+        label: 'IFSC / SWIFT Code',
         type: 'text',
         format: 'ifsc',
         placeholder: 'e.g. SBIN0001234',
@@ -190,18 +188,18 @@ export const CATEGORIES: CategoryConfig[] = [
         key: 'Account Type',
         label: 'Account Type',
         type: 'select',
-        options: ['Savings', 'Current', 'Joint Savings', 'NRE', 'NRO'],
+        options: ['Savings', 'Current', 'Joint Savings', 'NRE', 'NRO', 'Fixed Deposit'],
       },
       { key: 'Branch', label: 'Branch', type: 'text' },
       { key: 'Nominee', label: 'Nominee', type: 'text' },
       {
-        key: 'Linked Phone',
-        label: 'Linked Phone Number',
-        type: 'tel',
-        format: 'phone',
-        placeholder: '+91 …',
+        key: 'Net Banking ID',
+        label: 'Net Banking User ID',
+        type: 'text',
+        sensitive: true,
+        format: 'login-id',
+        placeholder: 'e.g. name@example.com',
       },
-      { key: 'Net Banking ID', label: 'Net Banking User ID', type: 'text', sensitive: true },
     ],
   },
   {
@@ -226,17 +224,25 @@ export const CATEGORIES: CategoryConfig[] = [
         placeholder: 'xxxx-xxxx-xxxx-xxxx',
       },
       {
-        key: 'Card Network',
-        label: 'Card Network',
-        type: 'select',
-        options: ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Diners'],
-      },
-      {
         key: 'Expiry',
         label: 'Expiry (MM/YYYY)',
         type: 'text',
         format: 'expiry-mmyyyy',
         placeholder: 'MM/YYYY',
+      },
+      {
+        key: 'CVV',
+        label: 'CVV',
+        type: 'text',
+        sensitive: true,
+        format: 'cvv',
+        placeholder: '3 or 4 digits',
+      },
+      {
+        key: 'Card Network',
+        label: 'Card Network',
+        type: 'select',
+        options: ['Visa', 'Mastercard', 'RuPay', 'Amex', 'Diners'],
       },
       { key: 'Credit Limit', label: 'Credit Limit', type: 'text' },
       {
@@ -312,7 +318,14 @@ export const CATEGORIES: CategoryConfig[] = [
     icon: 'Car',
     fields: [
       { key: 'Vehicle Name', label: 'Vehicle Name / Model', type: 'text', required: true },
-      { key: 'Registration Number', label: 'Registration Number', type: 'text', required: true },
+      {
+        key: 'Registration Number',
+        label: 'Registration Number',
+        type: 'text',
+        required: true,
+        format: 'alpha-upper',
+        placeholder: 'e.g. KA 03 AB 1234',
+      },
       { key: 'Engine Number', label: 'Engine Number', type: 'text', sensitive: true },
       { key: 'Chassis Number', label: 'Chassis Number', type: 'text', sensitive: true },
       {
@@ -462,17 +475,8 @@ export const CATEGORIES: CategoryConfig[] = [
         key: 'Type',
         label: 'Type',
         type: 'select',
-        options: ['Life', 'Health', 'Vehicle', 'Home', 'Travel', 'Other'],
+        options: ['Health', 'Life', 'Vehicle', 'Travel', 'Home', 'Other'],
       },
-      { key: 'Premium Amount', label: 'Premium Amount', type: 'text' },
-      {
-        key: 'Premium Frequency',
-        label: 'Premium Frequency',
-        type: 'select',
-        options: ['Monthly', 'Quarterly', 'Half-yearly', 'Annual'],
-      },
-      { key: 'Sum Insured', label: 'Sum Insured', type: 'text' },
-      { key: 'Nominee', label: 'Nominee', type: 'text' },
       {
         key: 'Start Date',
         label: 'Start Date',
@@ -488,123 +492,6 @@ export const CATEGORIES: CategoryConfig[] = [
         placeholder: 'DD-MM-YYYY',
       },
       { key: 'Contact', label: 'Agent / Support Contact', type: 'tel', format: 'phone' },
-    ],
-  },
-  {
-    id: 'investment',
-    label: 'Investments',
-    shortLabel: 'Invest',
-    color: '#7BC4A0',
-    bgColor: 'bg-vault-elevated',
-    borderColor: 'border-border',
-    textColor: 'text-vault-muted',
-    lightBg: 'bg-vault-panel',
-    icon: 'TrendingUp',
-    fields: [
-      {
-        key: 'Type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: ['FD', 'RD', 'Mutual Fund', 'PPF', 'NPS', 'Stocks', 'Gold', 'Other'],
-      },
-      { key: 'Institution', label: 'Institution', type: 'text', required: true },
-      {
-        key: 'Account / Folio Number',
-        label: 'Account / Folio Number',
-        type: 'text',
-        sensitive: true,
-      },
-      { key: 'Invested Amount', label: 'Invested Amount', type: 'text' },
-      { key: 'Current Value', label: 'Current Value', type: 'text' },
-      {
-        key: 'Maturity Date',
-        label: 'Maturity Date',
-        type: 'text',
-        format: 'date-dmy',
-        placeholder: 'DD-MM-YYYY',
-      },
-      { key: 'Nominee', label: 'Nominee', type: 'text' },
-    ],
-  },
-  {
-    id: 'loan',
-    label: 'Loans / EMI',
-    shortLabel: 'Loans',
-    color: '#E8A07A',
-    bgColor: 'bg-vault-elevated',
-    borderColor: 'border-border',
-    textColor: 'text-vault-muted',
-    lightBg: 'bg-vault-panel',
-    icon: 'Banknote',
-    fields: [
-      { key: 'Lender', label: 'Lender', type: 'text', required: true },
-      {
-        key: 'Loan Type',
-        label: 'Loan Type',
-        type: 'select',
-        options: ['Home', 'Personal', 'Vehicle', 'Education', 'Other'],
-      },
-      {
-        key: 'Loan Account Number',
-        label: 'Loan Account Number',
-        type: 'text',
-        sensitive: true,
-      },
-      { key: 'Principal', label: 'Principal', type: 'text' },
-      { key: 'EMI Amount', label: 'EMI Amount', type: 'text' },
-      { key: 'Interest Rate', label: 'Interest Rate (%)', type: 'text' },
-      {
-        key: 'Start Date',
-        label: 'Start Date',
-        type: 'text',
-        format: 'date-dmy',
-        placeholder: 'DD-MM-YYYY',
-      },
-      {
-        key: 'End Date',
-        label: 'End Date',
-        type: 'text',
-        format: 'date-dmy',
-        placeholder: 'DD-MM-YYYY',
-      },
-      { key: 'Remaining Tenure', label: 'Remaining Tenure', type: 'text', placeholder: 'e.g. 48 months' },
-    ],
-  },
-  {
-    id: 'income',
-    label: 'Income / Expenses',
-    shortLabel: 'Income',
-    color: '#9BC47B',
-    bgColor: 'bg-vault-elevated',
-    borderColor: 'border-border',
-    textColor: 'text-vault-muted',
-    lightBg: 'bg-vault-panel',
-    icon: 'CircleDollarSign',
-    fields: [
-      {
-        key: 'Type',
-        label: 'Type',
-        type: 'select',
-        required: true,
-        options: ['Salary', 'Business', 'Rental', 'Pension', 'Expense', 'Other'],
-      },
-      { key: 'Source / Payee', label: 'Source / Payee', type: 'text', required: true },
-      { key: 'Amount', label: 'Amount', type: 'text' },
-      {
-        key: 'Frequency',
-        label: 'Frequency',
-        type: 'select',
-        options: ['One-time', 'Monthly', 'Quarterly', 'Annual'],
-      },
-      {
-        key: 'Date',
-        label: 'Date',
-        type: 'text',
-        format: 'date-dmy',
-        placeholder: 'DD-MM-YYYY',
-      },
-      { key: 'Linked Account', label: 'Linked Account / Notes', type: 'text' },
     ],
   },
   {
@@ -658,7 +545,7 @@ export const CATEGORIES: CategoryConfig[] = [
   {
     id: 'certificate',
     label: 'Certificate',
-    shortLabel: 'Certificates',
+    shortLabel: 'Cert',
     color: '#F0C38E',
     bgColor: 'bg-vault-elevated',
     borderColor: 'border-border',
@@ -777,7 +664,7 @@ export const CATEGORIES: CategoryConfig[] = [
   {
     id: 'subscription',
     label: 'Subscription',
-    shortLabel: 'Subscriptions',
+    shortLabel: 'Subs',
     color: '#8EB4E8',
     bgColor: 'bg-vault-elevated',
     borderColor: 'border-border',
@@ -800,14 +687,7 @@ export const CATEGORIES: CategoryConfig[] = [
         format: 'date-dmy',
         placeholder: 'DD-MM-YYYY',
       },
-      {
-        key: 'Account Email',
-        label: 'Account Email',
-        type: 'text',
-        sensitive: true,
-        format: 'email',
-        placeholder: 'e.g. name@example.com',
-      },
+      { key: 'Account Email', label: 'Account Email', type: 'text', sensitive: true },
     ],
   },
   {

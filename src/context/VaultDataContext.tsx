@@ -11,6 +11,7 @@ import {
 import { checkBadgeUnlocks } from '@/lib/gamification/badges';
 import { checkInStreak } from '@/lib/gamification/streaks';
 import { setStoredTier } from '@/lib/featureFlags';
+import { isPro } from '@/lib/subscription';
 import { toast } from 'sonner';
 import {
   rescheduleExpiryReminders,
@@ -63,12 +64,24 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    loadVaultDataAsync().then((data) => {
-      if (!cancelled) {
-        setStoredTier(data.settings.plan ?? 'free');
-        setVaultData(data);
-        setLoading(false);
+    loadVaultDataAsync().then(async (data) => {
+      if (cancelled) return;
+      // Revoke free / spoofed Pro: plan must include a paid store entitlement.
+      let next = data;
+      if ((data.settings.plan ?? 'free') === 'pro' && !isPro(data.settings)) {
+        next = {
+          ...data,
+          settings: {
+            ...data.settings,
+            plan: 'free',
+            proEntitlement: undefined,
+          },
+        };
+        await saveVaultDataAsync(next);
       }
+      setStoredTier(next.settings.plan ?? 'free');
+      setVaultData(next);
+      setLoading(false);
     });
     return () => {
       cancelled = true;
@@ -120,14 +133,21 @@ export function VaultDataProvider({ children }: { children: React.ReactNode }) {
   const persistVaultData = useCallback(async (data: VaultData) => {
     checkInStreak();
     const unlocked = checkBadgeUnlocks(data);
-    const toSave =
+    let toSave =
       unlocked.length > 0
         ? mergeUnlockedBadges(
             data,
             unlocked.map((b) => b.id)
           )
         : data;
-    setStoredTier(toSave.settings.plan ?? 'free');
+    // Never persist a "pro" plan without a paid entitlement token.
+    if ((toSave.settings.plan ?? 'free') === 'pro' && !isPro(toSave.settings)) {
+      toSave = {
+        ...toSave,
+        settings: { ...toSave.settings, plan: 'free', proEntitlement: undefined },
+      };
+    }
+    setStoredTier(isPro(toSave.settings) ? 'pro' : 'free');
     await saveVaultDataAsync(toSave);
     setVaultData(toSave);
     unlocked.forEach((b) =>

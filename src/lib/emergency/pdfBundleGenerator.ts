@@ -41,14 +41,14 @@ export async function generateEmergencyPDF(rows: EmergencyPdfRow[]): Promise<Uin
   const docPdf = new jsPDF({ unit: 'pt', format: 'a4' });
 
   docPdf.setFontSize(18);
-  docPdf.text('SecureVault — Emergency bundle', 40, 48);
+  docPdf.text('Strong Vault — Emergency bundle', 40, 48);
   docPdf.setFontSize(10);
   docPdf.setTextColor(90, 90, 90);
   docPdf.text(`Generated ${new Date().toLocaleString()} — keep this file private.`, 40, 68);
   docPdf.setTextColor(0, 0, 0);
 
   const appUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/landing` : 'https://securevault.app';
+    typeof window !== 'undefined' ? `${window.location.origin}/landing` : 'https://strongvault.app';
   docPdf.setFontSize(9);
   docPdf.text(`App link: ${appUrl}`, 40, 88);
 
@@ -127,10 +127,7 @@ export function encryptedBundleToDownloadBlob(bundle: EncryptedPdfBundle): Blob 
   return new Blob([JSON.stringify(bundle)], { type: 'application/json' });
 }
 
-export function downloadBlob(blob: Blob, filename: string): void {
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
+export async function downloadBlob(blob: Blob, filename: string): Promise<void> {
+  const { saveOrShareFile } = await import('@/lib/saveFile');
+  await saveOrShareFile(blob, filename, blob.type || 'application/octet-stream');
 }

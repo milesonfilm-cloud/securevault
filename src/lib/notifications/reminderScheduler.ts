@@ -119,8 +119,8 @@ async function postSchedulesToServiceWorker(entries: ScheduleEntry[]): Promise<v
       reg.active?.postMessage({
         type: 'SCHEDULE_NOTIFY',
         when: e.when,
-        title: 'SecureVault',
-        body: `Your ${e.title} expires in ${days} day${days === 1 ? '' : 's'} — Open SecureVault`,
+        title: 'Strong Vault',
+        body: `Your ${e.title} expires in ${days} day${days === 1 ? '' : 's'} — Open Strong Vault`,
       });
     }
   } catch {
@@ -144,8 +144,8 @@ function showDueNotifications(): void {
     fired.add(e.id);
     const days = e.kind === '30' ? 30 : e.kind === '7' ? 7 : 1;
     try {
-      new Notification('SecureVault', {
-        body: `Your ${e.title} expires in ${days} day${days === 1 ? '' : 's'} — Open SecureVault`,
+      new Notification('Strong Vault', {
+        body: `Your ${e.title} expires in ${days} day${days === 1 ? '' : 's'} — Open Strong Vault`,
         icon: '/brand/vault-mark.svg',
       });
     } catch {

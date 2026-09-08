@@ -1,149 +1,155 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Fingerprint, ScanFace, ShieldCheck, ShieldOff, Loader2 } from 'lucide-react';
+import { Fingerprint, ScanFace, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 import {
-  isBiometricSupported,
-  isPlatformAuthenticatorAvailable,
+  isBiometricAvailable,
   hasBiometricCredential,
   registerBiometric,
   clearBiometricCredential,
-} from '@/lib/webauthn';
+} from '@/lib/biometricAuth';
 
 export default function BiometricSettings() {
   const t = useTranslations('settingsPanels');
-  const [supported, setSupported] = useState(false);
+  const [supported, setSupported] = useState(true);
   const [registered, setRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const check = async () => {
-      if (isBiometricSupported()) {
-        const available = await isPlatformAuthenticatorAvailable();
-        setSupported(available);
-        setRegistered(hasBiometricCredential());
-      }
-      setChecking(false);
+    let cancelled = false;
+    void (async () => {
+      const available = await isBiometricAvailable();
+      if (cancelled) return;
+      setSupported(available);
+      setRegistered(hasBiometricCredential());
+    })();
+    return () => {
+      cancelled = true;
     };
-    check();
   }, []);
 
   const showMessage = (text: string, type: 'success' | 'error') => {
     setMessage(text);
     setMessageType(type);
-    setTimeout(() => setMessage(''), 3500);
+    window.setTimeout(() => setMessage(''), 4500);
   };
 
-  const handleEnable = async () => {
+  const handleToggle = async () => {
+    if (loading) return;
+
+    if (registered) {
+      clearBiometricCredential();
+      setRegistered(false);
+      showMessage(t('biometricDisabledToast'), 'success');
+      return;
+    }
+
+    if (!supported) {
+      showMessage(t('biometricUnavailableBody'), 'error');
+      return;
+    }
+
     setLoading(true);
     setMessage('');
-    const ok = await registerBiometric();
-    if (ok) {
-      setRegistered(true);
-      showMessage(t('biometricEnableSuccess'), 'success');
-    } else {
-      showMessage(t('biometricSetupFailed'), 'error');
+    try {
+      const result = await registerBiometric();
+      if (result.ok) {
+        setRegistered(true);
+        showMessage(t('biometricEnableSuccess'), 'success');
+      } else if (result.reason === 'cancelled') {
+        showMessage(t('biometricCancelled'), 'error');
+      } else if (result.reason === 'unavailable') {
+        showMessage(t('biometricUnavailableBody'), 'error');
+      } else {
+        showMessage(t('biometricSetupFailed'), 'error');
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
-
-  const handleDisable = () => {
-    clearBiometricCredential();
-    setRegistered(false);
-    showMessage(t('biometricDisabledToast'), 'success');
-  };
-
-  if (checking) return null;
-
-  if (!supported) {
-    return (
-      <div className="neo-card rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-9 h-9 bg-vault-elevated border border-border rounded-2xl flex items-center justify-center">
-            <Fingerprint size={18} className="text-vault-warm" />
-          </div>
-          <div>
-            <h3 className="text-sm font-700 text-vault-text">{t('biometricTitle')}</h3>
-            <p className="text-xs text-vault-faint">{t('biometricSubtitle')}</p>
-          </div>
-        </div>
-        <p className="text-xs text-vault-muted neo-inset rounded-2xl px-4 py-3">
-          {t('biometricUnavailableBody')}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="neo-card rounded-2xl p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-vault-elevated border border-border">
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-2xl border border-border bg-vault-elevated">
           <Fingerprint size={18} className="text-vault-warm" />
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h3 className="text-sm font-700 text-vault-text">{t('biometricTitle')}</h3>
           <p className="text-xs text-vault-faint">{t('biometricSubtitle')}</p>
         </div>
-        <div
-          className={`ml-auto px-2.5 py-1 rounded-full text-xs font-700 border ${
-            registered
-              ? 'bg-vault-warm/20 text-vault-warm border-vault-warm/35'
-              : 'bg-vault-elevated text-vault-muted border-border'
-          }`}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={registered}
+          aria-label={t('biometricTitle')}
+          disabled={loading}
+          onClick={() => void handleToggle()}
+          className={cn(
+            'sv-biometric-switch relative z-10 h-8 w-14 shrink-0 rounded-full transition-colors',
+            'focus:outline-none focus-visible:ring-2 focus-visible:ring-vault-warm/50',
+            'disabled:cursor-wait disabled:opacity-70',
+            registered ? 'bg-[#4338C9]' : 'bg-[rgba(44,37,64,0.22)]'
+          )}
         >
-          {registered ? t('biometricEnabled') : t('biometricDisabled')}
-        </div>
+          {loading ? (
+            <Loader2
+              size={14}
+              className={cn(
+                'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin',
+                registered ? 'text-white' : 'text-vault-text'
+              )}
+            />
+          ) : (
+            <span
+              className={cn(
+                'sv-biometric-switch-knob absolute top-1 h-6 w-6 rounded-full shadow-md transition-all duration-200',
+                registered ? 'right-1 left-auto' : 'left-1 right-auto'
+              )}
+            />
+          )}
+        </button>
       </div>
 
-      {/* Biometric types */}
-      <div className="flex gap-3 mb-4">
-        <div className="flex-1 flex items-center gap-2 neo-inset rounded-2xl px-3 py-2.5">
-          <Fingerprint size={16} className="text-vault-warm flex-shrink-0" />
+      <div className="mb-4 flex gap-3">
+        <div className="neo-inset flex flex-1 items-center gap-2 rounded-2xl px-3 py-2.5">
+          <Fingerprint size={16} className="shrink-0 text-vault-warm" />
           <span className="text-xs text-vault-muted">{t('fingerprint')}</span>
         </div>
-        <div className="flex-1 flex items-center gap-2 neo-inset rounded-2xl px-3 py-2.5">
-          <ScanFace size={16} className="text-vault-warm flex-shrink-0" />
+        <div className="neo-inset flex flex-1 items-center gap-2 rounded-2xl px-3 py-2.5">
+          <ScanFace size={16} className="shrink-0 text-vault-warm" />
           <span className="text-xs text-vault-muted">{t('faceId')}</span>
         </div>
       </div>
 
-      <p className="text-xs text-vault-faint mb-4">
-        {registered ? t('biometricHintRegistered') : t('biometricHintRegister')}
+      <p className="mb-0 text-xs text-vault-faint">
+        {!supported
+          ? t('biometricUnavailableBody')
+          : registered
+            ? t('biometricHintRegistered')
+            : t('biometricHintRegister')}
       </p>
 
-      {message && (
+      {message ? (
         <div
-          className={`flex items-center gap-2 rounded-xl px-3 py-2.5 mb-4 text-sm ${messageType === 'success' ? 'bg-vault-warm/15 text-vault-warm border border-vault-warm/25' : 'bg-red-500/10 text-red-300 border border-red-500/25'}`}
+          className={`mt-4 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm ${
+            messageType === 'success'
+              ? 'border border-vault-warm/25 bg-vault-warm/15 text-vault-text'
+              : 'border border-red-500/25 bg-red-500/10 text-red-700'
+          }`}
         >
           <div
-            className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${messageType === 'success' ? 'bg-vault-warm' : 'bg-red-400'}`}
+            className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+              messageType === 'success' ? 'bg-vault-warm' : 'bg-red-400'
+            }`}
           />
           {message}
         </div>
-      )}
-
-      {registered ? (
-        <button
-          onClick={handleDisable}
-          className="neo-btn neo-btn-secondary w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border border-red-400/50 text-red-300 hover:bg-red-500/10 text-sm font-700 transition-colors"
-        >
-          <ShieldOff size={15} />
-          {t('biometricDisableCta')}
-        </button>
-      ) : (
-        <button
-          onClick={handleEnable}
-          disabled={loading}
-          className="neo-btn neo-btn-primary w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl text-sm font-800 transition-colors disabled:opacity-60"
-        >
-          {loading ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
-          {loading ? t('biometricSettingUp') : t('biometricEnableCta')}
-        </button>
-      )}
+      ) : null}
     </div>
   );
 }

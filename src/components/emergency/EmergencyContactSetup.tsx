@@ -49,7 +49,7 @@ export default function EmergencyContactSetup() {
         <h3 className="text-sm font-800 text-vault-text">Trusted emergency contact</h3>
         <p className="text-xs text-vault-muted mt-1">
           Stored only on this device. Use the emergency PDF export to share details with your
-          contact when needed — nothing is emailed from SecureVault servers.
+          contact when needed — nothing is emailed from Strong Vault servers.
         </p>
       </div>
 

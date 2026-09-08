@@ -76,7 +76,7 @@ export const BADGE_DEFINITIONS: Array<{
   {
     id: 'streak_7',
     name: 'Week warrior',
-    description: 'Opened SecureVault 7 days in a row.',
+    description: 'Opened Strong Vault 7 days in a row.',
     icon: '🔥',
     condition: () => getStreakCount() >= 7,
   },

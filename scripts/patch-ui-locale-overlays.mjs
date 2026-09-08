@@ -128,11 +128,11 @@ const byLocale = {
       expiredOrRevoked: 'यह साझा लिंक समाप्त हो गया या रद्द कर दिया गया।',
     },
     handoverPage: {
-      brandStamp: 'SecureVault',
+      brandStamp: 'Strong Vault',
       missingKey: 'कृपया # सहित पूरा लिंक खोलें।',
       notFound: 'यह हैंडओवर लिंक समाप्त हो गया या बदल दिया गया।',
       openFailed: 'यह हैंडओवर बंडल नहीं खोला जा सका।',
-      footerLine: 'SecureVault द्वारा साझा — केवल दृश्य · उत्पन्न {date}',
+      footerLine: 'Strong Vault द्वारा साझा — केवल दृश्य · उत्पन्न {date}',
     },
     progressPage: {
       eyebrow: 'गेमिफ़िकेशन',
@@ -261,11 +261,11 @@ const byLocale = {
       expiredOrRevoked: 'ಈ ಹಂಚಿಕೆ ಲಿಂಕ್ ಅವಧಿ ಮುಗಿದಿದೆ ಅಥವಾ ರದ್ದಾಗಿದೆ।',
     },
     handoverPage: {
-      brandStamp: 'SecureVault',
+      brandStamp: 'Strong Vault',
       missingKey: '# ಸೇರಿದಂತೆ ಪूರ್ಣ ಲಿಂಕ್ ತೆರೆಯಿರಿ।',
       notFound: 'ಈ ಹ್ಯಾಂಡ್ಓವರ್ ಲಿಂಕ್ ಅವಧಿ ಮುಗಿದಿದೆ ಅಥವಾ ಬದಲಾಯಿಸಲಾಗಿದೆ।',
       openFailed: 'ಈ ಹ್ಯಾಂಡ್ಓವರ್ ಬಂಡಲ್ ತೆರೆಯಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ।',
-      footerLine: 'SecureVault ನಿಂದ ಹಂಚಿದೆ — ಓದು ಮಾತ್ರ · ರಚಿಸಲಾಗಿದೆ {date}',
+      footerLine: 'Strong Vault ನಿಂದ ಹಂಚಿದೆ — ಓದು ಮಾತ್ರ · ರಚಿಸಲಾಗಿದೆ {date}',
     },
     progressPage: {
       eyebrow: 'ಗೇಮಿಫಿಕೇಶನ್',
@@ -399,11 +399,11 @@ const byLocale = {
       expiredOrRevoked: 'இந்த பகிர்வு இணைப்பு காலாவதியானது அல்லது ரத்து செய்யப்பட்டது।',
     },
     handoverPage: {
-      brandStamp: 'SecureVault',
+      brandStamp: 'Strong Vault',
       missingKey: '# உட்பொதி உட்பட முழு இணைப்பைத் திறக்கவும்।',
       notFound: 'இந்த ஒப்படைப்பு இணைப்பு காலாவதியானது அல்லது மாற்றப்பட்டது।',
       openFailed: 'இந்த ஒப்படைப்பு தொகுப்பைத் திறக்க முடியவில்லை।',
-      footerLine: 'SecureVault மூலம் பகிரப்பட்டது — வெறும் பார்வை · உருவாக்கப்பட்டது {date}',
+      footerLine: 'Strong Vault மூலம் பகிரப்பட்டது — வெறும் பார்வை · உருவாக்கப்பட்டது {date}',
     },
     progressPage: {
       eyebrow: 'விளையாட்டியல்',
@@ -536,11 +536,11 @@ const byLocale = {
       expiredOrRevoked: 'ఈ షేర్ లింక్ గడువు ముగిసింది లేదా రద್ದు చేయబడింది।',
     },
     handoverPage: {
-      brandStamp: 'SecureVault',
+      brandStamp: 'Strong Vault',
       missingKey: '# భాగంతో సహా పూర్తి లింక్ తెరవండి।',
       notFound: 'ఈ హ్యాండ్ఓవర్ లింక్ గడువు ముగిసింది లేదా మార్చబడింది।',
       openFailed: 'ఈ హ్యాండ్ఓవర్ బండిల్ తెరవలేము।',
-      footerLine: 'SecureVault ద్వారా షేర్ — చూపు మాత్రమే · రూపొందించబడింది {date}',
+      footerLine: 'Strong Vault ద్వారా షేర్ — చూపు మాత్రమే · రూపొందించబడింది {date}',
     },
     progressPage: {
       eyebrow: 'గేమిఫికేషన్',
@@ -673,11 +673,11 @@ const byLocale = {
       expiredOrRevoked: 'ഈ പങ്കുവെക്കൽ ലിങ്ക് കാലാവധി കഴിഞ്ഞു അല്ലെങ്കിൽ റദ്ദാക്കി।',
     },
     handoverPage: {
-      brandStamp: 'SecureVault',
+      brandStamp: 'Strong Vault',
       missingKey: '# ഉൾപ്പെടെ മുഴുവൻ ലിങ്ക് തുറക്കുക।',
       notFound: 'ഈ ഹാൻഡ്‌ഓവർ ലിങ്ക് കാലാവധി കഴിഞ്ഞു അല്ലെങ്കിൽ മാറ്റിസ്ഥാപിച്ചു।',
       openFailed: 'ഈ ഹാൻഡ്‌ഓവർ ബണ്ടിൽ തുറക്കാനായില്ല।',
-      footerLine: 'SecureVault വഴി പങ്കിട്ടത് — വായന മാത്രം · സൃഷ്ടിച്ചത് {date}',
+      footerLine: 'Strong Vault വഴി പങ്കിട്ടത് — വായന മാത്രം · സൃഷ്ടിച്ചത് {date}',
     },
     progressPage: {
       eyebrow: 'ഗെയിമിഫിക്കേഷൻ',

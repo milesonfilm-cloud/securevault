@@ -23,6 +23,22 @@
     "collapse": "संकुचित करें",
     "expandSidebar": "साइडबार विस्तृत करें"
   },
+  "walkthrough": {
+    "skip": "छोड़ें",
+    "next": "आगे",
+    "done": "समझ गया",
+    "stepOf": "{current} / {total}",
+    "familyTitle": "परिवार कार्ड",
+    "familyBody": "सदस्य बदलने के लिए बाएँ या दाएँ स्वाइप करें। हर कार्ड आपके वॉल्ट का एक व्यक्ति है।",
+    "familyEmptyBody": "यह होम है। परिवार का सदस्य जोड़ें और उनका कार्ड यहाँ दिखेगा।",
+    "addTitle": "सदस्य जोड़ें",
+    "addBody": "किसी को जोड़ने के लिए प्लस दबाएँ। उनके दस्तावेज़ उनके प्रोफ़ाइल के नीचे रहेंगे।",
+    "menuTitle": "ऐप मेनू",
+    "menuBody": "वॉल्ट, नवीनीकरण, प्रगति और सेटिंग्स यहीं हैं — काम पूरा होने पर लॉक भी।",
+    "docsTitle": "दस्तावेज़",
+    "docsBody": "हर सदस्य के रिकॉर्ड उनके कार्ड के नीचे हैं। आईडी, कार्ड और फ़ाइलें जोड़ें — वे उसी व्यक्ति से जुड़े रहते हैं।",
+    "docsEmptyBody": "सदस्य जोड़ने के बाद उनके दस्तावेज़ और दस्तावेज़ जोड़ें बटन कार्ड के नीचे दिखेंगे।"
+  },
   "familyManagement": {
     "heroTitle": "परिवार के सदस्य",
     "addMemberFab": "परिवार का सदस्य जोड़ें",
@@ -68,6 +84,12 @@
     "emptyTitle": "अभी कोई सदस्य नहीं",
     "emptyBody": "कार्ड स्टैक देखने के लिए किसी को जोड़ें।",
     "addMember": "सदस्य जोड़ें",
+    "addMemberFab": "परिवार का सदस्य जोड़ें",
+    "searchAria": "सदस्य और दस्तावेज़ खोजें",
+    "searchPlaceholder": "सदस्य या दस्तावेज़ खोजें",
+    "noSearchResults": "कोई सदस्य उस खोज से मेल नहीं खाता।",
+    "swipeCardsHint": "कार्ड स्वाइप करें",
+    "categoriesHeading": "श्रेणियाँ ({count})",
     "privacy": "गोपनीयता और सेटिंग्स",
     "openVault": "दस्तावेज़ वॉल्ट खोलें",
     "refreshDocumentCounts": "दस्तावेज़ गिनती ताज़ा करें",
@@ -133,16 +155,17 @@
     "modalEditTitle": "दस्तावेज़ संपादित करें",
     "saveLocalSubtitle": "सारा डेटा केवल आपके डिवाइस पर स्थानीय रूप से सहेजा जाता है",
     "scanTitle": "कैमरे से दस्तावेज़ स्कैन करें और फ़ील्ड भरें",
-    "familyMemberLabel": "परिवार का सदस्य *",
+    "familyMemberLabel": "परिवार का सदस्य",
     "selectFamilyMember": "एक परिवार के सदस्य का चयन करें",
-    "categoryLabel": "श्रेणी *",
+    "categoryLabel": "श्रेणी",
     "selectCategory": "एक श्रेणी चुनें",
     "folderLabel": "फ़ोल्डर",
     "folderHint": "वैकल्पिक — इस दस्तावेज़ को एक फ़ोल्डर में रखें, या \"कोई फ़ोल्डर नहीं\" रखें।",
     "noFolders": "अभी आपके वॉल्ट में कोई फ़ोल्डर नहीं है।",
-    "titleLabel": "दस्तावेज़ शीर्षक *",
+    "titleLabel": "दस्तावेज़ शीर्षक",
     "titleHint": "यादगार नाम — जैसे \"आधार कार्ड\"",
     "titleRequired": "दस्तावेज़ शीर्षक आवश्यक है",
+    "titleTooShort": "कम से कम 2 अक्षर लिखें",
     "titlePlaceholder": "जैसे आधार कार्ड",
     "reviewOcrTitle": "निकाले गए फ़ील्ड की समीक्षा करें",
     "reviewOcrBody": "टेक्स्ट इस डिवाइस पर पहचाना गया। सहेजने से पहले आईडी और तारीखें जाँचें।",
@@ -177,10 +200,6 @@
     "emergencySubtitle": "विश्वसनीय संपर्क, PDF, हैंडओवर लिंक →",
     "language": "भाषा",
     "languageSubtitle": "पसंदीदा भाषा चुनें। इस डिवाइस पर सहेजी जाती है।",
-    "appearance": "दिखावट",
-    "appearanceSubtitle": "हल्का पास्टल होम या नियॉन वॉल्ट। इस डिवाइस पर सहेजा जाता है।",
-    "themeNeon": "नियॉन वॉल्ट",
-    "themePastel": "पास्टल परिवार",
     "permissions": "अनुमतियाँ",
     "logout": "लॉग आउट",
     "privacyTitle": "गोपनीयता",
@@ -235,15 +254,15 @@
     "kickerYourData": "आपका डेटा",
     "kickerOrganize": "व्यवस्थित करें",
     "kickerStaySafe": "सुरक्षित रहें",
-    "titleSecureVault": "SecureVault",
+    "titleStrongVault": "Strong Vault",
     "titlePrivateVault": "निजी दस्तावेज़ वॉल्ट",
     "titleBuiltFamilies": "परिवारों के लिए बना",
     "titleBackup": "नियमित बैकअप लें",
-    "bodySetup": "अपने वॉल्ट को एन्क्रिप्ट करने के लिए मज़बूत पासवर्ड बनाएँ। कुछ भी अपलोड नहीं होता — सब कुछ इस डिवाइस पर रहता है।",
-    "bodyLogin": "अपने पासवर्ड से साइन इन करें। सब कुछ स्थानीय और ऑफ़लाइन रहता है।",
-    "bodyVault": "सरकारी आईडी, बैंक विवरण, पासवर्ड और अधिक — श्रेणीबद्ध और एन्क्रिप्टेड।",
-    "bodyFamily": "दस्तावेज़ों को परिवार के सदस्यों से जोड़ें ताकि रिकॉर्ड व्यवस्थित रहें।",
-    "bodyBackup": "सेटिंग्स से एन्क्रिप्टेड JSON बैकअप निर्यात करें।",
+    "bodySetup": "Create a strong password to encrypt your vault. Nothing leaves this phone — your secrets stay on-device.",
+    "bodyLogin": "Sign in with your password to decrypt your vault. Everything stays local and offline on this device.",
+    "bodyVault": "Store government IDs, bank details, passwords, and more — organized by category and encrypted at rest.",
+    "bodyFamily": "Link documents to family members so household records stay structured and easy to find.",
+    "bodyBackup": "Export encrypted JSON backups from Settings to a file you keep. There is no cloud sync — you control every copy.",
     "skip": "इंट्रो छोड़ें",
     "next": "आगे",
     "createPassword": "पासवर्ड बनाएँ",
@@ -251,58 +270,58 @@
     "cards": {
       "welcome": [
         {
-          "t": "लोकल-फर्स्ट वॉल्ट",
-          "b": "आपका एन्क्रिप्टेड डेटा इस डिवाइस पर रहता है — डिफ़ॉल्ट रूप से कुछ भी अपलोड नहीं होता।"
+          "t": "On this device only",
+          "b": "Your vault never syncs to the cloud. Encrypted data stays in this app on your phone."
         },
         {
-          "t": "मज़बूत एन्क्रिप्शन",
-          "b": "इंडस्ट्री-स्टैंडर्ड AES रिकॉर्ड को आराम से सुरक्षित रखता है।"
+          "t": "Strong encryption",
+          "b": "AES encryption locks records at rest. Only your password can unlock them on this device."
         },
         {
-          "t": "विश्वास के लिए बना",
-          "b": "टूर को कभी भी छोड़ें या दोबारा देखें; आपका वॉल्ट निजी और ऑफ़लाइन रहता है।"
+          "t": "Private by design",
+          "b": "No account server for vault contents. Skip or replay this tour anytime."
         }
       ],
       "vault": [
         {
-          "t": "श्रेणियाँ और स्पष्टता",
-          "b": "आईडी, वित्त, चिकित्सा और पासवर्ड को समूहीकृत करें ताकि सब कुछ आसानी से मिल सके।"
+          "t": "Categories & clarity",
+          "b": "Group IDs, finance, medical, and passwords so everything is easy to find."
         },
         {
-          "t": "जब तक अनलॉक न करें, बंद",
-          "b": "संवेदनशील फ़ील्ड तब तक एन्क्रिप्टेड रहती हैं जब तक आप पासवर्ड दर्ज न करें।"
+          "t": "Locked until you unlock",
+          "b": "Sensitive fields stay encrypted until you enter your password on this device."
         },
         {
-          "t": "नवीनीकरण और तिथियाँ",
-          "b": "समाप्ति और नवीनीकरण ट्रैक करें ताकि महत्वपूर्ण दस्तावेज़ छूटें नहीं।"
+          "t": "Renewals & dates",
+          "b": "Track expiries and renewals so important documents never sneak up on you."
         }
       ],
       "family": [
         {
-          "t": "प्रति-सदस्य स्थान",
-          "b": "दस्तावेज़ों को परिवार के सदस्यों से जोड़ें — एक संरचित घर का दृश्य।"
+          "t": "Per-member spaces",
+          "b": "Link documents to family members for a structured household view."
         },
         {
-          "t": "घर का होम",
-          "b": "सदस्य पृष्ठ आपका लैंडिंग स्पॉट है — प्रोफ़ाइल, टाइलें और झलक।"
+          "t": "Household home",
+          "b": "The members page is your landing spot — profiles, tiles, and activity at a glance."
         },
         {
-          "t": "साझा शांति",
-          "b": "सबकी ज़रूरी चीज़ें व्यवस्थित रखें — गड़बड़ शेयर्ड फ़ोल्डर्स के बिना।"
+          "t": "Shared peace of mind",
+          "b": "Keep everyone’s essentials organized without messy shared folders or cloud accounts."
         }
       ],
       "backup": [
         {
-          "t": "एन्क्रिप्टेड एक्सपोर्ट",
-          "b": "जब चाहें सेटिंग्स से JSON बैकअप डाउनलोड करें।"
+          "t": "Encrypted file exports",
+          "b": "From Settings, download an encrypted JSON backup you can store offline yourself."
         },
         {
-          "t": "रिकवरी प्लानिंग",
-          "b": "रीसेट या डिवाइस बदलने पर हाल का बैकअप आपका सेफ़्टी नेट है।"
+          "t": "Your recovery plan",
+          "b": "If you reset the app or change phones, restore from a backup file you saved earlier."
         },
         {
-          "t": "आप समय तय करते हैं",
-          "b": "वैकल्पिक क्लाउड सिंक — डिफ़ॉल्ट से नहीं, आपकी मर्ज़ी से।"
+          "t": "No cloud sync",
+          "b": "Strong Vault does not upload or sync your vault. Backups only happen when you export a file."
         }
       ]
     }
@@ -317,7 +336,7 @@
     "ml": "🇮🇳 മലയാളം"
   },
   "brand": {
-    "wordmarkSecure": "SECURE",
+    "wordmarkSecure": "STRONG",
     "wordmarkVault": "VAULT",
     "tagline": "महत्वपूर्ण को सुरक्षित रखें",
     "ariaWordmark": "सिक्योरवॉल्ट",
@@ -326,8 +345,8 @@
   "aboutPage": {
     "title": "परिचय",
     "intro": "आपके परिवार के लिए निजी दस्तावेज़ वॉल्ट — इस डिवाइस पर संग्रहीत, आपके नियंत्रण में एन्क्रिप्टेड।",
-    "whatHeading": "SecureVault क्या है",
-    "whatP1a": "SecureVault संवेदनशील व्यक्तिगत और पारिवारिक डेटा ",
+    "whatHeading": "Strong Vault क्या है",
+    "whatP1a": "Strong Vault संवेदनशील व्यक्तिगत और पारिवारिक डेटा ",
     "whatP1b": "इस डिवाइस पर",
     "whatP1c": " संग्रहीत और व्यवस्थित करता है, इस ऐप में एन्क्रिप्टेड। वॉल्ट की सामग्री किसी ऐप-संचालित क्लाउड पर अपलोड नहीं होती — केवल आप चुनने पर बैकअप निर्यात करते हैं (उदाहरण JSON निर्यात या कोई वैकल्पिक सिंक जो आप सक्षम करें)।",
     "whatP2a": "यदि आप ",
@@ -339,9 +358,9 @@
     "termsHeading": "नियम एवं शर्तें",
     "termsEffective": "ऐप के उपयोग से प्रभावी · इस बिल्ड के साथ अंतिम अद्यतन",
     "t1Title": "1. स्वीकृति",
-    "t1Body": "SecureVault इंस्टॉल, एक्सेस या उपयोग करके आप इन नियमों और गोपनीयता नीति से सहमत होते हैं। यदि सहमत नहीं हैं तो ऐप का उपयोग न करें।",
+    "t1Body": "Strong Vault इंस्टॉल, एक्सेस या उपयोग करके आप इन नियमों और गोपनीयता नीति से सहमत होते हैं। यदि सहमत नहीं हैं तो ऐप का उपयोग न करें।",
     "t2Title": "2. सेवा",
-    "t2Body": "SecureVault क्लाइंट-साइड सॉफ़्टवेयर है जो दस्तावेज़ों और संबंधित मेटाडेटा को स्थानीय रूप से संग्रहीत और व्यवस्थित करने में मदद करता है। सुविधाओं में निर्यात, वैकल्पिक एकीकरण या सदस्यता स्तर (जैसे Pro) शामिल हो सकते हैं। सुविधा सटीकता संस्करण पर निर्भर करती है।",
+    "t2Body": "Strong Vault क्लाइंट-साइड सॉफ़्टवेयर है जो दस्तावेज़ों और संबंधित मेटाडेटा को स्थानीय रूप से संग्रहीत और व्यवस्थित करने में मदद करता है। सुविधाओं में निर्यात, वैकल्पिक एकीकरण या सदस्यता स्तर (जैसे Pro) शामिल हो सकते हैं। सुविधा सटीकता संस्करण पर निर्भर करती है।",
     "t3Title": "3. आपकी ज़िम्मेदारियाँ",
     "t3Body": "आप अपने डिवाइस, पासवर्ड और किसी भी बैकअप के लिए ज़िम्मेदार हैं। आप ऐप का अवैध उद्देश्यों या तीसरे पक्ष के अधिकारों का उल्लंघन कर उपयोग न करें। केवल वह डेटा संग्रहीत करें जिसे रखने और एन्क्रिप्ट करने की अनुमति है।",
     "t4Title": "4. उपयोग लाइसेंस",
@@ -356,7 +375,7 @@
     "t8Body": "गोपनीयता संबंधी अनुरोधों के लिए गोपनीयता नीति में संपर्क देखें। अन्य कानूनी सूचनाओं के लिए ऐप या वितरण सूची में प्रकाशित चैनल का उपयोग करें।",
     "disclaimerHeading": "अस्वीकरण",
     "disclaimerReadCarefully": "ध्यान से पढ़ें",
-    "disclaimerP1": "SecureVault <asis>«जैसा है»</asis> और <asavail>«जैसा उपलब्ध है»</asavail> के रूप में प्रदान किया जाता है, कानून द्वारा अनुमत पूर्ण सीमा तक बिना किसी वारंटी के। डेवलपर और योगदानकर्ता डेटा हानि, विफल बैकअप या पुनर्स्थापन, डिवाइस या ब्राउज़र समस्याएँ, भूले हुए पासवर्ड या सॉफ़्टवेयर त्रुटियों सहित नुकसान के लिए <noliab>उत्तरदायी नहीं हैं</noliab>। कानून द्वारा अनुमत अधिकतम सीमा तक अप्रत्यक्ष, परिणामी या दंडात्मक क्षति के लिए कोई दायित्व नहीं है।",
+    "disclaimerP1": "Strong Vault <asis>«जैसा है»</asis> और <asavail>«जैसा उपलब्ध है»</asavail> के रूप में प्रदान किया जाता है, कानून द्वारा अनुमत पूर्ण सीमा तक बिना किसी वारंटी के। डेवलपर और योगदानकर्ता डेटा हानि, विफल बैकअप या पुनर्स्थापन, डिवाइस या ब्राउज़र समस्याएँ, भूले हुए पासवर्ड या सॉफ़्टवेयर त्रुटियों सहित नुकसान के लिए <noliab>उत्तरदायी नहीं हैं</noliab>। कानून द्वारा अनुमत अधिकतम सीमा तक अप्रत्यक्ष, परिणामी या दंडात्मक क्षति के लिए कोई दायित्व नहीं है।",
     "disclaimerP2": "यहाँ कुछ भी कानूनी, वित्तीय या व्यावसायिक सलाह नहीं है। ऊपर के नियम इस सारांश की सामान्य पूरक हैं; यदि कोई विरोध हो तो स्पष्ट जोखिम खुलासे और लागू कानून प्रबल होंगे।"
   },
   "categories": {
@@ -404,6 +423,7 @@
         "card_number_last_4": "अंतिम 4 अंक",
         "card_network": "कार्ड नेटवर्क",
         "expiry": "समाप्ति (MM/YYYY)",
+        "cvv": "CVV",
         "credit_limit": "क्रेडिट सीमा",
         "billing_cycle": "बिलिंग चक्र तिथि",
         "customer_care": "ग्राहक सेवा नंबर"
@@ -649,7 +669,7 @@
     "upgradeBadge": "Pro में अपग्रेड",
     "heroUnlock": "पूर्ण {brand} अनलॉक करें",
     "heroUnlockSub": "परिवार के दस्तावेज़ों के लिए आपको जो चाहिए — असीमित, सुरक्षित, हमेशा हाथ में।",
-    "planName": "SecureVault Pro",
+    "planName": "Strong Vault Pro",
     "pricePerYear": "/ वर्ष",
     "subscriptionNote": "एक वार्षिक सदस्यता",
     "getProCta": "Pro लें",
@@ -661,7 +681,7 @@
     "tableFeature": "सुविधा",
     "tableFree": "फ्री",
     "tablePro": "Pro",
-    "getProPlayCta": "Google Play पर SecureVault Pro लें",
+    "getProPlayCta": "Google Play पर Strong Vault Pro लें",
     "alreadyPurchased": "पहले से खरीदा है?",
     "activating": "सक्रिय हो रहा है…",
     "tapActivate": "सक्रिय करने के लिए यहाँ टैप करें",
@@ -749,7 +769,7 @@
     },
     "heroOnProLead": "आप पर हैं",
     "heroUnlockLead": "पूर्ण अनलॉक करें",
-    "brandShort": "SecureVault"
+    "brandShort": "Strong Vault"
   },
   "dangerZone": {
     "title": "खतरा क्षेत्र",
@@ -795,12 +815,16 @@
     "addPhotoBtn": "फ़ोटो जोड़ें",
     "removePhoto": "हटाएँ",
     "photoHint": "फ़ोटो आपके वॉल्ट में स्थानीय रूप से संग्रहित और आकार घटाए जाते हैं।",
-    "fullNameLabel": "पूरा नाम *",
+    "fullNameLabel": "पूरा नाम",
     "namePlaceholder": "उदा. अर्जुन शर्मा",
     "nameRequired": "पूरा नाम आवश्यक है",
-    "relationshipLabel": "रिश्ता *",
+    "nameTooShort": "कम से कम 2 अक्षर लिखें",
+    "nameFormat": "अक्षर, स्पेस, हाइफ़न या अपॉस्ट्रॉफ़ी इस्तेमाल करें (जैसे अर्जुन शर्मा)",
+    "relationshipLabel": "रिश्ता",
     "relationshipRequired": "रिश्ता चुनें",
     "dobLabel": "जन्म तिथि",
+    "dobInvalid": "मान्य जन्म तिथि दर्ज करें (वर्ष 1900 या बाद)",
+    "dobFuture": "जन्म तिथि भविष्य की नहीं हो सकती",
     "profileColorHint": "जब कोई फ़ोटो न हो, और दस्तावेज़ बैज के लिए उपयोग",
     "saving": "सहेज रहा है…",
     "saveChanges": "परिवर्तन सहेजें",
@@ -854,7 +878,7 @@
     "removePhotoTitle": "फ़ोटो हटाएँ"
   },
   "sharePage": {
-    "brandStamp": "SecureVault",
+    "brandStamp": "Strong Vault",
     "viewOnlySubtitle": "साझा दस्तावेज़ (केवल देखें)",
     "openFailed": "यह साझा दस्तावेज़ नहीं खोला जा सका।",
     "missingKey": "यह लिंक अधूरा है — आपको भेजा गया पूरा URL खोलें (# के बाद वाला हिस्सा सहित)।",
@@ -863,11 +887,11 @@
   "handoverPage": {
     "subtitle": "आपातकालीन हैंडओवर (केवल पढ़ना)",
     "notesLabel": "नोट्स:",
-    "brandStamp": "SecureVault",
+    "brandStamp": "Strong Vault",
     "missingKey": "कृपया # सहित पूरा लिंक खोलें।",
     "notFound": "यह हैंडओवर लिंक समाप्त हो गया या बदल दिया गया।",
     "openFailed": "यह हैंडओवर बंडल नहीं खोला जा सका।",
-    "footerLine": "SecureVault द्वारा साझा — केवल दृश्य · उत्पन्न {date}"
+    "footerLine": "Strong Vault द्वारा साझा — केवल दृश्य · उत्पन्न {date}"
   },
   "progressPage": {
     "addMembersForRings": "व्यक्तिगत रिंग देखने के लिए सदस्य जोड़ें।",
@@ -909,7 +933,7 @@
   "consentBanner": {
     "ariaLabel": "गोपनीयता वरीयताएँ",
     "title": "गोपनीयता और डेटा वरीयताएँ",
-    "body": "SecureVault आपके सभी दस्तावेज़ों को <device>आपके डिवाइस पर एन्क्रिप्टेड</device> रूप में संग्रहीत करता है। AI दस्तावेज़ स्कैन के दौरान OCR टेक्स्ट प्रसंस्करण हेतु Anthropic को भेजा जाता है। एनालिटिक्स हमें ऐप सुधारने में मदद करता है। आप सेटिंग्स में कभी भी बदल सकते हैं।",
+    "body": "Strong Vault आपके सभी दस्तावेज़ों को <device>आपके डिवाइस पर एन्क्रिप्टेड</device> रूप में संग्रहीत करता है। AI दस्तावेज़ स्कैन के दौरान OCR टेक्स्ट प्रसंस्करण हेतु Anthropic को भेजा जाता है। एनालिटिक्स हमें ऐप सुधारने में मदद करता है। आप सेटिंग्स में कभी भी बदल सकते हैं।",
     "essential": "आवश्यक — स्थानीय एन्क्रिप्टेड संग्रहण, प्रमाणीकरण, ऑफ़लाइन (आवश्यक)",
     "aiProcessing": "AI प्रसंस्करण — दस्तावेज़ फ़ील्ड निकालने हेतु OCR टेक्स्ट Anthropic Claude को भेजा जाता है। कोई दस्तावेज़ छवि आपके डिवाइस से बाहर नहीं जाती।",
     "analytics": "एनालिटिक्स — ऐप सुधार के लिए Google Analytics के माध्यम से अनाम उपयोग आँकड़े।",

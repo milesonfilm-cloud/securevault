@@ -1,15 +1,17 @@
 import type { VaultSettings } from './storage';
+import { hasPaidProEntitlement } from './proBilling';
 
 /** Max documents per category for free users. */
 export const FREE_DOCS_PER_CATEGORY = 1;
 
 /** Play Store listing URL — update with real package ID when published. */
-export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.securevault.app';
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=strongvault.com';
 
 export type Plan = 'free' | 'pro';
 
+/** True only when the user has a paid store entitlement on record. */
 export function isPro(settings: VaultSettings): boolean {
-  return (settings.plan ?? 'free') === 'pro';
+  return hasPaidProEntitlement(settings);
 }
 
 /**

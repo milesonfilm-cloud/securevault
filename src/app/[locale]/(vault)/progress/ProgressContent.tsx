@@ -4,47 +4,21 @@ import React, { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useVaultData } from '@/context/VaultDataContext';
 import {
+  calculateFamilyScore,
   calculateMemberScore,
   criticalCategoriesForMember,
 } from '@/lib/gamification/completenessScore';
 import { getCategoryById } from '@/lib/categories';
 import CompletenessRing from '@/components/gamification/CompletenessRing';
 import BadgeDisplay from '@/components/gamification/BadgeDisplay';
+import StreakWidget from '@/components/gamification/StreakWidget';
 import OnboardingChecklist, {
   markProgressChecklistVisited,
 } from '@/components/gamification/OnboardingChecklist';
+import { getStreakData } from '@/lib/gamification/streaks';
+import VaultScoreWidget from '@/components/dashboard/VaultScoreWidget';
 import VaultHealthCard from '@/components/dashboard/VaultHealthCard';
 import VaultPageHeading from '@/components/ui/VaultPageHeading';
-import type { VaultData } from '@/lib/storage';
-
-function formatVaultAge(members: VaultData['members'], documents: VaultData['documents']): string {
-  const stamps = [
-    ...members.map((m) => m.createdAt),
-    ...documents.map((d) => d.updatedAt ?? d.createdAt),
-  ].filter(Boolean);
-  if (stamps.length === 0) return 'Not started yet';
-  const earliest = Math.min(...stamps.map((s) => new Date(s).getTime()));
-  const months = Math.max(
-    1,
-    Math.round((Date.now() - earliest) / (1000 * 60 * 60 * 24 * 30))
-  );
-  if (months < 12) return `Vault age: ${months} month${months === 1 ? '' : 's'}`;
-  const years = Math.floor(months / 12);
-  return `Vault age: ${years} year${years === 1 ? '' : 's'}`;
-}
-
-function formatLastUpdated(documents: VaultData['documents']): string {
-  if (documents.length === 0) return 'No documents yet';
-  const latest = Math.max(
-    ...documents.map((d) => new Date(d.updatedAt ?? d.createdAt).getTime())
-  );
-  const days = Math.round((Date.now() - latest) / 86400000);
-  if (days === 0) return 'Last updated: today';
-  if (days === 1) return 'Last updated: yesterday';
-  if (days < 30) return `Last updated: ${days} days ago`;
-  const months = Math.round(days / 30);
-  return `Last updated: ${months} month${months === 1 ? '' : 's'} ago`;
-}
 
 export default function ProgressContent() {
   const { vaultData, loading } = useVaultData();
@@ -55,6 +29,13 @@ export default function ProgressContent() {
     markProgressChecklistVisited();
   }, []);
 
+  const streak = getStreakData();
+
+  const familyScore = useMemo(
+    () => calculateFamilyScore(vaultData.members, vaultData.documents),
+    [vaultData.members, vaultData.documents]
+  );
+
   const memberRows = useMemo(() => {
     return vaultData.members.map((m) => {
       const docs = vaultData.documents.filter((d) => d.memberId === m.id);
@@ -64,18 +45,9 @@ export default function ProgressContent() {
 
   const earned = useMemo(() => new Set(vaultData.streakData.badges), [vaultData.streakData.badges]);
 
-  const vaultAge = useMemo(
-    () => formatVaultAge(vaultData.members, vaultData.documents),
-    [vaultData.members, vaultData.documents]
-  );
-  const lastUpdated = useMemo(
-    () => formatLastUpdated(vaultData.documents),
-    [vaultData.documents]
-  );
-
   if (loading) {
     return (
-      <div className="mx-auto max-w-screen-xl animate-pulse space-y-6 p-4 lg:p-6">
+      <div className="vault-page mx-auto animate-pulse space-y-6">
         <div className="mx-auto h-10 w-64 rounded-xl bg-vault-elevated" />
         <div className="h-40 rounded-2xl bg-vault-panel" />
       </div>
@@ -83,72 +55,93 @@ export default function ProgressContent() {
   }
 
   return (
-    <div className="mx-auto min-h-full max-w-screen-xl bg-vault-bg p-4 lg:p-6">
-      <VaultPageHeading
-        className="mb-8"
-        eyebrow={tp('eyebrow')}
-        title={tp('title')}
-        description={tp('description')}
-      />
+    <div className="vault-page">
+      <VaultPageHeading className="mb-6 sm:mb-8" title={tp('title')} description={tp('description')} />
 
-      <div className="mb-8 grid gap-4 lg:grid-cols-2">
-        <VaultHealthCard vaultData={vaultData} loading={loading} />
+      <div className="mb-5 grid gap-4 sm:mb-8 lg:grid-cols-2">
+        <VaultScoreWidget vaultData={vaultData} />
         <OnboardingChecklist vaultData={vaultData} />
       </div>
 
-      <div className="mb-10 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-vault-panel px-4 py-3 shadow-vault">
-          <p className="text-xs font-medium text-vault-muted">{vaultAge}</p>
+      <div className="mb-6 sm:mb-10">
+        <VaultHealthCard vaultData={vaultData} loading={loading} />
+      </div>
+
+      <div className="neo-card mb-5 grid gap-4 rounded-2xl p-4 sm:mb-8 sm:grid-cols-[auto_1fr] sm:items-center sm:p-5">
+        <div>
+          <p className="text-[10px] font-800 uppercase tracking-wider text-vault-muted">
+            {tp('familyCompleteness')}
+          </p>
+          <p className="mt-1 text-[2.25rem] font-800 tabular-nums leading-none text-vault-text sm:text-5xl">{familyScore}%</p>
         </div>
-        <div className="rounded-2xl border border-border bg-vault-panel px-4 py-3 shadow-vault">
-          <p className="text-xs font-medium text-vault-muted">{lastUpdated}</p>
-        </div>
+        <StreakWidget className="w-full sm:max-w-none" />
       </div>
 
       <section className="mb-10">
-        <h2 className="mb-4 text-sm font-700 text-vault-text">{tp('perMember')}</h2>
+        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">
+          {tp('perMember')}
+        </h2>
         {memberRows.length === 0 ? (
           <p className="text-sm text-vault-muted">{tp('addMembersForRings')}</p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {memberRows.map(({ member, score, missing }) => (
               <div
                 key={member.id}
-                className="flex flex-col items-center rounded-2xl border border-border bg-vault-elevated/30 p-5"
+                className="flex items-start gap-4 rounded-2xl border border-border bg-vault-elevated/30 p-4"
               >
-                <CompletenessRing member={member} percent={score} />
-                <p className="mt-2 text-center text-sm font-700 text-vault-text">{member.name}</p>
-                <p className="mt-1 text-center text-[11px] text-vault-faint">
-                  {tp('criticalCategories', {
-                    count: criticalCategoriesForMember(member).length,
-                  })}
-                </p>
-                {missing.length > 0 ? (
-                  <ul className="mt-3 w-full space-y-1 text-left text-[11px] text-vault-muted">
-                    {missing.map((catId) => (
-                      <li key={`${member.id}-${catId}`} className="flex items-center gap-2">
-                        <span
-                          className="h-1.5 w-1.5 shrink-0 rounded-full"
-                          style={{ backgroundColor: member.avatarColor }}
-                        />
-                        {tm('missingCategory', {
-                          label: getCategoryById(catId)?.label ?? catId,
-                        })}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-3 text-center text-xs font-600 text-vault-warm">{tp('complete')}</p>
-                )}
+                <CompletenessRing member={member} percent={score} size={88} stroke={7} />
+                <div className="min-w-0 flex-1 pt-1">
+                  <p className="truncate text-sm font-700 text-vault-text">{member.name}</p>
+                  <p className="mt-0.5 text-[11px] text-vault-faint">
+                    {tp('criticalCategories', {
+                      count: criticalCategoriesForMember(member).length,
+                    })}
+                  </p>
+                  {missing.length > 0 ? (
+                    <ul className="mt-2 space-y-1 text-[11px] text-vault-muted">
+                      {missing.map((catId) => (
+                        <li key={`${member.id}-${catId}`} className="flex items-center gap-2">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-vault-coral" />
+                          {tm('missingCategory', {
+                            label: getCategoryById(catId)?.shortLabel ?? catId,
+                          })}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-2 text-xs font-600 text-vault-warm">{tp('complete')}</p>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         )}
       </section>
 
-      <section>
-        <h2 className="mb-4 text-sm font-700 text-vault-text">{tp('badges')}</h2>
+      <section className="mb-10">
+        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">{tp('badges')}</h2>
         <BadgeDisplay earnedIds={earned} />
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-sm font-800 uppercase tracking-wider text-vault-muted">
+          {tp('streakStats')}
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-border bg-vault-elevated/40 px-4 py-3">
+            <p className="text-[10px] font-700 uppercase text-vault-faint">{tp('streakCurrent')}</p>
+            <p className="text-2xl font-800 tabular-nums text-vault-text">{streak.currentStreak}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-vault-elevated/40 px-4 py-3">
+            <p className="text-[10px] font-700 uppercase text-vault-faint">{tp('streakLongest')}</p>
+            <p className="text-2xl font-800 tabular-nums text-vault-text">{streak.longestStreak}</p>
+          </div>
+          <div className="rounded-xl border border-border bg-vault-elevated/40 px-4 py-3">
+            <p className="text-[10px] font-700 uppercase text-vault-faint">{tp('streakDaysUsed')}</p>
+            <p className="text-2xl font-800 tabular-nums text-vault-text">{streak.totalDaysUsed}</p>
+          </div>
+        </div>
       </section>
     </div>
   );

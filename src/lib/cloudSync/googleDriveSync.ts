@@ -6,7 +6,7 @@
 import type { EncryptedVaultRecordV1 } from '@/lib/db';
 import { idbGetEncryptedVaultRecord, idbPutEncryptedVaultRecord } from '@/lib/db';
 
-const FILE_NAME = 'securevault_backup.enc';
+const FILE_NAME = 'strongvault_backup.enc';
 const TOKEN_KEY = 'sv_gdrive_token';
 const META_KEY = 'sv_gdrive_last_sync';
 

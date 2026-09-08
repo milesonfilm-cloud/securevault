@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { contrastingInitialsHex } from '@/lib/memberAvatarColors';
+import { resolveMemberColor } from '@/lib/memberAvatarColors';
 
 export interface MemberAvatarProps {
   name: string;
@@ -27,6 +27,8 @@ export default function MemberAvatar({
     .join('')
     .toUpperCase();
 
+  const mc = resolveMemberColor(avatarColor);
+
   if (photoDataUrl) {
     return (
       <div className={cn('relative overflow-hidden shadow-inner', className)}>
@@ -43,7 +45,7 @@ export default function MemberAvatar({
         textClassName,
         className
       )}
-      style={{ backgroundColor: avatarColor, color: contrastingInitialsHex(avatarColor) }}
+      style={{ backgroundColor: mc.bg, color: mc.text }}
     >
       {initials || '?'}
     </div>

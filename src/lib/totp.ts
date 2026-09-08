@@ -2,7 +2,7 @@ import * as OTPAuth from 'otpauth';
 
 export function generateTotpSecret(): string {
   const totp = new OTPAuth.TOTP({
-    issuer: 'SecureVault',
+    issuer: 'Strong Vault',
     label: 'vault',
     algorithm: 'SHA1',
     digits: 6,
@@ -13,7 +13,7 @@ export function generateTotpSecret(): string {
 
 export function verifyTotp(secret: string, token: string): boolean {
   const totp = new OTPAuth.TOTP({
-    issuer: 'SecureVault',
+    issuer: 'Strong Vault',
     label: 'vault',
     algorithm: 'SHA1',
     digits: 6,
@@ -26,7 +26,7 @@ export function verifyTotp(secret: string, token: string): boolean {
 
 export function getTotpUri(secret: string, userLabel: string): string {
   const totp = new OTPAuth.TOTP({
-    issuer: 'SecureVault',
+    issuer: 'Strong Vault',
     label: userLabel,
     algorithm: 'SHA1',
     digits: 6,

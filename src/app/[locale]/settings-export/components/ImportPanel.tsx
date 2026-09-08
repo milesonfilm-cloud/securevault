@@ -31,7 +31,7 @@ export default function ImportPanel() {
 
   const parseFile = (file: File) => {
     if (!file.name.endsWith('.json')) {
-      setErrorMsg('Only JSON files exported from SecureVault are supported');
+      setErrorMsg('Only JSON files exported from Strong Vault are supported');
       setImportState('error');
       return;
     }
@@ -41,7 +41,7 @@ export default function ImportPanel() {
       try {
         const raw = JSON.parse(e.target?.result as string);
         if (!raw.members || !raw.documents) {
-          throw new Error('Invalid SecureVault backup format');
+          throw new Error('Invalid Strong Vault backup format');
         }
         const normalized = normalizeVaultData({
           members: raw.members,
@@ -63,7 +63,7 @@ export default function ImportPanel() {
         });
         setImportState('preview');
       } catch (_err) {
-        setErrorMsg('Could not parse this file — make sure it is a valid SecureVault JSON backup');
+        setErrorMsg('Could not parse this file — make sure it is a valid Strong Vault JSON backup');
         setImportState('error');
       }
     };
@@ -143,7 +143,7 @@ export default function ImportPanel() {
         </div>
         <div>
           <h3 className="text-base font-700 text-vault-text">Import Backup</h3>
-          <p className="text-xs text-vault-faint">Restore from a SecureVault JSON backup file</p>
+          <p className="text-xs text-vault-faint">Restore from a Strong Vault JSON backup file</p>
         </div>
       </div>
 
@@ -213,7 +213,7 @@ export default function ImportPanel() {
               <CheckCircle2 size={18} className="text-vault-warm mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-700 text-vault-text mb-1">
-                  Valid SecureVault backup detected
+                  Valid Strong Vault backup detected
                 </p>
                 <div className="flex flex-wrap gap-3 mt-2">
                   <span className="text-xs bg-vault-warm/20 text-vault-warm px-2 py-1 rounded-full font-600">

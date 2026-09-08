@@ -8,30 +8,34 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  CreditCard,
+  Landmark,
+  Wallet,
+  Building2,
+  Car,
+  Users,
   StickyNote,
+  KeyRound,
   BadgeCheck,
-  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Document, FamilyMember } from '@/lib/storage';
 import { getCategoryById } from '@/lib/categories';
-import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
-import { appendAuditEntry } from '@/lib/auditLog';
 import { DEFAULT_EXPIRY_WARN_DAYS, getDocumentExpiryUrgency } from '@/lib/documentExpiry';
 import { hexAlpha, contrastingInitialsHex } from '@/lib/memberAvatarColors';
 import PhotoAttachments from './PhotoAttachments';
 import CopyValueButton from '@/components/ui/CopyValueButton';
 
-function logDocumentViewed(doc: Document) {
-  appendAuditEntry({
-    action: 'document_viewed',
-    actorMemberId: doc.memberId,
-    targetId: doc.id,
-    targetTitle: doc.title,
-    categoryId: doc.categoryId,
-  });
-}
+const ICON_MAP: Record<string, React.ReactNode> = {
+  CreditCard: <CreditCard size={16} />,
+  Landmark: <Landmark size={16} />,
+  Wallet: <Wallet size={16} />,
+  Building2: <Building2 size={16} />,
+  Car: <Car size={16} />,
+  Users: <Users size={16} />,
+  KeyRound: <KeyRound size={16} />,
+};
 
 interface DocumentListProps {
   documents: Document[];
@@ -49,8 +53,6 @@ interface DocumentListProps {
   onDelete: (doc: Document) => void;
   /** Hide edit/delete (emergency read-only mode). */
   readOnly?: boolean;
-  onQuickAddCategory?: (categoryId: string) => void;
-  onAddDocument?: () => void;
 }
 
 function getMemberById(members: FamilyMember[], id: string): FamilyMember | undefined {
@@ -86,8 +88,6 @@ export default function DocumentList({
   onEdit,
   onDelete,
   readOnly = false,
-  onQuickAddCategory,
-  onAddDocument,
 }: DocumentListProps) {
   const t = useTranslations('documents');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -108,8 +108,6 @@ export default function DocumentList({
     }
 
     setExpandedId(docId);
-    const doc = documents.find((d) => d.id === docId);
-    if (doc) logDocumentViewed(doc);
     setFlashRow({ docId, variant });
 
     let raf0 = 0;
@@ -135,68 +133,22 @@ export default function DocumentList({
   }, [navigateTo, documents, onNavigateToHandled]);
 
   if (documents.length === 0) {
-    const quickCategories = [
-      { id: 'government-ids', label: 'Aadhaar / PAN' },
-      { id: 'passport', label: 'Passport' },
-      { id: 'drivers-license', label: 'Driving License' },
-    ] as const;
-
     return (
       <div
         id="vault-document-list"
-        className="flex flex-col items-center justify-center py-16 px-4 text-center"
+        className="flex flex-col items-center justify-center py-20 text-center"
       >
-        <div className="mb-5 flex gap-2">
-          {['🪪', '📇', '🛂', '🚗'].map((icon) => (
-            <span
-              key={icon}
-              className="flex h-12 w-12 items-center justify-center rounded-xl bg-vault-elevated border border-border text-xl"
-              aria-hidden
-            >
-              {icon}
-            </span>
-          ))}
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-5 bg-vault-elevated border border-border shadow-vault">
+          <CreditCard size={30} className="text-vault-warm" />
         </div>
         <h3 className="text-base font-bold mb-1 text-vault-text">{t('noDocuments')}</h3>
-        <p className="text-sm max-w-sm text-vault-muted mb-6">
-          Start by adding your most important IDs
-        </p>
-        {!readOnly && onQuickAddCategory ? (
-          <div className="flex flex-wrap justify-center gap-2 mb-4">
-            {quickCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => onQuickAddCategory(cat.id)}
-                className="rounded-full border border-border bg-vault-elevated px-4 py-2 text-xs font-700 text-vault-text hover:border-vault-warm/40 transition-colors"
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        ) : null}
-        {!readOnly && onAddDocument ? (
-          <button
-            type="button"
-            onClick={onAddDocument}
-            className="inline-flex items-center gap-2 rounded-full bg-[#4338C9] px-5 py-2.5 text-sm font-bold text-white shadow-[0_8px_20px_rgba(67,56,201,0.28)] transition-all hover:bg-[#372fb0] active:scale-[0.98]"
-          >
-            + Add Document
-          </button>
-        ) : (
-          <p className="text-sm max-w-xs text-vault-muted">{t('listEmptyHint')}</p>
-        )}
+        <p className="text-sm max-w-xs text-vault-muted">{t('listEmptyHint')}</p>
       </div>
     );
   }
 
   const toggleExpand = (id: string) => {
-    setExpandedId((prev) => {
-      if (prev === id) return null;
-      const doc = documents.find((d) => d.id === id);
-      if (doc) logDocumentViewed(doc);
-      return id;
-    });
+    setExpandedId((prev) => (prev === id ? null : id));
   };
 
   const toggleMask = (fieldKey: string) => {
@@ -236,10 +188,11 @@ export default function DocumentList({
                 <>
                   <button
                     onClick={() => onEdit(doc)}
-                    className="p-1.5 rounded-[10px] text-vault-faint hover:text-vault-warm hover:bg-white/[0.05] transition-colors"
+                    className="inline-flex items-center gap-1 rounded-[10px] bg-vault-warm/80 px-2.5 py-1.5 text-[11px] font-bold text-vault-ink transition-colors hover:bg-vault-warm"
                     title="Edit document"
                   >
-                    <Pencil size={16} />
+                    <Pencil size={14} />
+                    Edit
                   </button>
                   <button
                     onClick={() => onDelete(doc)}
@@ -256,16 +209,14 @@ export default function DocumentList({
             </div>
           );
 
-          const memberAccent = member?.avatarColor ?? filterAccentColor;
-
           return (
             <div
               id={`vault-doc-${doc.id}`}
               key={`doc-item-${doc.id}`}
-              className={`rounded-2xl overflow-hidden transition-all duration-200 relative z-0 bg-vault-panel border border-border shadow-[0_12px_40px_rgba(0,0,0,0.55)] ring-1 ring-[rgba(0,255,65,0.16)] ${
-                memberAccent ? 'border-l-[4px]' : ''
+              className={`sv-icon-card rounded-2xl overflow-hidden transition-all duration-200 relative z-0 ${
+                filterAccentColor ? 'border-l-[3px]' : ''
               } ${flashClass}`}
-              style={memberAccent ? { borderLeftColor: memberAccent } : undefined}
+              style={filterAccentColor ? { borderLeftColor: filterAccentColor } : undefined}
             >
               <div
                 className="relative z-[1] flex items-start gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-vault-elevated/50"
@@ -280,29 +231,21 @@ export default function DocumentList({
                     color: cat?.color ?? 'var(--vault-c-warm)',
                   }}
                 >
-                  {cat ? <CategoryLucideIcon name={cat.icon} size={16} /> : <FileText size={16} />}
+                  {cat ? ICON_MAP[cat.icon] : <CreditCard size={16} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   {cat && (
-                    <div className="flex items-center gap-1.5">
-                      <p
-                        className="text-[11px] font-semibold leading-tight"
-                        style={{ color: cat.color }}
-                      >
-                        {cat.label}
-                      </p>
-                      <CopyValueButton value={cat.label} compact className="p-1" />
-                    </div>
+                    <p
+                      className="text-[10px] font-bold uppercase tracking-[1.5px] leading-tight"
+                      style={{ color: cat.color }}
+                    >
+                      {cat.shortLabel}
+                    </p>
                   )}
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
                     <p className="min-w-0 text-[15px] font-semibold leading-snug text-vault-text truncate">
                       {doc.title}
                     </p>
-                    <CopyValueButton
-                      value={doc.title}
-                      compact
-                      className="shrink-0 text-vault-faint"
-                    />
                     {expiryUrgency === 'expired' && (
                       <span className="shrink-0 text-[9px] font-800 uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/25 text-red-200 border border-red-400/30">
                         Expired
@@ -344,13 +287,6 @@ export default function DocumentList({
                         {member.name.split(' ')[0]}
                       </span>
                     )}
-                    {member && (
-                      <CopyValueButton
-                        value={`${member.name} (${member.relationship})`}
-                        compact
-                        className="shrink-0"
-                      />
-                    )}
                     {fieldEntries.length > 0 && !isExpanded && (
                       <p className="text-xs font-mono truncate text-vault-muted">
                         {fieldEntries[0][0]}: {fieldEntries[0][1]}
@@ -388,7 +324,9 @@ export default function DocumentList({
                               {key}
                             </p>
                             <div className="flex shrink-0 items-center gap-1">
-                              <CopyValueButton value={value} compact />
+                              {catField?.type !== 'select' && (
+                                <CopyValueButton value={value} compact />
+                              )}
                               {isSensitive && (
                                 <button
                                   type="button"
@@ -426,11 +364,10 @@ export default function DocumentList({
 
                   {doc.tags.length > 0 && (
                     <div className="mt-2.5">
-                      <div className="mb-1.5 flex items-center justify-between gap-2">
-                        <p className="text-[11px] font-600 text-vault-faint">
+                      <div className="mb-1.5">
+                        <p className="text-[11px] font-600 uppercase tracking-wide text-vault-faint">
                           Tags
                         </p>
-                        <CopyValueButton value={doc.tags.join(', ')} compact className="shrink-0" />
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {doc.tags.map((tag) => (
@@ -450,6 +387,20 @@ export default function DocumentList({
                   <p className="text-xs mt-2.5 text-vault-faint">
                     Updated {formatDate(doc.updatedAt)}
                   </p>
+
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(doc);
+                      }}
+                      className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-vault-warm py-2.5 text-sm font-bold text-vault-ink shadow-vault transition-all active:scale-[0.98]"
+                    >
+                      <Pencil size={16} strokeWidth={2.25} />
+                      Edit document
+                    </button>
+                  )}
                 </div>
               )}
             </div>

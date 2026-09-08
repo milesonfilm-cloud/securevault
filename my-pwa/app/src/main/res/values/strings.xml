@@ -34,7 +34,7 @@
         \"relation\": [\"delegate_permission/common.handle_all_urls\"],
         \"target\": {
             \"namespace\": \"web\",
-            \"site\": \"https://securevault--vault-84ff7.asia-southeast1.hosted.app\"
+            \"site\": \"https://strongvault--vault-84ff7.asia-southeast1.hosted.app\"
         }
     }]
     

@@ -46,7 +46,7 @@ const fontWellnessSerif = DM_Serif_Display({
   fallback: ['Georgia', 'serif'],
 });
 
-/** Urbanist — Family Vault light theme. */
+/** Urbanist — Family Vault home theme. */
 const fontUrbanist = Urbanist({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800', '900'],
@@ -59,35 +59,38 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#f6f5fa',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f6f5fa' },
+    { media: '(prefers-color-scheme: dark)', color: '#f6f5fa' },
+  ],
 };
 
 export const metadata: Metadata = {
-  title: 'SecureVault — Private Document Storage for Families',
+  title: 'Strong Vault — Private Document Storage for Families',
   description:
-    'SecureVault — Android and iOS app for encrypted family document storage on your device. No cloud vault sync.',
+    'Strong Vault — Android and iOS app for encrypted family document storage on your device. No cloud vault sync.',
   manifest: '/manifest.json',
   icons: {
     icon: [
       {
-        url: '/brand/securevault-app-icon.png',
+        url: '/brand/strongvault-app-icon.png',
         type: 'image/png',
         sizes: '512x512',
       },
       {
-        url: '/brand/securevault-app-icon.png',
+        url: '/brand/strongvault-app-icon.png',
         type: 'image/png',
         sizes: '192x192',
       },
       { url: '/brand/vault-mark.svg', type: 'image/svg+xml', sizes: 'any' },
     ],
-    apple: [{ url: '/brand/securevault-app-icon.png', sizes: '180x180', type: 'image/png' }],
-    shortcut: [{ url: '/brand/securevault-app-icon.png', type: 'image/png', sizes: '192x192' }],
+    apple: [{ url: '/brand/strongvault-app-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: [{ url: '/brand/strongvault-app-icon.png', type: 'image/png', sizes: '192x192' }],
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'SecureVault',
+    title: 'Strong Vault',
   },
 };
 
@@ -104,12 +107,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         fontUrbanist.variable,
         'font-sans'
       )}
-      data-theme="pastel"
+      data-theme="glass"
     >
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{localStorage.setItem('sv_ui_theme','pastel');}catch(e){}document.documentElement.setAttribute('data-theme','pastel');})();`,
+            __html: `(function(){try{localStorage.setItem('sv_ui_theme','glass');document.documentElement.setAttribute('data-theme','glass');}catch(e){document.documentElement.setAttribute('data-theme','glass');}})();`,
           }}
         />
       </head>

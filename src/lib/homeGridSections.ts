@@ -16,7 +16,7 @@ export interface HomeGridSection {
 }
 
 /**
- * Consolidates SecureVault categories into 5 home-grid sections.
+ * Consolidates all 19 Strong Vault categories into 5 home-grid sections.
  */
 /** Saturated “icon sheet” hues — pair with glass + gradients in Spectrum home UI */
 export const HOME_GRID_SECTIONS: HomeGridSection[] = [
@@ -30,15 +30,7 @@ export const HOME_GRID_SECTIONS: HomeGridSection[] = [
     id: 'finance-banking',
     title: 'Finance & Banking',
     color: '#0EA5E9',
-    categoryIds: [
-      'bank-accounts',
-      'credit-debit-cards',
-      'insurance',
-      'investment',
-      'loan',
-      'income',
-      'subscription',
-    ],
+    categoryIds: ['bank-accounts', 'credit-debit-cards', 'insurance', 'subscription'],
   },
   {
     id: 'travel-vehicles',

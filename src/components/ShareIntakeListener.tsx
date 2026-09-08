@@ -36,7 +36,7 @@ export default function ShareIntakeListener() {
             metadata: { source: 'pwa_share_target' },
           });
         }
-        router.push('/document-vault?shared=1');
+        router.push('/family-management?shared=1');
       })();
     };
 
@@ -102,7 +102,7 @@ export default function ShareIntakeListener() {
                 });
               }
 
-              router.push('/document-vault?shared=1');
+              router.push('/family-management?shared=1');
             })();
           }
         );

@@ -1,4 +1,4 @@
-﻿# SecureVault
+﻿# Strong Vault
 
 A **zero-knowledge family document vault** built for India and beyond.
 

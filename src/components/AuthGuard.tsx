@@ -6,13 +6,15 @@ import { Eye, EyeOff, Lock, Fingerprint, CheckCircle2, ScanFace } from 'lucide-r
 import BackupReminderBanner from '@/components/ui/BackupReminderBanner';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import AuthWelcomePanel from '@/components/AuthWelcomePanel';
+import BrandLogoSplash from '@/components/ui/BrandLogoSplash';
+import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
 import {
-  isBiometricSupported,
-  isPlatformAuthenticatorAvailable,
+  isBiometricAvailable,
   hasBiometricCredential,
   registerBiometric,
   authenticateWithBiometric,
-} from '@/lib/webauthn';
+} from '@/lib/biometricAuth';
+import { isNativeApp } from '@/lib/platform';
 import {
   clearVaultKey,
   getStoredKdfParams,
@@ -23,7 +25,6 @@ import {
   setStoredVerifier,
   setVaultKey,
 } from '@/lib/vaultSession';
-import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
 import { persistUnlockedVaultKey, tryRestoreVaultKeyFromPersist } from '@/lib/vaultKeyPersist';
 import {
   computePinVerifier,
@@ -35,12 +36,11 @@ import {
 import { appendAuditEntry } from '@/lib/auditLog';
 import { resetVaultLocalOnly } from '@/lib/storage';
 import { VaultDataProvider } from '@/context/VaultDataContext';
-import { completeAuthIntroSession, shouldShowAuthIntro } from '@/lib/authIntroSession';
+import { AUTH_INTRO_SESSION_KEY, completeAuthIntroSession } from '@/lib/authIntroSession';
+import { hasSeenLogoSplash } from '@/lib/logoSplash';
+import { requestFirstSignInWalkthrough } from '@/lib/appWalkthrough';
 import { verifyTotp } from '@/lib/totp';
 import { isTotpEnabled, loadTotpSecretEncrypted } from '@/lib/totpSettings';
-import { enterDemoMode, exitDemoMode, isDemoMode } from '@/lib/demoMode';
-import { createEphemeralDemoVaultKey, ensureDemoVaultSeeded } from '@/lib/demoVaultSeed';
-import { EXIT_DEMO_EVENT } from '@/components/DemoModeBanner';
 
 const SESSION_KEY = SESSION_UNLOCKED_KEY;
 
@@ -74,126 +74,135 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const [biometricSetupOffer, setBiometricSetupOffer] = useState(false);
   const [introChecked, setIntroChecked] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [playLogoSplash, setPlayLogoSplash] = useState(false);
   /** Shown on login after biometric gate — PIN still required to derive CryptoKey */
   const [loginHint, setLoginHint] = useState('');
+  /** When biometrics are enabled, unlock requires biometric success before PIN is accepted. */
+  const [biometricVerified, setBiometricVerified] = useState(false);
   const [totpGateActive, setTotpGateActive] = useState(false);
   const [totpCode, setTotpCode] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const bioPromptedRef = useRef(false);
+
+  const requiresBiometricGate = biometricAvailable && biometricRegistered;
+  const awaitingBiometric = phase === 'login' && requiresBiometricGate && !biometricVerified;
 
   useEffect(() => {
     const storedVerifier = getStoredVerifier();
 
-    const init = async () => {
-      const supported = isBiometricSupported();
-      if (supported) {
-        const available = await isPlatformAuthenticatorAvailable();
-        setBiometricAvailable(available);
-        setBiometricRegistered(hasBiometricCredential());
-      }
-
-      if (!storedVerifier) {
-        if (isDemoMode()) {
-          try {
-            ensureDemoVaultSeeded();
-            const key = await createEphemeralDemoVaultKey();
-            setVaultKey(key);
-            safeSessionSet(SESSION_KEY, 'true');
-            setPhase('unlocked');
-            return;
-          } catch {
-            exitDemoMode();
-          }
-        }
-        setPhase('setup');
-      } else {
-        if (isDemoMode()) exitDemoMode();
-        const restored = await tryRestoreVaultKeyFromPersist();
-        if (restored) {
-          setVaultKey(restored);
-          safeSessionSet(SESSION_KEY, 'true');
-          setPhase('unlocked');
-        } else {
-          setPhase('login');
-        }
+    const withTimeout = async <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        return await Promise.race([
+          promise,
+          new Promise<T>((resolve) => {
+            timer = setTimeout(() => resolve(fallback), ms);
+          }),
+        ]);
+      } finally {
+        if (timer) clearTimeout(timer);
       }
     };
 
-    init();
+    const init = async () => {
+      try {
+        const available = await withTimeout(isBiometricAvailable(), 2500, isNativeApp());
+        setBiometricAvailable(available);
+        setBiometricRegistered(hasBiometricCredential());
+
+        if (!storedVerifier) {
+          setPhase('setup');
+        } else {
+          const restored = await withTimeout(tryRestoreVaultKeyFromPersist(), 2500, null);
+          if (restored) {
+            setVaultKey(restored);
+            safeSessionSet(SESSION_KEY, 'true');
+            setPhase('unlocked');
+          } else {
+            setPhase('login');
+          }
+        }
+      } catch {
+        setPhase(storedVerifier ? 'login' : 'setup');
+      }
+    };
+
+    void init();
   }, []);
 
   useEffect(() => {
     if (phase !== 'setup' && phase !== 'login') return;
-    const hasCredentials = !!getStoredVerifier();
-    setShowIntro(shouldShowAuthIntro(hasCredentials));
+    try {
+      const done = sessionStorage.getItem(AUTH_INTRO_SESSION_KEY) === '1';
+      setShowIntro(!done);
+      setPlayLogoSplash(!done && phase === 'setup' && !hasSeenLogoSplash());
+    } catch {
+      setShowIntro(true);
+      setPlayLogoSplash(phase === 'setup');
+    }
     setIntroChecked(true);
   }, [phase]);
 
   useEffect(() => {
     if (showIntro) return;
-    if (phase === 'setup' || phase === 'login') {
+    if (phase === 'setup' || (phase === 'login' && !awaitingBiometric)) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
-  }, [phase, showIntro]);
+  }, [phase, showIntro, awaitingBiometric]);
 
   const completeAuthIntro = useCallback(() => {
     completeAuthIntroSession();
     setShowIntro(false);
   }, []);
 
-  const startDemoMode = useCallback(() => {
-    void (async () => {
-      try {
-        enterDemoMode();
-        ensureDemoVaultSeeded();
-        const key = await createEphemeralDemoVaultKey();
-        setVaultKey(key);
-        completeAuthIntroSession();
-        setShowIntro(false);
-        setError('');
-        setPin('');
-        setConfirmPin('');
-        safeSessionSet(SESSION_KEY, 'true');
-        setSuccess(true);
-        setPhase('unlocked');
-        if (pathname !== '/family-management') {
-          router.replace('/family-management');
-        }
-      } catch (err) {
-        console.error('[SecureVault] demo mode failed', err);
-        exitDemoMode();
-        setError(t('createFailed'));
-        triggerShake();
-      }
-    })();
-  }, [pathname, router, t]);
-
-  const leaveDemoForSetup = useCallback(() => {
-    exitDemoMode();
-    clearVaultKey();
-    try {
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch {
-      /* ignore */
-    }
-    setSuccess(false);
-    setPin('');
-    setConfirmPin('');
-    setError('');
-    setShowIntro(false);
-    completeAuthIntroSession();
-    setPhase('setup');
-  }, []);
-
-  useEffect(() => {
-    const onExitDemo = () => leaveDemoForSetup();
-    window.addEventListener(EXIT_DEMO_EVENT, onExitDemo);
-    return () => window.removeEventListener(EXIT_DEMO_EVENT, onExitDemo);
-  }, [leaveDemoForSetup]);
-
   const triggerShake = () => {
     setShake(true);
     setTimeout(() => setShake(false), 600);
   };
+
+  const handleBiometricLogin = useCallback(async () => {
+    setBiometricLoading(true);
+    setError('');
+    try {
+      const ok = await authenticateWithBiometric();
+      if (ok) {
+        if (!getStoredVerifier() || !getStoredKdfParams()) {
+          throw new Error('not_initialized');
+        }
+        // Biometrics prove presence; AES key is still derived from PIN only.
+        setBiometricVerified(true);
+        setLoginHint(t('identityVerifiedHint'));
+        setPhase('login');
+        setPin('');
+        setTimeout(() => inputRef.current?.focus(), 100);
+      } else {
+        setError(t('bioFailed'));
+        setShake(true);
+        setTimeout(() => setShake(false), 600);
+      }
+    } catch {
+      setError(t('bioUnavailable'));
+      setShake(true);
+      setTimeout(() => setShake(false), 600);
+    } finally {
+      setBiometricLoading(false);
+    }
+  }, [t]);
+
+  // Auto-prompt biometrics once when login requires the gate.
+  useEffect(() => {
+    if (phase !== 'login' || showIntro || !introChecked) return;
+    if (!requiresBiometricGate || biometricVerified || bioPromptedRef.current) return;
+    bioPromptedRef.current = true;
+    void handleBiometricLogin();
+  }, [
+    phase,
+    showIntro,
+    introChecked,
+    requiresBiometricGate,
+    biometricVerified,
+    handleBiometricLogin,
+  ]);
 
   const unlockVault = useCallback(() => {
     appendAuditEntry({
@@ -202,15 +211,13 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       targetId: null,
       targetTitle: null,
     });
-    if (!isDemoMode()) {
-      void (async () => {
-        try {
-          await persistUnlockedVaultKey(getVaultKey());
-        } catch {
-          /* ignore */
-        }
-      })();
-    }
+    void (async () => {
+      try {
+        await persistUnlockedVaultKey(getVaultKey());
+      } catch {
+        /* ignore */
+      }
+    })();
     safeSessionSet(SESSION_KEY, 'true');
     setSuccess(true);
     setPhase('unlocked');
@@ -240,10 +247,6 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           triggerShake();
           return;
         }
-        // Leaving demo: wipe sample session data before creating a real vault
-        if (isDemoMode()) {
-          exitDemoMode();
-        }
         const params = newKdfParams();
         const key = await deriveAesKeyFromPin(pin, params);
         const verifier = await computePinVerifier(key);
@@ -264,13 +267,14 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           return;
         }
         setVaultKey(key);
+        requestFirstSignInWalkthrough();
         if (biometricAvailable && !biometricRegistered) {
           setBiometricSetupOffer(true);
         } else {
           unlockVault();
         }
       } catch (err) {
-        console.error('[SecureVault] setup failed', err);
+        console.error('[Strong Vault] setup failed', err);
         const msg = err instanceof Error ? err.message.toLowerCase() : '';
         if (
           msg.includes('memory') ||
@@ -296,6 +300,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (requiresBiometricGate && !biometricVerified) {
+      setError(t('bioRequiredBeforePin'));
+      triggerShake();
+      void handleBiometricLogin();
+      return;
+    }
     setLoginHint('');
     (async () => {
       const params = getStoredKdfParams();
@@ -319,38 +329,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     });
   };
 
-  const handleBiometricLogin = async () => {
-    setBiometricLoading(true);
-    setError('');
-    try {
-      const ok = await authenticateWithBiometric();
-      if (ok) {
-        if (!getStoredVerifier() || !getStoredKdfParams()) {
-          throw new Error('not_initialized');
-        }
-        // Biometrics prove presence; the AES key is still derived from PIN only.
-        setLoginHint(t('identityVerifiedHint'));
-        setPhase('login');
-        setPin('');
-        setTimeout(() => inputRef.current?.focus(), 100);
-      } else {
-        setError(t('bioFailed'));
-        triggerShake();
-      }
-    } catch {
-      setError(t('bioUnavailable'));
-      triggerShake();
-    } finally {
-      setBiometricLoading(false);
-    }
-  };
-
   const handleRegisterBiometric = async () => {
     setBiometricLoading(true);
     setError('');
     try {
-      const ok = await registerBiometric();
-      if (ok) {
+      const result = await registerBiometric();
+      if (result.ok) {
         setBiometricRegistered(true);
         unlockVault();
       } else {
@@ -383,7 +367,10 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   if (phase === 'loading') {
     return (
       <div className="min-h-[100dvh] auth-bg flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-vault-warm"
+          aria-label={t('unlocking')}
+        />
       </div>
     );
   }
@@ -557,13 +544,12 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   }
 
   if (showIntro) {
+    if (playLogoSplash) {
+      return <BrandLogoSplash onFinished={() => setPlayLogoSplash(false)} />;
+    }
     return (
       <div className="auth-welcome-banner flex min-h-[100dvh] flex-col items-center justify-center p-4 py-10 relative overflow-x-hidden">
-        <AuthWelcomePanel
-          phase={phase === 'login' ? 'login' : 'setup'}
-          onFinish={completeAuthIntro}
-          onTryDemo={phase === 'setup' ? startDemoMode : undefined}
-        />
+        <AuthWelcomePanel phase={phase} onFinish={completeAuthIntro} />
       </div>
     );
   }
@@ -579,71 +565,63 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <div
             className={`relative mb-4 transition-all duration-500 ${success ? 'scale-110' : ''}`}
           >
-            <div className="flex min-h-[6.75rem] w-full max-w-[280px] items-center justify-center rounded-2xl border border-[color:var(--color-border)] bg-vault-elevated px-5 py-3.5">
+            <div className="flex items-center justify-center">
               {success ? (
                 <CheckCircle2 size={36} className="text-vault-warm animate-scale-in" />
               ) : (
-                <BrandMarkSvg
-                  title="SecureVault"
-                  className="max-h-[108px] w-auto shrink-0"
-                  size={96}
-                />
+                <BrandMarkSvg title="Strong Vault" size={96} className="mx-auto" />
               )}
             </div>
           </div>
 
           <h1 className="text-center text-2xl font-800 tracking-tight text-vault-text">
-            {success ? t('welcome') : phase === 'setup' ? t('createPassword') : t('unlockVault')}
+            {success
+              ? t('welcome')
+              : phase === 'setup'
+                ? t('createPassword')
+                : awaitingBiometric
+                  ? t('biometricRequiredTitle')
+                  : t('unlockVault')}
           </h1>
           <p className="text-sm text-vault-muted mt-1 text-center">
-            {success ? t('unlocking') : phase === 'setup' ? t('createPin') : t('enterPin')}
+            {success
+              ? t('unlocking')
+              : phase === 'setup'
+                ? t('createPin')
+                : awaitingBiometric
+                  ? t('biometricThenPin')
+                  : t('enterPin')}
           </p>
         </div>
 
-        {/* Biometric quick-login button (login phase only, if registered) */}
-        {!success &&
-          phase === 'login' &&
-          biometricAvailable &&
-          biometricRegistered &&
-          !loginHint && (
-            <button
-              onClick={handleBiometricLogin}
-              disabled={biometricLoading}
-              className="w-full mb-5 flex flex-col items-center gap-2 bg-vault-elevated hover:bg-vault-panel border border-[color:var(--color-border)] rounded-2xl py-4 px-4 transition-all duration-200 group"
-            >
-              <div className="relative">
-                <div className="w-14 h-14 rounded-2xl bg-vault-panel border border-[color:var(--color-border)] flex items-center justify-center transition-all duration-200">
-                  {biometricLoading ? (
-                    <div className="w-6 h-6 border-2 border-vault-faint border-t-vault-warm rounded-full animate-spin" />
-                  ) : (
-                    <Fingerprint size={28} className="text-vault-warm transition-colors" />
-                  )}
-                </div>
+        {/* Biometric gate (required first when enabled) */}
+        {!success && phase === 'login' && awaitingBiometric && (
+          <button
+            type="button"
+            onClick={() => void handleBiometricLogin()}
+            disabled={biometricLoading}
+            className="w-full mb-5 flex flex-col items-center gap-2 bg-vault-elevated hover:bg-vault-panel border border-[color:var(--color-border)] rounded-2xl py-4 px-4 transition-all duration-200 group"
+          >
+            <div className="relative">
+              <div className="w-14 h-14 rounded-2xl bg-vault-panel border border-[color:var(--color-border)] flex items-center justify-center transition-all duration-200">
+                {biometricLoading ? (
+                  <div className="w-6 h-6 border-2 border-vault-faint border-t-vault-warm rounded-full animate-spin" />
+                ) : (
+                  <Fingerprint size={28} className="text-vault-warm transition-colors" />
+                )}
               </div>
-              <div className="text-center">
-                <p className="text-sm font-700 text-vault-text transition-colors">
-                  {biometricLoading ? t('authenticating') : t('biometric')}
-                </p>
-                <p className="text-xs text-vault-muted mt-0.5">{t('fingerprintOrFace')}</p>
-              </div>
-            </button>
-          )}
-
-        {/* Divider */}
-        {!success &&
-          phase === 'login' &&
-          biometricAvailable &&
-          biometricRegistered &&
-          !loginHint && (
-            <div className="flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-vault-faint font-600">{t('usePassword')}</span>
-              <div className="flex-1 h-px bg-border" />
             </div>
-          )}
+            <div className="text-center">
+              <p className="text-sm font-700 text-vault-text transition-colors">
+                {biometricLoading ? t('authenticating') : t('biometric')}
+              </p>
+              <p className="text-xs text-vault-muted mt-0.5">{t('fingerprintOrFace')}</p>
+            </div>
+          </button>
+        )}
 
-        {/* Form */}
-        {!success && (
+        {/* Form — password only after biometrics when enabled */}
+        {!success && !awaitingBiometric && (
           <form onSubmit={phase === 'setup' ? handleSetup : handleLogin} className="space-y-4">
             {/* Password field */}
             <div className="space-y-1.5">
@@ -735,23 +713,24 @@ export default function AuthGuard({ children }: AuthGuardProps) {
               <Lock size={18} />
               {phase === 'setup' ? t('createVaultPassword') : t('submitUnlock')}
             </button>
-            {phase === 'setup' ? (
-              <button
-                type="button"
-                onClick={startDemoMode}
-                className="mt-3 w-full rounded-xl border border-[color:var(--color-border)] bg-vault-elevated py-3 text-sm font-700 text-vault-text transition-colors hover:bg-vault-panel"
-              >
-                {t('tryDemo')}
-              </button>
-            ) : null}
           </form>
         )}
 
-        {!success && (phase === 'setup' || phase === 'login') && (
+        {!success && awaitingBiometric && error && (
+          <div
+            role="alert"
+            className="mb-4 flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2.5 animate-fade-in"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
+        )}
+
+        {!success && (phase === 'setup' || (phase === 'login' && !awaitingBiometric)) && (
           <BackupReminderBanner variant="dark" className="mt-5" />
         )}
 
-        {!success && phase === 'login' && (
+        {!success && phase === 'login' && !awaitingBiometric && (
           <button
             type="button"
             onClick={handleForgotPin}

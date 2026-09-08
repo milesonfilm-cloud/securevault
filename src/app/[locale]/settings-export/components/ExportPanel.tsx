@@ -7,6 +7,7 @@ import { VaultData, ExportRecord } from '@/lib/storage';
 import { useVaultData } from '@/context/VaultDataContext';
 import { CATEGORIES } from '@/lib/categories';
 import { appendAuditEntry } from '@/lib/auditLog';
+import { saveOrShareFile } from '@/lib/saveFile';
 
 type ExportFormat = 'json' | 'csv';
 
@@ -29,7 +30,7 @@ export default function ExportPanel() {
       if (format === 'json') {
         const exportData = {
           exportedAt: new Date().toISOString(),
-          app: 'SecureVault',
+          app: 'Strong Vault',
           version: '1.0',
           members: vaultData.members,
           documents: docs,
@@ -37,12 +38,7 @@ export default function ExportPanel() {
           documentStacks: vaultData.documentStacks,
         };
         const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `securevault-backup-${timestamp}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+        await saveOrShareFile(blob, `strongvault-backup-${timestamp}.json`, 'application/json');
       } else if (format === 'csv') {
         const rows: string[] = [];
         rows.push(
@@ -73,12 +69,7 @@ export default function ExportPanel() {
           );
         });
         const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `securevault-export-${timestamp}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
+        await saveOrShareFile(blob, `strongvault-export-${timestamp}.csv`, 'text/csv');
       }
 
       // Record export
@@ -94,7 +85,9 @@ export default function ExportPanel() {
       };
       await persistVaultData(updated);
 
-      toast.success(`Exported ${docs.length} documents as ${format.toUpperCase()}`);
+      toast.success(
+        `Exported ${docs.length} documents as ${format.toUpperCase()}. Choose where to save the file.`
+      );
       appendAuditEntry({
         action: 'vault_exported',
         actorMemberId: null,
@@ -113,7 +106,7 @@ export default function ExportPanel() {
       {
         id: 'json',
         label: 'JSON Backup',
-        desc: 'Full backup — importable back into SecureVault',
+        desc: 'Full backup — importable back into Strong Vault',
         icon: <FileJson size={18} className="text-vault-warm" />,
       },
       {

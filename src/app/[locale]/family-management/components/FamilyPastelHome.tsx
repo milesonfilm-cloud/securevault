@@ -1,36 +1,36 @@
 'use client';
 
-import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   AlertTriangle,
   ArrowLeft,
-  ArrowUpRight,
   ChevronRight,
   Eye,
   EyeOff,
+  FilePlus,
+  Pencil,
   Plus,
-  RefreshCw,
+  Search,
+  UserPlus,
   StickyNote,
+  MoveHorizontal,
   X,
 } from 'lucide-react';
-import { Link } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { FamilyMember, Document } from '@/lib/storage';
 import { CATEGORIES, getCategoryById } from '@/lib/categories';
-import Modal from '@/components/ui/Modal';
 import CopyValueButton from '@/components/ui/CopyValueButton';
 import { CategoryLucideIcon } from '@/lib/categoryLucideIcons';
 import {
-  pastelPaletteFromAvatarColor,
-  PASTEL_ACCENT_PLACEHOLDER_PALETTE,
-} from '@/lib/memberPastelPalettes';
+  hexAlpha,
+  resolveMemberColor,
+  type MemberColorDef,
+} from '@/lib/memberAvatarColors';
 import { isDemoMemberId } from '@/lib/demoFamilyMembers';
-import { isDemoMode } from '@/lib/demoMode';
-import { resolveMemberColor } from '@/lib/memberAvatarColors';
-import MemberAvatar from '@/components/MemberAvatar';
+import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
 import { cn } from '@/lib/utils';
-import { useVaultData } from '@/context/VaultDataContext';
 import { usePastelMemberAccent } from '@/context/PastelMemberAccentContext';
 import {
   DEFAULT_EXPIRY_WARN_DAYS,
@@ -39,71 +39,154 @@ import {
   parseExpiryValue,
   EXPIRY_FIELD_KEYS,
 } from '@/lib/documentExpiry';
+import {
+  collectMemberDocumentSearchHits,
+  documentMatchesSearch,
+  getSearchMatchHint,
+  memberMatchesSearch,
+} from '@/lib/documentSearch';
 
 const SPRING = [0.16, 1, 0.3, 1] as const;
+const STACK_SPRING = { type: 'spring', stiffness: 380, damping: 32, mass: 0.7 } as const;
+const CARD_W = 189;
+const CARD_H = 214;
+const FAN_STEP = 62;
+const FAN_MAX = 2;
 
-/** Landscape card + stacked layers: each rear card exposes this many px above the one in front */
-const PASTEL_CARD_STACK_PEEK_PX = 30;
-const PASTEL_CARD_H = 292;
-const PASTEL_CARD_MAX_W = 384;
-
-function formatMonthYear(iso: string): string {
-  try {
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
-  } catch {
-    return '—';
-  }
+/** Shortest signed distance on a ring so the focused card is always slot 0. */
+function wrapOffset(index: number, focus: number, count: number): number {
+  if (count <= 1) return 0;
+  let d = index - focus;
+  const half = Math.floor(count / 2);
+  if (d > half) d -= count;
+  if (d < -half) d += count;
+  return d;
 }
 
-function pastelRipple(e: React.MouseEvent<HTMLElement>) {
-  const el = e.currentTarget;
-  if (getComputedStyle(el).position === 'static') {
-    el.style.position = 'relative';
-  }
-  el.style.overflow = 'hidden';
-  const rect = el.getBoundingClientRect();
-  const dot = document.createElement('span');
-  dot.className = 'pastel-ripple-dot';
-  dot.style.left = `${e.clientX - rect.left}px`;
-  dot.style.top = `${e.clientY - rect.top}px`;
-  el.appendChild(dot);
-  window.setTimeout(() => dot.remove(), 720);
+function glassCardWashStyle(mc: MemberColorDef): React.CSSProperties {
+  return {
+    backgroundImage: `linear-gradient(165deg, rgba(255,255,255,0.82) 0%, ${hexAlpha(mc.bg, 0.96)} 58%, ${hexAlpha(mc.border, 0.16)} 100%)`,
+  };
 }
 
-function usePastelCountUp(target: number, enabled: boolean) {
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    if (!enabled) return;
-    let cancelled = false;
-    let intervalId: number | undefined;
-    const startTimer = window.setTimeout(() => {
-      if (cancelled) return;
-      const dur = 500;
-      const stepMs = 16;
-      const steps = Math.max(1, Math.ceil(dur / stepMs));
-      let i = 0;
-      intervalId = window.setInterval(() => {
-        i += 1;
-        setV(Math.round((target * i) / steps));
-        if (i >= steps) {
-          if (intervalId !== undefined) window.clearInterval(intervalId);
-          intervalId = undefined;
-          setV(target);
-        }
-      }, stepMs) as unknown as number;
-    }, 700);
-    return () => {
-      cancelled = true;
-      window.clearTimeout(startTimer);
-      if (intervalId !== undefined) window.clearInterval(intervalId);
-    };
-  }, [target, enabled]);
-  return v;
+function displayMemberName(name: string): string {
+  return name.trim().toLocaleUpperCase();
+}
+
+function MemberCarouselCard({
+  member,
+  index,
+  total,
+  selected,
+  offset,
+  onSelect,
+  docCount,
+  categoryCount,
+}: {
+  member: FamilyMember;
+  index: number;
+  total: number;
+  selected: boolean;
+  offset: number;
+  onSelect: () => void;
+  docCount: number;
+  categoryCount: number;
+}) {
+  const t = useTranslations('pastelHome');
+  const mc = resolveMemberColor(member.avatarColor);
+  const abs = Math.abs(offset);
+  const label = `${String(index + 1).padStart(2, '0')}/${String(total).padStart(2, '0')}`;
+
+  if (abs > FAN_MAX) return null;
+
+  return (
+    <motion.button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect();
+      }}
+      aria-expanded={selected}
+      aria-label={member.name}
+      initial={false}
+      animate={{
+        x: offset * FAN_STEP,
+        y: selected ? -10 : abs * 22,
+        rotate: offset * 8,
+        scale: selected ? 1 : Math.max(0.84, 0.94 - abs * 0.05),
+        opacity: 1,
+        zIndex: 20 - abs,
+      }}
+      transition={STACK_SPRING}
+      whileTap={{ scale: selected ? 0.98 : 0.92 }}
+      className="cream-wallet-card absolute top-3 origin-bottom overflow-hidden text-left"
+      style={{
+        width: CARD_W,
+        height: CARD_H,
+        left: '50%',
+        marginLeft: -CARD_W / 2,
+        borderRadius: 28,
+        background: mc.bg,
+        backdropFilter: 'blur(18px)',
+        WebkitBackdropFilter: 'blur(18px)',
+        border: '1px solid rgba(255,255,255,0.78)',
+        boxShadow: selected
+          ? `0 22px 40px ${hexAlpha(mc.border, 0.38)}, 0 0 36px ${hexAlpha(mc.border, 0.22)}`
+          : `0 10px 24px ${hexAlpha(mc.border, 0.24)}`,
+      }}
+    >
+      <div className="pointer-events-none absolute inset-0" style={glassCardWashStyle(mc)} />
+      <div className="relative z-[1] flex h-full flex-col">
+        {selected ? (
+          <div className="flex items-start justify-between px-4 pt-4">
+            <div className="min-w-0 text-left">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#1a1a1a]/55">
+                {t('documentsLabel')}
+              </p>
+              <p className="mt-0.5 text-[20px] font-bold tabular-nums leading-none text-[#1a1a1a]">
+                {docCount}
+              </p>
+            </div>
+            <div className="min-w-0 text-right">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[#1a1a1a]/55">
+                {t('categoriesLabel')}
+              </p>
+              <p className="mt-0.5 text-[20px] font-bold tabular-nums leading-none text-[#1a1a1a]">
+                {categoryCount}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="h-14" />
+        )}
+        <div
+          className="mt-auto flex min-h-[62px] items-center justify-between gap-3 border-t border-white/50 px-4 py-3"
+          style={{
+            background: hexAlpha(mc.border, 0.28),
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.42)',
+          }}
+        >
+          <div className="min-w-0">
+            <p className="truncate text-[9px] font-medium uppercase tracking-[0.14em] text-[#1a1a1a]/55">
+              {member.relationship}
+            </p>
+            <p className="mt-0.5 truncate text-[15px] font-bold uppercase leading-tight tracking-[0.06em] text-[#1a1a1a]">
+              {displayMemberName(member.name)}
+            </p>
+          </div>
+          <p className="shrink-0 text-[12px] font-semibold tabular-nums tracking-wide text-[#1a1a1a]/72">
+            {label}
+          </p>
+        </div>
+      </div>
+      <span className="sr-only">{t('docsSuffix')}</span>
+    </motion.button>
+  );
 }
 
 // ─── Member Category Section ───────────────────────────────────────────────
-type MemberPaletteType = ReturnType<typeof pastelPaletteFromAvatarColor>;
-
 function maskValue(v: string) {
   return '•'.repeat(Math.min(v.length, 12));
 }
@@ -115,14 +198,17 @@ function InlineDocDetail({
   catIcon,
   catLabel,
   onBack,
+  onEdit,
 }: {
   doc: Document;
   catColor: string;
   catIcon: string;
   catLabel: string;
   onBack: () => void;
+  onEdit: (doc: Document) => void;
 }) {
   const t = useTranslations('pastelHome');
+  const tc = useTranslations('common');
   const locale = useLocale();
   const [revealedFields, setRevealedFields] = useState<Set<string>>(new Set());
   const urgency = getDocumentExpiryUrgency(doc, DEFAULT_EXPIRY_WARN_DAYS);
@@ -138,7 +224,7 @@ function InlineDocDetail({
       today.setHours(0, 0, 0, 0);
       const daysUntil = Math.round((exp.getTime() - today.getTime()) / 86400000);
       if (daysUntil <= DEFAULT_EXPIRY_WARN_DAYS) {
-        return { label: key, summary: formatExpirySummary(daysUntil, exp), daysUntil };
+        return { label: key, summary: formatExpirySummary(daysUntil), daysUntil };
       }
     }
     return null;
@@ -160,11 +246,11 @@ function InlineDocDetail({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 28 }}
       transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-      className="flex flex-col"
+      className="flex w-full flex-col"
     >
       {/* ── Header ── */}
       <div
-        className="flex items-center gap-2.5 px-4 py-3"
+        className="flex items-center gap-2.5 px-3 py-3"
         style={{ borderBottom: `1.5px solid ${catColor}22` }}
       >
         <button
@@ -188,29 +274,40 @@ function InlineDocDetail({
           >
             {catLabel}
           </p>
-          {/* title + copy */}
           <div className="mt-0.5 flex items-center gap-1.5">
             <p className="min-w-0 truncate text-[14px] font-bold text-[#212121]">{doc.title}</p>
-            <CopyValueButton value={doc.title} compact />
           </div>
         </div>
-        {/* expiry/urgency badges */}
-        {urgency === 'expired' && (
-          <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-red-500 ring-1 ring-red-200">
-            {t('badgeExpired')}
-          </span>
-        )}
-        {urgency === 'soon' && (
-          <span className="shrink-0 rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-orange-500 ring-1 ring-orange-200">
-            {t('badgeExpiring')}
-          </span>
-        )}
+        <button
+          type="button"
+          onClick={() => onEdit(doc)}
+          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#212121] px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_4px_12px_rgba(33,33,33,0.18)] transition-transform active:scale-95"
+        >
+          <Pencil className="h-3 w-3" strokeWidth={2.5} />
+          {tc('edit')}
+        </button>
       </div>
+
+      {/* expiry/urgency badges under header when present */}
+      {(urgency === 'expired' || urgency === 'soon') && (
+        <div className="flex justify-end gap-1.5 px-3 pt-2">
+          {urgency === 'expired' && (
+            <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-red-500 ring-1 ring-red-200">
+              {t('badgeExpired')}
+            </span>
+          )}
+          {urgency === 'soon' && (
+            <span className="shrink-0 rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-orange-500 ring-1 ring-orange-200">
+              {t('badgeExpiring')}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Expiry alert banner ── */}
       {urgency && expiryBanner && (
         <div
-          className="mx-4 mt-3 flex items-start gap-2.5 rounded-[12px] px-3 py-2.5"
+          className="mx-3 mt-3 flex items-start gap-2.5 rounded-[12px] px-3 py-2.5"
           style={{
             background: urgency === 'expired' ? 'rgba(239,68,68,0.07)' : 'rgba(249,115,22,0.07)',
             border: `1px solid ${urgency === 'expired' ? 'rgba(239,68,68,0.2)' : 'rgba(249,115,22,0.2)'}`,
@@ -237,7 +334,7 @@ function InlineDocDetail({
         {fieldEntries.length === 0 ? (
           <p className="py-3 text-center text-[12px] text-[#212121]/40">{t('noFieldsRecorded')}</p>
         ) : (
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2">
             {fieldEntries.map(([key, value]) => {
               const catField = catConfig?.fields.find((f) => f.key === key);
               const isSensitive = catField?.sensitive ?? false;
@@ -247,18 +344,21 @@ function InlineDocDetail({
               return (
                 <div
                   key={key}
-                  className="rounded-[12px] px-3 py-2.5"
+                  className="rounded-[12px] px-3.5 py-2.5"
                   style={{
                     background: '#F6F5FA',
                     border: '1px solid rgba(33,33,33,0.07)',
                   }}
                 >
-                  <div className="flex items-center justify-between gap-1.5">
-                    <p className="min-w-0 flex-1 truncate text-[10px] font-semibold uppercase tracking-[1px] text-[#212121]/50">
-                      {key}
+                  <p className="break-words text-[11px] font-semibold leading-snug text-[#212121]/50">
+                    {catField?.label ?? key}
+                  </p>
+                  <div className="mt-1 flex items-start justify-between gap-2">
+                    <p className="min-w-0 flex-1 break-words text-[13px] font-bold leading-snug text-[#212121]">
+                      {displayValue}
                     </p>
                     <div className="flex shrink-0 items-center gap-0.5">
-                      <CopyValueButton value={value} compact />
+                      {catField?.type !== 'select' && <CopyValueButton value={value} compact />}
                       {isSensitive && (
                         <button
                           type="button"
@@ -275,9 +375,6 @@ function InlineDocDetail({
                       )}
                     </div>
                   </div>
-                  <p className="mt-1 break-all text-[13px] font-bold text-[#212121]">
-                    {displayValue}
-                  </p>
                 </div>
               );
             })}
@@ -303,11 +400,10 @@ function InlineDocDetail({
         {/* Tags */}
         {doc.tags.length > 0 && (
           <div className="mt-2.5">
-            <div className="mb-1.5 flex items-center justify-between gap-2">
+            <div className="mb-1.5">
               <p className="text-[10px] font-bold uppercase tracking-[1px] text-[#212121]/45">
                 {t('tagsHeading')}
               </p>
-              <CopyValueButton value={doc.tags.join(', ')} compact />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {doc.tags.map((tag) => (
@@ -337,6 +433,15 @@ function InlineDocDetail({
             }),
           })}
         </p>
+
+        <button
+          type="button"
+          onClick={() => onEdit(doc)}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-[14px] bg-[#212121] py-3 text-[13px] font-bold text-white shadow-[0_8px_20px_rgba(33,33,33,0.14)] transition-transform active:scale-[0.98]"
+        >
+          <Pencil className="h-4 w-4" strokeWidth={2.25} />
+          {tc('edit')} document
+        </button>
       </div>
     </motion.div>
   );
@@ -345,16 +450,21 @@ function InlineDocDetail({
 function MemberCategorySection({
   member,
   docs,
-  memberPalette,
+  onAddDocument,
+  onEditDocument,
+  focusDocId = null,
 }: {
   member: FamilyMember;
   docs: Document[];
-  memberPalette: MemberPaletteType;
+  onAddDocument: (opts: { memberId: string; categoryId?: string }) => void;
+  onEditDocument: (doc: Document) => void;
+  focusDocId?: string | null;
 }) {
   const t = useTranslations('pastelHome');
+  const tc = useTranslations('common');
   const [selectedCatId, setSelectedCatId] = useState<string | null>(null);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
-  const memberFirstName = member.name.split(/\s+/)[0];
+  const memberFirstName = displayMemberName(member.name.split(/\s+/)[0] ?? member.name);
 
   const categoryGroups = useMemo(() => {
     const map = new Map<string, Document[]>();
@@ -399,6 +509,14 @@ function MemberCategorySection({
     setSelectedDocId(null);
   }, [member.id]);
 
+  useEffect(() => {
+    if (!focusDocId) return;
+    const doc = docs.find((d) => d.id === focusDocId);
+    if (!doc) return;
+    setSelectedCatId(doc.categoryId);
+    setSelectedDocId(doc.id);
+  }, [focusDocId, docs]);
+
   // Reset doc selection when category changes
   useEffect(() => {
     setSelectedDocId(null);
@@ -409,49 +527,43 @@ function MemberCategorySection({
 
   if (categoryGroups.length === 0) {
     return (
-      <section className="pastel-enter mt-7" style={{ animationDelay: '300ms' }}>
-        <div className="mb-3 flex items-center justify-between">
+      <section className="mt-1" data-walkthrough="member-docs">
+        <div className="mb-1 flex items-baseline justify-center gap-2">
           <h2 className="text-[17px] font-bold text-[#212121]">
-            {t('memberCategoriesTitle', { name: memberFirstName })}
+            {t('categoriesHeading', { count: 0 })}
           </h2>
-          <Link
-            href={`/document-vault?member=${encodeURIComponent(member.id)}&add=1`}
-            className="text-[13px] font-semibold text-[#212121]/55"
-          >
-            {t('addDocsShort')}
-          </Link>
         </div>
-        <div className="rounded-[20px] bg-white/70 px-4 py-6 text-center shadow-[0_4px_16px_rgba(33,33,33,0.06)]">
+        <p className="mb-3 text-center text-[13px] text-[#212121]/50">
+          {t('memberCategoriesTitle', { name: memberFirstName })}
+        </p>
+        <div className="rounded-[20px] bg-white px-4 py-6 text-center shadow-[0_4px_16px_rgba(33,33,33,0.06)]">
           <p className="text-[13px] text-[#212121]/55">{t('noDocsForMember')}</p>
-          <Link
-            href={`/document-vault?member=${encodeURIComponent(member.id)}&add=1`}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(33,33,33,0.12)]"
-            style={{ background: memberPalette.avatarInk }}
+          <button
+            type="button"
+            onClick={() => onAddDocument({ memberId: member.id })}
+            className="mt-3 inline-flex items-center gap-1.5 text-[12px] font-semibold text-vault-muted underline decoration-black/20 underline-offset-2"
           >
-            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
             {t('addDocument')}
-          </Link>
+          </button>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="pastel-enter mt-7" style={{ animationDelay: '300ms' }}>
-      <div className="mb-3 flex items-center justify-between">
+    <section className="mt-1" data-walkthrough="member-docs">
+      <div className="mb-1 text-center">
         <h2 className="text-[17px] font-bold text-[#212121]">
-          {t('memberCategoriesTitle', { name: memberFirstName })}
+          {t('categoriesHeading', { count: categoryGroups.length })}
         </h2>
-        <Link
-          href={`/document-vault?member=${encodeURIComponent(member.id)}`}
-          className="text-[13px] font-semibold text-[#212121]/55"
-        >
-          {t('viewAll')}
-        </Link>
       </div>
+      <p className="mb-3 text-center text-[13px] text-[#212121]/50">
+        {t('memberCategoriesTitle', { name: memberFirstName })}
+      </p>
 
       {/* Horizontal round-button strip */}
-      <div className="flex gap-4 overflow-x-auto pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex justify-center overflow-x-auto pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-4">
         {categoryGroups.map(({ cat, catDocs }) => {
           const isSelected = selectedCatId === cat.id;
           const alerts = alertsByCat.get(cat.id);
@@ -521,6 +633,7 @@ function MemberCategorySection({
             </button>
           );
         })}
+        </div>
       </div>
 
       {/* Expanded panel — shows doc list OR inline doc detail */}
@@ -533,7 +646,7 @@ function MemberCategorySection({
             exit={{ opacity: 0, y: -6, scaleY: 0.97 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
             style={{ transformOrigin: 'top center' }}
-            className="mt-3 overflow-hidden rounded-[20px] bg-white shadow-[0_6px_24px_rgba(33,33,33,0.09)]"
+            className="mx-auto mt-3 w-full overflow-hidden rounded-[20px] bg-white shadow-[0_6px_24px_rgba(33,33,33,0.09)]"
           >
             <AnimatePresence mode="wait">
               {selectedDoc ? (
@@ -544,6 +657,7 @@ function MemberCategorySection({
                   catIcon={selectedGroup.cat.icon}
                   catLabel={selectedGroup.cat.label}
                   onBack={() => setSelectedDocId(null)}
+                  onEdit={onEditDocument}
                 />
               ) : (
                 <motion.div
@@ -555,7 +669,7 @@ function MemberCategorySection({
                 >
                   {/* Panel header */}
                   <div
-                    className="flex items-center gap-3 px-4 py-3"
+                    className="flex items-center gap-3 px-3 py-3"
                     style={{ borderBottom: `1.5px solid ${selectedGroup.cat.color}22` }}
                   >
                     <div
@@ -590,50 +704,67 @@ function MemberCategorySection({
                     {selectedGroup.catDocs.map((doc) => {
                       const urgency = getDocumentExpiryUrgency(doc, DEFAULT_EXPIRY_WARN_DAYS);
                       return (
-                        <button
+                        <div
                           key={doc.id}
-                          type="button"
-                          onClick={() => setSelectedDocId(doc.id)}
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors active:bg-[#f6f5fa]"
+                          className="flex w-full items-center gap-2 px-3 py-2.5 transition-colors active:bg-[#f6f5fa]"
                         >
-                          <div
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]"
-                            style={{ background: `${selectedGroup.cat.color}18` }}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedDocId(doc.id)}
+                            className="flex min-w-0 flex-1 items-center gap-3 text-left"
                           >
-                            <CategoryLucideIcon
-                              name={selectedGroup.cat.icon}
-                              size={15}
-                              style={{ color: selectedGroup.cat.color }}
-                            />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-semibold text-[#212121]">
-                              {doc.title}
-                            </p>
-                            {urgency ? (
-                              <p
-                                className="text-[11px] font-medium"
+                            <div
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]"
+                              style={{ background: `${selectedGroup.cat.color}18` }}
+                            >
+                              <CategoryLucideIcon
+                                name={selectedGroup.cat.icon}
+                                size={15}
+                                style={{ color: selectedGroup.cat.color }}
+                              />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-[13px] font-semibold text-[#212121]">
+                                {doc.title}
+                              </p>
+                              {urgency ? (
+                                <p
+                                  className="text-[11px] font-medium"
+                                  style={{ color: urgency === 'expired' ? '#ef4444' : '#f97316' }}
+                                >
+                                  {urgency === 'expired'
+                                    ? t('badgeExpired')
+                                    : t('docRowExpiringSoon')}
+                                </p>
+                              ) : doc.fields && Object.keys(doc.fields).length > 0 ? (
+                                <p className="truncate text-[11px] text-[#212121]/45">
+                                  {Object.entries(doc.fields)
+                                    .slice(0, 1)
+                                    .map(([, v]) => v)
+                                    .join('')}
+                                </p>
+                              ) : null}
+                            </div>
+                            {urgency && (
+                              <AlertTriangle
+                                className="h-4 w-4 shrink-0"
                                 style={{ color: urgency === 'expired' ? '#ef4444' : '#f97316' }}
-                              >
-                                {urgency === 'expired' ? t('badgeExpired') : t('docRowExpiringSoon')}
-                              </p>
-                            ) : doc.fields && Object.keys(doc.fields).length > 0 ? (
-                              <p className="truncate text-[11px] text-[#212121]/45">
-                                {Object.entries(doc.fields)
-                                  .slice(0, 1)
-                                  .map(([, v]) => v)
-                                  .join('')}
-                              </p>
-                            ) : null}
-                          </div>
-                          {urgency && (
-                            <AlertTriangle
-                              className="h-4 w-4 shrink-0"
-                              style={{ color: urgency === 'expired' ? '#ef4444' : '#f97316' }}
-                            />
-                          )}
-                          <ChevronRight className="h-4 w-4 shrink-0 text-[#212121]/25" />
-                        </button>
+                              />
+                            )}
+                            <ChevronRight className="h-4 w-4 shrink-0 text-[#212121]/25" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEditDocument(doc);
+                            }}
+                            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#212121] px-2.5 py-1.5 text-[10px] font-bold text-white"
+                          >
+                            <Pencil className="h-3 w-3" strokeWidth={2.5} />
+                            {tc('edit')}
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -647,725 +778,438 @@ function MemberCategorySection({
   );
 }
 
-// ─── Bento Grid ─────────────────────────────────────────────────────────────
-function PastelBentoGrid({
-  memberCount,
-  docCount,
-  categoryCount,
-  barHeights,
-  onViewAllMembers,
-}: {
-  memberCount: number;
-  docCount: number;
-  categoryCount: number;
-  barHeights: number[];
-  onViewAllMembers: () => void;
-}) {
-  const t = useTranslations('pastelHome');
-  const m = usePastelCountUp(memberCount, true);
-  const d = usePastelCountUp(docCount, true);
-  const c = usePastelCountUp(categoryCount, true);
-  const bars = barHeights.slice(0, 8);
-
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <div
-        className={cn(
-          'pastel-enter rounded-[20px] border border-[#212121]/10 bg-white p-4 shadow-[0_8px_24px_rgba(33,33,33,0.06)]',
-          'min-h-[140px] border-l-[3px] border-l-[#7C3AED]'
-        )}
-        style={{ animationDelay: '450ms' }}
-      >
-        <p className="text-xs font-medium text-[#212121]/55">{t('membersLabel')}</p>
-        <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#7C3AED]">{m}</p>
-        <p className="mt-1 text-[13px] font-medium text-[#212121]/65">{t('membersSub')}</p>
-        <button
-          type="button"
-          onClick={(e) => {
-            pastelRipple(e);
-            onViewAllMembers();
-          }}
-          className="relative mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-[#4338C9] underline decoration-[#4338C9]/35 underline-offset-2"
-        >
-          {t('viewAll')}
-          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </button>
-      </div>
-      <div
-        className={cn(
-          'pastel-enter rounded-[20px] border border-[#212121]/10 bg-white p-4 shadow-[0_8px_24px_rgba(33,33,33,0.06)]',
-          'min-h-[140px]'
-        )}
-        style={{ animationDelay: '600ms' }}
-      >
-        <p className="text-xs font-medium text-[#212121]/55">{t('documentsLabel')}</p>
-        <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#212121]">{d}</p>
-        <p className="mt-1 text-[13px] font-medium text-[#212121]/65">{t('documentsSub')}</p>
-        <Link
-          href="/document-vault"
-          onClick={pastelRipple}
-          className="relative mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-[#212121]"
-        >
-          {t('browse')}
-          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </Link>
-      </div>
-      <div
-        className={cn(
-          'pastel-enter col-span-2 flex min-h-[128px] gap-4 rounded-[20px] border border-[#212121]/10 bg-white p-4 shadow-[0_8px_24px_rgba(33,33,33,0.06)]'
-        )}
-        style={{ animationDelay: '750ms' }}
-      >
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-medium text-[#212121]/55">{t('categoriesLabel')}</p>
-          <p className="mt-1 text-[34px] font-bold leading-none tracking-tight text-[#212121]">
-            {c}
-          </p>
-          <p className="mt-1 text-[13px] font-medium text-[#212121]/65">{t('categoriesSub')}</p>
-        </div>
-        <div className="flex flex-1 items-end justify-center gap-1 sm:gap-1.5">
-          {bars.map((h, i) => (
-            <div key={`bar-${i}`} className="flex h-[72px] w-2 items-end justify-center sm:w-2.5">
-              <div
-                className="pastel-bar-fill w-full rounded-full bg-[#212121]/22"
-                style={{
-                  height: `${Math.max(10, h)}%`,
-                  animationDelay: `${800 + i * 60}ms`,
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function computeSwipeDir(from: number, to: number, len: number): number {
-  if (len <= 0 || from === to) return 1;
-  const forward = (to - from + len) % len;
-  const backward = (from - to + len) % len;
-  return forward <= backward ? 1 : -1;
-}
-
-const cardVariants = {
-  enter: (dir: number) => ({
-    x: dir * 28,
-    scale: 0.96,
-    opacity: 0,
-  }),
-  center: {
-    x: 0,
-    scale: 1,
-    opacity: 1,
-    transition: { duration: 0.4, ease: SPRING },
-  },
-  exit: (dir: number) => ({
-    x: -dir * 28,
-    scale: 0.96,
-    opacity: 0,
-    transition: { duration: 0.22, ease: SPRING },
-  }),
-};
 
 export interface FamilyPastelHomeProps {
   displayMembers: FamilyMember[];
   documentsByMemberId: (id: string) => Document[];
-  memberCount: number;
-  docCount: number;
-  categoryCount: number;
-  categoryHistogram: number[];
   onAddMember: () => void;
   onEditMember: (member: FamilyMember) => void;
+  onAddDocument: (opts: { memberId: string; categoryId?: string }) => void;
+  onEditDocument: (doc: Document) => void;
 }
 
 export default function FamilyPastelHome({
   displayMembers,
   documentsByMemberId,
-  memberCount,
-  docCount,
-  categoryCount,
-  categoryHistogram,
   onAddMember,
   onEditMember,
+  onAddDocument,
+  onEditDocument,
 }: FamilyPastelHomeProps) {
   const t = useTranslations('pastelHome');
   const tc = useTranslations('common');
-  const noiseFilterId = useId().replace(/:/g, '');
-  const { refreshVaultData } = useVaultData();
-
-  const [docCountsRefreshing, setDocCountsRefreshing] = useState(false);
-  const [showAllMembers, setShowAllMembers] = useState(false);
-  const { accentMemberId, setAccentMemberId, accentHydrated } = usePastelMemberAccent();
+  const { setAccentMemberId } = usePastelMemberAccent();
   const n = displayMembers.length;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [navDir, setNavDir] = useState(1);
-  const touchRef = useRef<{ x: number } | null>(null);
-  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
-  const profilesSectionRef = useRef<HTMLDivElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [docsOpen, setDocsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [focusDocId, setFocusDocId] = useState<string | null>(null);
+  const query = searchQuery.trim().toLowerCase();
+
+  const searchHits = useMemo(
+    () => collectMemberDocumentSearchHits(displayMembers, documentsByMemberId, query),
+    [displayMembers, documentsByMemberId, query]
+  );
+
+  const visibleMembers = useMemo(() => {
+    if (!query) return displayMembers;
+    return displayMembers.filter((m) =>
+      memberMatchesSearch(m, documentsByMemberId(m.id), query)
+    );
+  }, [displayMembers, documentsByMemberId, query]);
+
+  const openSearchHit = useCallback(
+    (memberId: string, docId: string) => {
+      const idx = displayMembers.findIndex((m) => m.id === memberId);
+      if (idx < 0) return;
+      setActiveIndex(idx);
+      setAccentMemberId(memberId);
+      setDocsOpen(true);
+      setFocusDocId(docId);
+    },
+    [displayMembers, setAccentMemberId]
+  );
 
   useEffect(() => {
-    if (n === 0) return;
-    setActiveIndex((i) => Math.min(Math.max(i, 0), n - 1));
+    if (n === 0) {
+      setActiveIndex(null);
+      setDocsOpen(false);
+      return;
+    }
+    setActiveIndex((i) => (i == null || i < 0 || i >= n ? 0 : i));
   }, [n]);
 
   const navigateTo = useCallback(
     (i: number) => {
-      if (n <= 0 || i === activeIndex) return;
-      setNavDir(computeSwipeDir(activeIndex, i, n));
+      if (n <= 0 || i < 0 || i >= n) return;
+      if (activeIndex === i) {
+        setDocsOpen((open) => !open);
+        return;
+      }
       setActiveIndex(i);
+      setDocsOpen(false);
       setAccentMemberId(displayMembers[i]?.id ?? null);
     },
     [n, activeIndex, displayMembers, setAccentMemberId]
   );
 
-  const focusMemberProfile = useCallback(
-    (index: number) => {
-      if (n <= 0) return;
-      if (index !== activeIndex) {
-        setNavDir(computeSwipeDir(activeIndex, index, n));
-        setActiveIndex(index);
-        setAccentMemberId(displayMembers[index]?.id ?? null);
-      }
-      setShowAllMembers(false);
-      requestAnimationFrame(() => {
-        profilesSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+  const stepCarousel = useCallback(
+    (dir: -1 | 1) => {
+    if (n <= 0) return;
+      const cur = activeIndex ?? 0;
+      const next = (cur + dir + n) % n;
+      setActiveIndex(next);
+      setAccentMemberId(displayMembers[next]?.id ?? null);
     },
     [n, activeIndex, displayMembers, setAccentMemberId]
   );
 
-  const goNext = useCallback(() => {
-    if (n <= 0) return;
-    navigateTo((activeIndex + 1) % n);
-  }, [n, activeIndex, navigateTo]);
-
-  const goPrev = useCallback(() => {
-    if (n <= 0) return;
-    navigateTo((activeIndex - 1 + n) % n);
-  }, [n, activeIndex, navigateTo]);
-
-  const member = n > 0 ? displayMembers[activeIndex] : null;
-
-  const memberIdsKey = useMemo(() => displayMembers.map((m) => m.id).join('\0'), [displayMembers]);
+  const member = activeIndex != null ? displayMembers[activeIndex] ?? null : null;
+  const addDocMember = member ?? displayMembers[0] ?? null;
 
   useEffect(() => {
-    if (n === 0 || !accentHydrated) return;
-    if (!accentMemberId) return;
-    const i = displayMembers.findIndex((m) => m.id === accentMemberId);
-    if (i >= 0) setActiveIndex(i);
-    else {
-      setActiveIndex(0);
-      setAccentMemberId(displayMembers[0]?.id ?? null);
-    }
-  }, [accentMemberId, accentHydrated, n, memberIdsKey, setAccentMemberId, displayMembers]);
+    if (!query) setFocusDocId(null);
+  }, [query]);
 
   useEffect(() => {
-    if (!accentHydrated || n === 0) return;
-    if (accentMemberId != null) return;
-    const first = displayMembers[0];
-    if (first?.id) setAccentMemberId(first.id);
-  }, [accentHydrated, n, accentMemberId, memberIdsKey, setAccentMemberId, displayMembers]);
-  const memberVisualKey = useMemo(
-    () => displayMembers.map((m) => `${m.id}:${m.avatarColor}`).join('\0'),
-    [displayMembers]
-  );
-
-  const palette = member
-    ? pastelPaletteFromAvatarColor(member.avatarColor)
-    : PASTEL_ACCENT_PLACEHOLDER_PALETTE;
-
-  /** Rear stack cards use each layer’s member tint (not the front card’s gradient). */
-  const { paletteGhostFar, paletteGhostMid } = useMemo(() => {
-    if (n < 2) {
-      return { paletteGhostFar: null, paletteGhostMid: null };
-    }
-    const idxMid = (((activeIndex - 1) % n) + n) % n;
-    let idxFar = (((activeIndex - 2) % n) + n) % n;
-    if (idxFar === activeIndex) idxFar = idxMid;
-    return {
-      paletteGhostFar: pastelPaletteFromAvatarColor(displayMembers[idxFar].avatarColor),
-      paletteGhostMid: pastelPaletteFromAvatarColor(displayMembers[idxMid].avatarColor),
-    };
-  }, [n, activeIndex, memberVisualKey, displayMembers]);
-
-  const docs = member ? documentsByMemberId(member.id) : [];
-  const docCountMember = docs.length;
-  const animatedDocCount = usePastelCountUp(docCountMember, n > 0);
-
-  const onTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      const start = touchRef.current;
-      if (!start || !e.changedTouches[0]) return;
-      touchRef.current = null;
-      const dx = e.changedTouches[0].clientX - start.x;
-      if (dx > 48) goPrev();
-      else if (dx < -48) goNext();
-    },
-    [goNext, goPrev]
-  );
-
-  const handleRefreshDocCounts = useCallback(async () => {
-    setDocCountsRefreshing(true);
-    try {
-      await refreshVaultData();
-    } finally {
-      setDocCountsRefreshing(false);
-    }
-  }, [refreshVaultData]);
-
-  const headerIconBtn =
-    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_4px_18px_rgba(33,33,33,0.1)] border border-[#212121]/06 transition-transform active:scale-[0.97]';
+    if (typeof window === 'undefined') return;
+    const mid = new URLSearchParams(window.location.search).get('member');
+    if (!mid) return;
+    const i = displayMembers.findIndex((m) => m.id === mid);
+    if (i < 0) return;
+    setActiveIndex(i);
+    setDocsOpen(true);
+    setAccentMemberId(mid);
+  }, [displayMembers, setAccentMemberId]);
 
   return (
-    <div className="font-urbanist min-h-full bg-[#F6F5FA] pb-6 lg:pb-10">
+    <div className="font-urbanist relative min-h-full overflow-x-clip bg-transparent pb-2 text-vault-text">
       <header
-        className="pastel-enter px-4 pt-[env(safe-area-inset-top)]"
+        className="pastel-enter relative z-20 px-3 pt-1 sm:px-4"
         style={{ animationDelay: '0ms' }}
       >
-        <div className="grid grid-cols-[2.75rem_1fr_2.75rem] items-center gap-3 py-3">
-          <span className="h-11 w-11 shrink-0" aria-hidden />
-          <div className="min-w-0 text-center">
-            <h1 className="truncate text-[17px] font-bold leading-tight text-[#212121]">
-              {t('title')}
-            </h1>
-            <p className="truncate text-[12px] font-medium text-[#212121]/52">{t('subtitle')}</p>
-          </div>
-          <button
-            type="button"
-            aria-label={t('addMember')}
-            className={cn(headerIconBtn, 'relative overflow-hidden')}
-            onClick={(e) => {
-              pastelRipple(e);
-              onAddMember();
-            }}
-          >
-            <Plus className="h-5 w-5 text-[#212121]" strokeWidth={2.5} />
-          </button>
-        </div>
+        <VaultPageHeading
+          className="mb-0 py-2 sm:mb-0 sm:py-3"
+          icon={<BrandMarkSvg size={56} title="Strong Vault" />}
+          title={t('title')}
+          description={t('subtitle')}
+        />
       </header>
 
-      <div className="px-4">
+      <div className="relative z-[1] px-3 sm:px-4">
         {n === 0 ? (
           <div
-            className="pastel-enter mx-auto mt-4 max-w-md rounded-[28px] bg-white p-8 text-center shadow-[0_8px_24px_rgba(33,33,33,0.08)]"
+            className="sv-icon-card pastel-enter relative z-[1] mx-auto mt-4 max-w-md rounded-[24px] p-6 text-center sm:rounded-[28px] sm:p-8"
             style={{ animationDelay: '150ms' }}
+            data-walkthrough="family-empty"
           >
-            <p className="text-[17px] font-bold text-[#212121]">{t('emptyTitle')}</p>
-            <p className="mt-2 text-[14px] text-[#212121]/55">{t('emptyBody')}</p>
+            <p className="text-[17px] font-bold text-vault-text">{t('emptyTitle')}</p>
+            <p className="mt-2 text-[14px] text-vault-muted">{t('emptyBody')}</p>
             <button
               type="button"
               onClick={onAddMember}
-              className="relative mx-auto mt-5 overflow-hidden rounded-full bg-[#212121] px-8 py-3 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(33,33,33,0.15)]"
+              data-walkthrough="add-member"
+              className="relative mx-auto mt-5 overflow-hidden rounded-full bg-vault-text px-8 py-3 text-[14px] font-semibold text-white shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
             >
               <Plus className="mr-2 inline h-4 w-4" strokeWidth={2.5} />
               {t('addMember')}
             </button>
           </div>
         ) : (
-          <>
-            <div
-              ref={profilesSectionRef}
-              id="family-member-profiles"
-              className="pastel-enter relative mx-auto mt-2 w-full scroll-mt-4"
-              style={{ animationDelay: '150ms', maxWidth: PASTEL_CARD_MAX_W + 24 }}
-            >
-              <div
-                className="relative mx-auto w-[min(94vw,384px)]"
-                style={{
-                  height: PASTEL_CARD_H + 2 * PASTEL_CARD_STACK_PEEK_PX,
-                  touchAction: 'pan-y',
-                }}
-                onTouchStart={(e) => {
-                  touchRef.current = { x: e.touches[0].clientX };
-                }}
-                onTouchEnd={onTouchEnd}
+          <div
+            className="pastel-enter relative mx-auto mt-2 w-full overflow-visible"
+            style={{ animationDelay: '150ms' }}
+            data-walkthrough="family-cards"
+          >
+            <div className="mb-7 flex items-start justify-center gap-4 sm:mb-8 sm:gap-8">
+              <button
+                type="button"
+                data-walkthrough="add-member"
+                aria-label={t('addMemberFab')}
+                onClick={onAddMember}
+                className="flex min-w-[4.25rem] flex-col items-center gap-1"
               >
-                <div
-                  className="pointer-events-none absolute left-1/2 top-0 z-0 w-full -translate-x-1/2"
-                  style={{ height: PASTEL_CARD_H }}
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-vault-text shadow-[0_10px_24px_rgba(45,49,66,0.12)] transition-transform active:scale-95">
+                  <UserPlus className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+                <span className="whitespace-nowrap text-center text-[10px] font-semibold leading-none text-vault-muted sm:text-[11px]">
+                  {t('addMember')}
+                </span>
+              </button>
+              {addDocMember ? (
+                <button
+                  type="button"
+                  data-walkthrough="add-document"
+                  aria-label={t('addDocument')}
+                  onClick={() => onAddDocument({ memberId: addDocMember.id })}
+                  className="flex min-w-[4.25rem] flex-col items-center gap-1"
                 >
-                  <div
-                    className="pastel-ghost-stack-in absolute left-0 right-0 rounded-[22px] shadow-[0_6px_24px_rgba(33,33,33,0.08)]"
-                    style={{
-                      top: 0,
-                      height: PASTEL_CARD_H,
-                      transform: 'scale(0.94)',
-                      transformOrigin: 'top center',
-                      background: paletteGhostFar
-                        ? `linear-gradient(168deg, ${paletteGhostFar.ghost2} 0%, ${paletteGhostFar.ghost1} 55%, ${paletteGhostFar.ghost2} 100%)`
-                        : '#e8e8ec',
-                      boxShadow: paletteGhostFar
-                        ? `0 10px 28px ${paletteGhostFar.cardShadow}`
-                        : undefined,
-                      animationDelay: '200ms',
-                    }}
-                  />
-                  <div
-                    className="pastel-ghost-stack-in absolute left-0 right-0 rounded-[22px] shadow-[0_6px_24px_rgba(33,33,33,0.09)]"
-                    style={{
-                      top: PASTEL_CARD_STACK_PEEK_PX,
-                      height: PASTEL_CARD_H,
-                      transform: 'scale(0.97)',
-                      transformOrigin: 'top center',
-                      background: paletteGhostMid
-                        ? `linear-gradient(168deg, ${paletteGhostMid.ghost1} 0%, ${paletteGhostMid.ghost2} 50%, ${paletteGhostMid.ghost1} 100%)`
-                        : '#ececf0',
-                      boxShadow: paletteGhostMid
-                        ? `0 12px 32px ${paletteGhostMid.cardShadow}`
-                        : undefined,
-                      animationDelay: '250ms',
-                    }}
-                  />
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-vault-text shadow-[0_10px_24px_rgba(45,49,66,0.12)] transition-transform active:scale-95">
+                    <FilePlus className="h-5 w-5" strokeWidth={1.75} />
+                  </span>
+                  <span className="whitespace-nowrap text-center text-[10px] font-semibold leading-none text-vault-muted sm:text-[11px]">
+                    {t('addDocument')}
+                  </span>
+                </button>
+              ) : null}
+              <button
+                type="button"
+                data-walkthrough="search"
+                aria-label={t('searchAria')}
+                aria-expanded={searchOpen}
+                onClick={() => {
+                  if (searchOpen) {
+                    setSearchOpen(false);
+                    setSearchQuery('');
+                  } else {
+                    setSearchOpen(true);
+                  }
+                }}
+                className="flex min-w-[4.25rem] flex-col items-center gap-1"
+              >
+                <span
+                  className={cn(
+                    'flex h-12 w-12 items-center justify-center rounded-full text-vault-text shadow-[0_10px_24px_rgba(45,49,66,0.12)] transition-transform active:scale-95',
+                    searchOpen ? 'bg-vault-warm/80' : 'bg-white'
+                  )}
+                >
+                  <Search className="h-5 w-5" strokeWidth={1.75} />
+                </span>
+                <span className="whitespace-nowrap text-center text-[10px] font-semibold leading-none text-vault-muted sm:text-[11px]">
+                  {tc('search')}
+                </span>
+              </button>
                 </div>
 
-                <div
-                  className="absolute left-1/2 z-10 w-full -translate-x-1/2"
-                  style={{
-                    top: 2 * PASTEL_CARD_STACK_PEEK_PX,
-                    perspective: 700,
-                  }}
-                >
-                  <AnimatePresence mode="wait" custom={navDir}>
-                    {member ? (
+            {visibleMembers.length > 1 ? (
+              <p className="mb-4 flex items-center justify-center gap-1.5 text-[11px] font-medium tracking-wide text-vault-muted">
+                <MoveHorizontal className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden />
+                {t('swipeCardsHint')}
+              </p>
+            ) : null}
+
+            <AnimatePresence initial={false}>
+              {searchOpen ? (
                       <motion.div
-                        key={member.id}
-                        custom={navDir}
-                        variants={cardVariants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        className="pastel-stack-main-in relative overflow-hidden rounded-[22px] shadow-[0_20px_50px_rgba(33,33,33,0.14)]"
-                        style={{
-                          width: '100%',
-                          height: PASTEL_CARD_H,
-                          minHeight: PASTEL_CARD_H,
-                          background: palette.gradient,
-                          boxShadow: `0 24px 48px ${palette.cardShadow}, 0 8px 24px rgba(33,33,33,0.1)`,
-                        }}
+                  key="family-search"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="mb-3 overflow-hidden"
+                >
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-vault-muted" />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={t('searchPlaceholder')}
+                      autoFocus
+                      className="w-full rounded-full border border-black/10 bg-white py-2.5 pl-10 pr-10 text-[14px] text-vault-text outline-none placeholder:text-vault-muted focus:ring-2 focus:ring-vault-warm/50"
+                    />
+                    {searchQuery ? (
+                      <button
+                        type="button"
+                        aria-label={tc('close')}
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-vault-muted"
                       >
-                        <div
-                          className="h-full rounded-[22px]"
-                          style={{
-                            height: PASTEL_CARD_H,
-                            minHeight: PASTEL_CARD_H,
-                            transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
-                            transformStyle: 'preserve-3d',
-                            transition: 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)',
-                          }}
-                          onPointerMove={(e) => {
-                            const r = e.currentTarget.getBoundingClientRect();
-                            const px = (e.clientX - r.left) / r.width - 0.5;
-                            const py = (e.clientY - r.top) / r.height - 0.5;
-                            e.currentTarget.style.transition = 'none';
-                            setTilt({
-                              rx: Math.max(-6, Math.min(6, -py * 12)),
-                              ry: Math.max(-6, Math.min(6, px * 12)),
-                            });
-                          }}
-                          onPointerLeave={(e) => {
-                            e.currentTarget.style.transition =
-                              'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
-                            setTilt({ rx: 0, ry: 0 });
-                          }}
-                        >
-                          <svg
-                            className="pointer-events-none absolute inset-0 h-full w-full overflow-hidden rounded-[22px]"
-                            aria-hidden
-                          >
-                            <defs>
-                              <filter
-                                id={`nf-${noiseFilterId}`}
-                                x="-20%"
-                                y="-20%"
-                                width="140%"
-                                height="140%"
-                              >
-                                <feTurbulence
-                                  type="fractalNoise"
-                                  baseFrequency="0.85"
-                                  numOctaves="3"
-                                  stitchTiles="stitch"
-                                  result="turb"
-                                />
-                                <feColorMatrix
-                                  in="turb"
-                                  type="matrix"
-                                  values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.2 0"
-                                  result="soft"
-                                />
-                              </filter>
-                            </defs>
-                            <rect
-                              width="100%"
-                              height="100%"
-                              fill="#ffffff"
-                              filter={`url(#nf-${noiseFilterId})`}
-                              opacity="0.14"
-                            />
-                          </svg>
-
-                          <div
-                            className="pastel-card-shimmer pointer-events-none absolute inset-0 overflow-hidden rounded-[22px]"
-                            aria-hidden
-                          >
-                            <div
-                              className="absolute -left-1/2 top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-white/45 to-transparent"
-                              style={{ transform: 'skewX(-16deg)' }}
-                            />
-                          </div>
-
-                          <div className="relative flex h-full min-h-0 flex-col gap-1 p-4 text-white">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="min-w-0">
-                                <p className="line-clamp-2 text-balance text-[17px] font-bold leading-snug text-white drop-shadow-sm">
-                                  {member.name}
-                                </p>
-                                <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[2px] text-white/75">
-                                  {member.relationship}
-                                </p>
-                              </div>
-                              <div className="shrink-0 text-right">
-                                <p className="text-[10px] font-bold uppercase tracking-[3px] text-white/85">
-                                  {t('vaultWordmark')}
-                                </p>
-                                <p className="mt-0.5 text-[11px] font-semibold text-white/80">
-                                  {t('since', { date: formatMonthYear(member.createdAt) })}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Member photo centred on the card */}
-                            <div className="mt-2 flex min-h-0 flex-1 flex-col items-center justify-center gap-3">
-                              <div
-                                className="relative"
-                                style={{
-                                  filter: `drop-shadow(0 8px 24px ${palette.cardShadow})`,
-                                }}
-                              >
-                                {/* soft glow ring */}
-                                <div
-                                  className="absolute inset-0 rounded-full"
-                                  style={{
-                                    boxShadow: `0 0 0 3px ${resolveMemberColor(member.avatarColor).border}, 0 0 0 6px rgba(255,255,255,0.18), 0 0 0 12px rgba(255,255,255,0.08)`,
-                                    borderRadius: '50%',
-                                  }}
-                                />
-                                <MemberAvatar
-                                  name={member.name}
-                                  avatarColor={member.avatarColor}
-                                  photoDataUrl={member.photoDataUrl}
-                                  className="h-[76px] w-[76px] rounded-full ring-[3px] ring-white/50 shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
-                                  textClassName="text-[22px]"
-                                />
-                              </div>
-
-                              {/* Doc count pushed below the avatar */}
-                              <div className="text-center">
-                                <p className="text-[10px] font-medium text-white/70">
-                                  {t('totalDocuments')}
-                                </p>
-                                <motion.p
-                                  key={`count-${member.id}`}
-                                  initial={{ scale: 0.72, opacity: 0 }}
-                                  animate={{ scale: 1, opacity: 1 }}
-                                  transition={{
-                                    type: 'spring',
-                                    stiffness: 340,
-                                    damping: 22,
-                                    delay: 0.06,
-                                  }}
-                                  className="mt-0.5 text-[30px] font-bold tabular-nums leading-none tracking-tight text-white drop-shadow-sm"
-                                >
-                                  {animatedDocCount}
-                                  <span className="text-[16px] font-semibold text-white/80">
-                                    {t('docsSuffix')}
-                                  </span>
-                                </motion.p>
-                              </div>
-                            </div>
-
-                            <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                              <Link
-                                href={`/document-vault?member=${encodeURIComponent(member.id)}&add=1`}
-                                onClick={pastelRipple}
-                                className="relative inline-flex max-w-[58%] overflow-hidden rounded-full bg-white px-3 py-2 text-[11px] font-bold text-[#212121] shadow-[0_4px_16px_rgba(33,33,33,0.12)]"
-                              >
-                                <Plus className="mr-1.5 h-4 w-4" strokeWidth={2.5} />
-                                {t('addDocument')}
-                              </Link>
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    pastelRipple(e);
-                                    void handleRefreshDocCounts();
-                                  }}
-                                  disabled={docCountsRefreshing}
-                                  aria-label={t('refreshDocumentCounts')}
-                                  title={t('refreshDocumentCounts')}
-                                  className={cn(
-                                    headerIconBtn,
-                                    'relative h-10 w-10 overflow-hidden border-0 disabled:opacity-50'
-                                  )}
-                                >
-                                  <RefreshCw
-                                    className={cn(
-                                      'h-4 w-4 text-[#212121]',
-                                      docCountsRefreshing && 'animate-spin'
-                                    )}
-                                    strokeWidth={2}
-                                  />
-                                </button>
-                                <Link
-                                  href={`/document-vault?member=${encodeURIComponent(member.id)}`}
-                                  onClick={pastelRipple}
-                                  aria-label={t('viewMemberDocuments')}
-                                  title={t('viewMemberDocuments')}
-                                  className={cn(
-                                    headerIconBtn,
-                                    'relative h-10 w-10 overflow-hidden border-0'
-                                  )}
-                                >
-                                  <Eye className="h-4 w-4 text-[#212121]" strokeWidth={2} />
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     ) : null}
-                  </AnimatePresence>
-                </div>
-              </div>
+                          </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
 
-              {member && (!isDemoMemberId(member.id) || isDemoMode()) ? (
-                <div className="mt-3 flex justify-center">
+            {query ? (
+              <div className="mb-4">
+                <p className="mb-2 text-center text-[12px] font-semibold tracking-wide text-vault-muted">
+                  {t('searchResultsHeading', { count: searchHits.length })}
+                </p>
+                {searchHits.length === 0 ? (
+                  <p className="rounded-[20px] bg-white px-4 py-6 text-center text-[13px] text-vault-muted shadow-[0_4px_16px_rgba(33,33,33,0.06)]">
+                    {t('noSearchResults')}
+                  </p>
+                ) : (
+                  <ul className="mx-auto max-w-[24rem] space-y-2">
+                    {searchHits.map(({ memberId, memberName, match }) => {
+                      const cat = getCategoryById(match.document.categoryId);
+                      const primaryReason = match.reasons[0];
+                      const hintMeta = primaryReason ? getSearchMatchHint(primaryReason) : null;
+                      const hint = hintMeta
+                        ? t(hintMeta.key as 'searchMatchDocument', hintMeta.values)
+                        : '';
+                      return (
+                        <li key={`${memberId}-${match.document.id}`}>
+                          <button
+                            type="button"
+                            onClick={() => openSearchHit(memberId, match.document.id)}
+                            className="w-full rounded-[18px] bg-white px-4 py-3 text-left shadow-[0_4px_16px_rgba(33,33,33,0.06)] ring-1 ring-black/[0.04] transition-transform active:scale-[0.99]"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="text-[14px] font-bold text-[#212121]">
+                                {match.document.title}
+                              </p>
+                              <ChevronRight
+                                className="mt-0.5 h-4 w-4 shrink-0 text-vault-muted"
+                                strokeWidth={2}
+                              />
+                            </div>
+                            <p className="mt-0.5 text-[11px] text-vault-muted">
+                              {memberName}
+                              {cat ? ` · ${cat.shortLabel}` : ''}
+                            </p>
+                            {hint ? (
+                              <p className="mt-1.5 truncate text-[11px] font-medium text-vault-warm">
+                                {hint}
+                              </p>
+                            ) : null}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            ) : null}
+
+            <div className="member-card-stack overflow-visible">
+              {!query && visibleMembers.length === 0 ? (
+                <p className="rounded-[20px] bg-white px-4 py-6 text-center text-[13px] text-vault-muted shadow-[0_4px_16px_rgba(33,33,33,0.06)]">
+                  {t('noSearchResults')}
+                </p>
+              ) : !query ? (
+                <>
+                  <div
+                    className="relative mx-auto h-[254px] w-full overflow-visible"
+                    style={{ touchAction: 'pan-y' }}
+                    onPointerDown={(e) => {
+                      (e.currentTarget as HTMLDivElement).dataset.sx = String(e.clientX);
+                    }}
+                    onPointerUp={(e) => {
+                      const start = Number((e.currentTarget as HTMLDivElement).dataset.sx ?? 0);
+                      const dx = e.clientX - start;
+                      if (dx < -48) stepCarousel(1);
+                      else if (dx > 48) stepCarousel(-1);
+                    }}
+                  >
+                    {visibleMembers.map((m, i) => {
+                      const focusI = member
+                        ? Math.max(0, visibleMembers.findIndex((x) => x.id === member.id))
+                        : 0;
+                      const offset = wrapOffset(i, focusI, visibleMembers.length);
+                      return (
+                        <MemberCarouselCard
+                          key={m.id}
+                          member={m}
+                          index={i}
+                          total={visibleMembers.length}
+                          selected={offset === 0}
+                          offset={offset}
+                          docCount={documentsByMemberId(m.id).length}
+                          categoryCount={
+                            new Set(documentsByMemberId(m.id).map((d) => d.categoryId)).size
+                          }
+                          onSelect={() => {
+                            const idx = displayMembers.findIndex((x) => x.id === m.id);
+                            if (idx >= 0) navigateTo(idx);
+                          }}
+                        />
+                      );
+                    })}
+                              </div>
+                  {visibleMembers.length > 1 ? (
+                    <div className="relative z-[2] mt-3 mb-8 flex justify-center gap-1.5">
+                      {visibleMembers.map((m) => (
+                                <button
+                          key={`dot-${m.id}`}
+                                  type="button"
+                          aria-label={m.name}
+                          onClick={() => {
+                            const idx = displayMembers.findIndex((x) => x.id === m.id);
+                            if (idx >= 0) {
+                              setActiveIndex(idx);
+                              setAccentMemberId(m.id);
+                            }
+                          }}
+                                  className={cn(
+                            'h-1.5 rounded-full transition-all',
+                            member?.id === m.id ? 'w-4 bg-[#212121]' : 'w-1.5 bg-[#212121]/22'
+                          )}
+                        />
+                      ))}
+                              </div>
+                    ) : null}
+                  <AnimatePresence initial={false}>
+                    {docsOpen && member ? (
+                      <motion.div
+                        key={`submenu-${member.id}`}
+                        initial={{ opacity: 0, y: -14, height: 0 }}
+                        animate={{ opacity: 1, y: 0, height: 'auto' }}
+                        exit={{ opacity: 0, y: -10, height: 0 }}
+                        transition={STACK_SPRING}
+                        className="overflow-hidden"
+                      >
+                        <div className="mx-auto mt-4 w-full max-w-[24rem] rounded-[24px] bg-white/90 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.04]">
+                          {!isDemoMemberId(member.id) ? (
+                            <div className="mb-1 flex justify-center">
                   <button
                     type="button"
-                    className="text-[12px] font-semibold text-[#212121]/55 underline decoration-[#212121]/25 underline-offset-2"
+                                className="min-h-8 px-3 text-center text-[12px] font-semibold text-vault-muted underline decoration-black/20 underline-offset-2"
                     onClick={() => onEditMember(member)}
                   >
                     {tc('edit')}
                   </button>
                 </div>
               ) : null}
-
-              {n > 1 ? (
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  {displayMembers.map((m, i) => {
-                    const dotInk = pastelPaletteFromAvatarColor(m.avatarColor).avatarInk;
-                    return (
-                      <button
-                        key={m.id}
-                        type="button"
-                        aria-label={`${m.name}`}
-                        className={cn(
-                          'h-2 rounded-full transition-all duration-300',
-                          i === activeIndex ? 'w-8' : 'w-2 hover:opacity-80'
-                        )}
-                        style={{
-                          background: i === activeIndex ? dotInk : 'rgba(33,33,33,0.28)',
-                        }}
-                        onClick={() => navigateTo(i)}
-                      />
-                    );
-                  })}
+                          <MemberCategorySection
+                            member={member}
+                            docs={
+                              query &&
+                              !member.name.toLowerCase().includes(query) &&
+                              !member.relationship.toLowerCase().includes(query)
+                                ? documentsByMemberId(member.id).filter((d) =>
+                                    documentMatchesSearch(d, query)
+                                  )
+                                : documentsByMemberId(member.id)
+                            }
+                            focusDocId={focusDocId}
+                            onAddDocument={onAddDocument}
+                            onEditDocument={onEditDocument}
+                          />
                 </div>
+                      </motion.div>
+              ) : null}
+                  </AnimatePresence>
+                </>
+              ) : null}
+              {query && docsOpen && member ? (
+                <motion.div
+                  key={`search-submenu-${member.id}`}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={STACK_SPRING}
+                  className="mx-auto mt-2 w-full max-w-[24rem] overflow-hidden rounded-[24px] bg-white/90 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.08)] ring-1 ring-black/[0.04]"
+                >
+                  <MemberCategorySection
+                    member={member}
+                    docs={documentsByMemberId(member.id).filter(
+                      (d) => !query || documentMatchesSearch(d, query) || d.id === focusDocId
+                    )}
+                    focusDocId={focusDocId}
+                    onAddDocument={onAddDocument}
+                    onEditDocument={onEditDocument}
+                  />
+                </motion.div>
               ) : null}
             </div>
-
-            {member && (
-              <MemberCategorySection member={member} docs={docs} memberPalette={palette} />
-            )}
-
-            <section className="pastel-enter mt-5" style={{ animationDelay: '380ms' }}>
-              <PastelBentoGrid
-                memberCount={memberCount}
-                docCount={docCount}
-                categoryCount={categoryCount}
-                barHeights={categoryHistogram}
-                onViewAllMembers={() => setShowAllMembers(true)}
-              />
-            </section>
-          </>
+          </div>
         )}
       </div>
-
-      <Modal
-        isOpen={showAllMembers}
-        onClose={() => setShowAllMembers(false)}
-        title={t('allMembersTitle')}
-        subtitle={t('allMembersSubtitle')}
-      >
-        <ul className="max-h-[60vh] space-y-2 overflow-y-auto">
-          {displayMembers.map((m, i) => {
-            const docs = documentsByMemberId(m.id);
-            const mc = resolveMemberColor(m.avatarColor);
-            const isActive = i === activeIndex;
-            return (
-              <li key={m.id}>
-                <div
-                  className={cn(
-                    'flex items-center gap-3 rounded-2xl border px-3 py-3 transition-colors',
-                    isActive
-                      ? 'border-[#4338C9]/35 bg-[#4338C9]/06'
-                      : 'border-[#212121]/08 bg-white'
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => focusMemberProfile(i)}
-                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
-                  >
-                    <div
-                      className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2"
-                      style={{ borderColor: mc.border }}
-                    >
-                      <MemberAvatar
-                        name={m.name}
-                        avatarColor={m.avatarColor}
-                        photoDataUrl={m.photoDataUrl}
-                        className="h-full w-full rounded-full"
-                        textClassName="text-sm"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-bold text-[#212121]">{m.name}</p>
-                      <p className="truncate text-xs text-[#212121]/55">
-                        {m.relationship}
-                        {m.dob ? ` · ${m.dob}` : ''}
-                        {` · ${docs.length} doc${docs.length === 1 ? '' : 's'}`}
-                      </p>
-                    </div>
-                  </button>
-                  <div className="flex shrink-0 flex-col gap-1.5 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() => focusMemberProfile(i)}
-                      className="rounded-full bg-[#4338C9] px-3 py-1.5 text-[11px] font-bold text-white"
-                    >
-                      {t('viewProfile')}
-                    </button>
-                    {!isDemoMemberId(m.id) || isDemoMode() ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAllMembers(false);
-                          onEditMember(m);
-                        }}
-                        className="rounded-full border border-[#212121]/12 px-3 py-1.5 text-[11px] font-semibold text-[#212121]"
-                      >
-                        {tc('edit')}
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </Modal>
     </div>
   );
 }

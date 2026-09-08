@@ -12,7 +12,7 @@ interface AppLogoProps {
 }
 
 /**
- * **Icon only** (shield mark, no text). For full logo + wordmark see `BrandLogoFull`.
+ * Strong Vault brand mark. Prefer `BrandLogoFull` when the full lockup is needed.
  */
 const AppLogo = memo(function AppLogo({ size = 88, className = '', onClick }: AppLogoProps) {
   const containerClassName = useMemo(() => {
@@ -24,7 +24,7 @@ const AppLogo = memo(function AppLogo({ size = 88, className = '', onClick }: Ap
 
   return (
     <div className={containerClassName} onClick={onClick}>
-      <BrandMarkSvg size={size} title="SecureVault" className="max-w-[min(420px,92vw)] drop-shadow-sm" />
+      <BrandMarkSvg size={size} title="Strong Vault" />
     </div>
   );
 });

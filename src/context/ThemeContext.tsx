@@ -1,58 +1,39 @@
 'use client';
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from 'react';
+import React, { createContext, useContext, useLayoutEffect, useState } from 'react';
 
-/** Single app theme — light / family vault styling. Neon vault has been removed. */
-export type AppTheme = 'pastel';
+export type AppTheme = 'glass';
 
 const STORAGE_KEY = 'sv_ui_theme';
 
 type ThemeContextValue = {
   theme: AppTheme;
-  /** No-op kept for call-site compatibility; theme is always pastel. */
-  setTheme: (t: AppTheme) => void;
   mounted: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
+function applyGlassTheme() {
+  document.documentElement.dataset.theme = 'glass';
+  try {
+    localStorage.setItem(STORAGE_KEY, 'glass');
+  } catch {
+    /* ignore */
+  }
+}
+
+/** App uses the glass look only — pastel theme has been removed. */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useLayoutEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, 'pastel');
-    } catch {
-      /* ignore */
-    }
-    document.documentElement.dataset.theme = 'pastel';
+    applyGlassTheme();
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    document.documentElement.dataset.theme = 'pastel';
-  }, []);
-
-  const value: ThemeContextValue = {
-    theme: 'pastel',
-    setTheme: () => {
-      try {
-        localStorage.setItem(STORAGE_KEY, 'pastel');
-      } catch {
-        /* ignore */
-      }
-      document.documentElement.dataset.theme = 'pastel';
-    },
-    mounted,
-  };
-
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme: 'glass', mounted }}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

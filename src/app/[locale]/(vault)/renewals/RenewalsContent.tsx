@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { CalendarClock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useVaultData } from '@/context/VaultDataContext';
 import { collectRenewalItems } from '@/lib/documentExpiry';
@@ -21,7 +20,7 @@ export default function RenewalsContent() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-screen-lg animate-pulse space-y-4 p-6">
+      <div className="vault-page animate-pulse space-y-4">
         <div className="mx-auto h-10 w-48 rounded-lg bg-vault-elevated" />
         <div className="h-40 rounded-2xl bg-vault-panel" />
       </div>
@@ -29,18 +28,11 @@ export default function RenewalsContent() {
   }
 
   return (
-    <div className="p-4 lg:p-6 max-w-screen-lg mx-auto bg-vault-bg min-h-full">
+    <div className="vault-page">
       <VaultPageHeading
-        className="mb-8"
-        icon={
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-vault-panel text-vault-warm">
-            <CalendarClock size={24} aria-hidden />
-          </div>
-        }
-        eyebrow={t('eyebrow')}
+        className="mb-6 sm:mb-8"
         title={t('title')}
         description={t('description', { days: HORIZON_DAYS })}
-        titleClassName="mt-0.5 text-[28px] font-bold tracking-tight leading-tight text-vault-text sm:text-[32px]"
       />
 
       <RenewalTimeline items={items} members={vaultData.members} />

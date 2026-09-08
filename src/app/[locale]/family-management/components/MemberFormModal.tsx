@@ -12,6 +12,15 @@ import { resizeImageFileToJpegDataUrl } from '@/lib/memberPhoto';
 import MemberAvatar from '@/components/MemberAvatar';
 import { MEMBER_RELATIONSHIP_VALUES } from '@/lib/memberRelationships';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
+
+function RequiredAsterisk() {
+  return (
+    <span className="ml-0.5 font-700 text-red-600" aria-hidden>
+      *
+    </span>
+  );
+}
 
 interface MemberFormData {
   name: string;
@@ -29,7 +38,7 @@ interface MemberFormModalProps {
   onClose: () => void;
   onSave: (data: MemberFormSavePayload) => void;
   editMember?: FamilyMember | null;
-  existingMembers?: FamilyMember[];
+  members?: { avatarColor: string }[];
 }
 
 export default function MemberFormModal({
@@ -37,7 +46,7 @@ export default function MemberFormModal({
   onClose,
   onSave,
   editMember,
-  existingMembers = [],
+  members = [],
 }: MemberFormModalProps) {
   const t = useTranslations('memberForm');
   const tc = useTranslations('common');
@@ -55,7 +64,7 @@ export default function MemberFormModal({
       name: '',
       relationship: MEMBER_RELATIONSHIP_VALUES[0],
       dob: '',
-      avatarColor: pickNextMemberColor(existingMembers),
+      avatarColor: pickNextMemberColor(members),
       photoDataUrl: '',
     },
   });
@@ -63,6 +72,7 @@ export default function MemberFormModal({
   const selectedColor = watch('avatarColor');
   const watchedName = watch('name');
   const photoDataUrl = watch('photoDataUrl');
+  const usedColorsKey = members.map((m) => m.avatarColor.toLowerCase()).join('|');
 
   useEffect(() => {
     if (editMember) {
@@ -78,11 +88,11 @@ export default function MemberFormModal({
         name: '',
         relationship: MEMBER_RELATIONSHIP_VALUES[0],
         dob: '',
-        avatarColor: pickNextMemberColor(existingMembers),
+        avatarColor: pickNextMemberColor(members),
         photoDataUrl: '',
       });
     }
-  }, [editMember, isOpen, reset]);
+  }, [editMember, isOpen, usedColorsKey, reset]);
 
   const onSubmit = (data: MemberFormData) => {
     onSave({
@@ -159,27 +169,47 @@ export default function MemberFormModal({
         {/* Name */}
         <div>
           <div className="mb-1 flex items-start justify-between gap-2">
-            <label className="label-text !mb-0 flex-1">{t('fullNameLabel')}</label>
+            <label className="label-text !mb-0 flex-1">
+              {t('fullNameLabel')}
+              <RequiredAsterisk />
+            </label>
             <CopyValueButton value={watch('name') ?? ''} compact />
           </div>
           <input
-            {...register('name', { required: t('nameRequired') })}
+            {...register('name', {
+              required: t('nameRequired'),
+              minLength: { value: 2, message: t('nameTooShort') },
+              validate: (value) => {
+                const trimmed = value.trim();
+                if (!trimmed) return t('nameRequired');
+                return /^[\p{L}][\p{L}\s.'-]*$/u.test(trimmed) || t('nameFormat');
+              },
+            })}
             placeholder={t('namePlaceholder')}
-            className="input-field"
+            className={cn('input-field', errors.name && 'border-red-500 ring-1 ring-red-400/40')}
           />
-          {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>}
+          {errors.name && (
+            <p className="mt-1 text-xs font-600 text-red-600" role="alert">
+              {errors.name.message}
+            </p>
+          )}
         </div>
 
         {/* Relationship + DOB */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="mb-1 flex items-start justify-between gap-2">
-              <label className="label-text !mb-0 flex-1">{t('relationshipLabel')}</label>
-              <CopyValueButton value={watch('relationship') ?? ''} compact />
+            <div className="mb-1">
+              <label className="label-text">
+                {t('relationshipLabel')}
+                <RequiredAsterisk />
+              </label>
             </div>
             <select
               {...register('relationship', { required: t('relationshipRequired') })}
-              className="input-field"
+              className={cn(
+                'input-field',
+                errors.relationship && 'border-red-500 ring-1 ring-red-400/40'
+              )}
             >
               {MEMBER_RELATIONSHIP_VALUES.map((r) => (
                 <option key={`rel-${r}`} value={r}>
@@ -187,13 +217,38 @@ export default function MemberFormModal({
                 </option>
               ))}
             </select>
+            {errors.relationship && (
+              <p className="mt-1 text-xs font-600 text-red-600" role="alert">
+                {errors.relationship.message}
+              </p>
+            )}
           </div>
           <div>
             <div className="mb-1 flex items-start justify-between gap-2">
               <label className="label-text !mb-0 flex-1">{t('dobLabel')}</label>
               <CopyValueButton value={watch('dob') ?? ''} compact />
             </div>
-            <input {...register('dob')} type="date" className="input-field" />
+            <input
+              {...register('dob', {
+                validate: (value) => {
+                  if (!value) return true;
+                  const d = new Date(`${value}T00:00:00`);
+                  if (Number.isNaN(d.getTime())) return t('dobInvalid');
+                  if (d.getFullYear() < 1900) return t('dobInvalid');
+                  const today = new Date();
+                  today.setHours(23, 59, 59, 999);
+                  if (d > today) return t('dobFuture');
+                  return true;
+                },
+              })}
+              type="date"
+              className={cn('input-field', errors.dob && 'border-red-500 ring-1 ring-red-400/40')}
+            />
+            {errors.dob && (
+              <p className="mt-1 text-xs font-600 text-red-600" role="alert">
+                {errors.dob.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -201,27 +256,24 @@ export default function MemberFormModal({
 
         {/* Avatar color */}
         <div>
-          <div className="mb-1 flex items-start justify-between gap-2">
-            <label className="label-text !mb-0 flex-1">{t('profileColor')}</label>
-            <CopyValueButton value={selectedColor} compact />
+          <div className="mb-1">
+            <label className="label-text">{t('profileColor')}</label>
           </div>
           <p className="mb-2 text-xs text-vault-faint">{t('profileColorHint')}</p>
-          <div className="flex flex-wrap gap-2">
-            {MEMBER_COLORS.map((color) => (
+          <div className="grid grid-cols-8 gap-2">
+            {MEMBER_COLORS.map((c) => (
               <button
-                key={`color-${color.name}`}
+                key={`color-${c.border}`}
                 type="button"
-                onClick={() => setValue('avatarColor', color.border)}
-                className={`h-8 w-8 rounded-lg border-2 transition-all duration-150 ${
-                  selectedColor === color.border
+                onClick={() => setValue('avatarColor', c.border)}
+                className={`h-8 w-8 rounded-lg border border-[#212121]/14 shadow-[0_1px_2px_rgba(33,33,33,0.06)] transition-all duration-150 ${
+                  selectedColor === c.border
                     ? 'scale-110 ring-2 ring-vault-warm ring-offset-2 ring-offset-vault-panel'
                     : 'hover:scale-105'
                 }`}
-                style={{
-                  backgroundColor: color.bg,
-                  borderColor: color.border,
-                }}
-                title={color.name}
+                style={{ backgroundColor: c.border }}
+                title={c.name}
+                aria-label={c.name}
               />
             ))}
           </div>

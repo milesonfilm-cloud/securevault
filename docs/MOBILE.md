@@ -1,13 +1,13 @@
-# SecureVault — Android & iOS only
+# Strong Vault — Android & iOS only
 
-SecureVault is distributed as **native mobile apps** (Capacitor). Vault data stays on the device (encrypted in the WebView). There is no hosted web app requirement for end users.
+Strong Vault is distributed as **native mobile apps** (Capacitor). Vault data stays on the device (encrypted in the WebView). There is no hosted web app requirement for end users.
 
 ## Prerequisites
 
 | Platform | Tools |
 |----------|--------|
 | **Both** | Node 20+, `npm install` |
-| **Android** | [Android Studio](https://developer.android.com/studio), JDK 17+ |
+| **Android** | [Android Studio](https://developer.android.com/studio), **JDK 21** (Capacitor 7) |
 | **iOS** | Mac with [Xcode](https://developer.apple.com/xcode/), Apple Developer account for device/App Store |
 
 ## Build the app bundle
@@ -27,10 +27,14 @@ This will:
 ## Run on Android
 
 ```bash
+npm run build:mobile
 npm run cap:open:android
 ```
 
-In Android Studio: **Run** on an emulator or USB device. For Play Store, use **Build → Generate Signed Bundle / APK**.
+In Android Studio: **Run** on an emulator or USB device (use **Run ▶**, not an old APK). For Play Store, use **Build → Generate Signed Bundle / APK**.
+
+If you see a **persistent white / blank screen**, check Logcat for a rapid loop of  
+`Handling local request: https://localhost/en/family-management/` with no `/_next/` assets — that is Capacitor html5mode serving a redirecting root `index.html`. The mobile build + `server.appStartPath` must point at `.../index.html`. Rebuild with `npm run build:mobile`, uninstall the app, then Run again.
 
 ## Run on iOS (Mac only)
 

@@ -28,7 +28,7 @@ export default function VaultScoreWidget({ vaultData, className }: VaultScoreWid
     <Link
       href="/progress"
       className={cn(
-        'group flex flex-col rounded-2xl border border-[color:var(--color-border)] bg-vault-panel p-4 shadow-vault transition-all hover:border-vault-warm/35 hover:shadow-[0_8px_28px_rgba(0,0,0,0.12)]',
+        'group neo-card flex flex-col rounded-2xl p-4 transition-all hover:border-vault-warm/35',
         className
       )}
     >

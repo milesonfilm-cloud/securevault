@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ShieldAlert, FileDown, ArrowLeft } from 'lucide-react';
+import { FileDown, ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { useVaultData } from '@/context/VaultDataContext';
@@ -23,7 +23,7 @@ export default function EmergencySettingsContent() {
   };
 
   return (
-    <div className="p-4 lg:p-6 max-w-screen-lg mx-auto bg-vault-bg min-h-full space-y-6">
+    <div className="vault-page space-y-6">
       <Link
         href="/settings-export"
         className="inline-flex items-center gap-2 text-xs font-700 text-vault-warm hover:text-vault-text"
@@ -32,16 +32,7 @@ export default function EmergencySettingsContent() {
         {t('backLink')}
       </Link>
 
-      <VaultPageHeading
-        icon={
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-vault-panel text-vault-coral">
-            <ShieldAlert size={24} aria-hidden />
-          </div>
-        }
-        title={t('pageTitle')}
-        description={t('pageDescription')}
-        titleClassName="mt-0.5 text-[28px] font-bold tracking-tight text-vault-text sm:text-[32px]"
-      />
+      <VaultPageHeading title={t('pageTitle')} description={t('pageDescription')} />
 
       <label className="flex items-center gap-3 cursor-pointer neo-card rounded-2xl p-5">
         <input

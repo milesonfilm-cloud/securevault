@@ -1,19 +1,15 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Privacy Policy — SecureVault' };
+export const metadata: Metadata = { title: 'Privacy Policy — Strong Vault' };
 
 export default function PrivacyPage() {
   return (
     <main
-      style={{
-        maxWidth: 720,
-        margin: '0 auto',
-        padding: '40px 20px',
-        fontFamily: 'var(--font-sans)',
-      }}
+      className="mx-auto min-h-full max-w-[720px] bg-vault-bg px-5 py-10 text-vault-text"
+      style={{ fontFamily: 'var(--font-sans)' }}
     >
       <h1 style={{ fontSize: 28, fontWeight: 500, marginBottom: 8 }}>Privacy Policy</h1>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: 32 }}>
+      <p className="mb-8 text-vault-muted">
         Last updated: {new Date().toLocaleDateString('en-IN', { dateStyle: 'long' })}
       </p>
 
@@ -21,7 +17,7 @@ export default function PrivacyPage() {
         What data we store — and where
       </h2>
       <p>
-        SecureVault is designed to be <strong>zero-knowledge</strong>. Your vault data (documents,
+        Strong Vault is designed to be <strong>zero-knowledge</strong>. Your vault data (documents,
         photos, metadata) is encrypted on your device using AES-256-GCM before being stored in your
         browser&apos;s IndexedDB. The encryption key is derived from your PIN using Argon2id and
         never leaves your device.
@@ -36,7 +32,7 @@ export default function PrivacyPage() {
       <h2 style={{ fontSize: 18, fontWeight: 500, marginTop: 28, marginBottom: 8 }}>
         Your rights (GDPR / DPDP 2023)
       </h2>
-      <ul style={{ paddingLeft: 20, color: 'var(--color-text-secondary)' }}>
+      <ul className="list-disc space-y-1 pl-5 text-vault-muted">
         <li style={{ marginBottom: 4 }}>
           Right to access: See Settings → Export for a full export of your vault data.
         </li>
@@ -57,7 +53,7 @@ export default function PrivacyPage() {
       </h2>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
         <thead>
-          <tr style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
+          <tr style={{ borderBottom: '0.5px solid var(--color-border)' }}>
             <th style={{ textAlign: 'left', padding: '8px 0', fontWeight: 500 }}>Processor</th>
             <th style={{ textAlign: 'left', padding: '8px 0', fontWeight: 500 }}>Purpose</th>
             <th style={{ textAlign: 'left', padding: '8px 0', fontWeight: 500 }}>Location</th>
@@ -70,10 +66,10 @@ export default function PrivacyPage() {
               ['Firebase / Google', 'Web hosting', 'USA'],
             ] as const
           ).map(([name, purpose, loc]) => (
-            <tr key={name} style={{ borderBottom: '0.5px solid var(--color-border-tertiary)' }}>
-              <td style={{ padding: '8px 0', color: 'var(--color-text-secondary)' }}>{name}</td>
-              <td style={{ padding: '8px 0', color: 'var(--color-text-secondary)' }}>{purpose}</td>
-              <td style={{ padding: '8px 0', color: 'var(--color-text-secondary)' }}>{loc}</td>
+            <tr key={name} style={{ borderBottom: '0.5px solid var(--color-border)' }}>
+              <td style={{ padding: '8px 0' }} className="text-vault-muted">{name}</td>
+              <td style={{ padding: '8px 0' }} className="text-vault-muted">{purpose}</td>
+              <td style={{ padding: '8px 0' }} className="text-vault-muted">{loc}</td>
             </tr>
           ))}
         </tbody>
@@ -82,7 +78,9 @@ export default function PrivacyPage() {
       <h2 style={{ fontSize: 18, fontWeight: 500, marginTop: 28, marginBottom: 8 }}>Contact</h2>
       <p>
         Data protection enquiries:{' '}
-        <a href="mailto:privacy@securevault.app">privacy@securevault.app</a>
+        <a href="mailto:privacy@strongvault.app" className="text-vault-warm underline underline-offset-2">
+          privacy@strongvault.app
+        </a>
       </p>
     </main>
   );

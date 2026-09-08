@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import ConditionalAuthGuard from '@/components/ConditionalAuthGuard';
 import LocaleHtmlLang from '@/components/i18n/LocaleHtmlLang';
+import ClientLocaleProvider from '@/components/i18n/ClientLocaleProvider';
 import ConsentBanner from '@/components/ConsentBanner';
 
 export function generateStaticParams() {
@@ -31,10 +32,12 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages}>
-      <LocaleHtmlLang />
-      <ConditionalAuthGuard>{children}</ConditionalAuthGuard>
-      <ConsentBanner />
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      <ClientLocaleProvider initialLocale={locale}>
+        <LocaleHtmlLang />
+        <ConditionalAuthGuard>{children}</ConditionalAuthGuard>
+        <ConsentBanner />
+      </ClientLocaleProvider>
     </NextIntlClientProvider>
   );
 }

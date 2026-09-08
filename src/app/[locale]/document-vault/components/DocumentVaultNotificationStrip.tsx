@@ -61,7 +61,7 @@ export default function DocumentVaultNotificationStrip({
       <div
         role="group"
         aria-label="Vault expiry and status"
-        className="inline-flex items-center gap-1 sm:gap-2 rounded-2xl border border-[color:var(--color-border)] bg-vault-panel/95 px-2 py-1.5 shadow-vault backdrop-blur-sm"
+        className="sv-glass-dark inline-flex items-center gap-1 rounded-2xl px-2 py-1.5 sm:gap-2"
       >
         {expired > 0 ? (
           <button

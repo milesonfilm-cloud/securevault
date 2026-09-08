@@ -11,6 +11,14 @@ export const MEMBER_COLORS = [
   { name: 'sky', bg: '#E0F2FE', border: '#0EA5E9', text: '#0284C7' },
   { name: 'emerald', bg: '#ECFDF5', border: '#10B981', text: '#059669' },
   { name: 'orange', bg: '#FFF7ED', border: '#F97316', text: '#EA580C' },
+  { name: 'indigo', bg: '#EEF2FF', border: '#6366F1', text: '#4F46E5' },
+  { name: 'fuchsia', bg: '#FDF4FF', border: '#D946EF', text: '#C026D3' },
+  { name: 'lime', bg: '#F7FEE7', border: '#84CC16', text: '#65A30D' },
+  { name: 'cyan', bg: '#ECFEFF', border: '#06B6D4', text: '#0891B2' },
+  { name: 'pink', bg: '#FCE7F3', border: '#EC4899', text: '#DB2777' },
+  { name: 'violet', bg: '#F5F3FF', border: '#8B5CF6', text: '#7C3AED' },
+  { name: 'red', bg: '#FEF2F2', border: '#EF4444', text: '#DC2626' },
+  { name: 'blue', bg: '#EFF6FF', border: '#3B82F6', text: '#2563EB' },
 ] as const;
 
 export type MemberColorDef = (typeof MEMBER_COLORS)[number];

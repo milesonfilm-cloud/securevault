@@ -18,7 +18,6 @@ const ACTION_LABELS: Record<string, string> = {
   document_deleted: 'Document deleted',
   document_viewed: 'Document viewed',
   document_exported: 'Document exported',
-  document_shared: 'Document shared',
   member_created: 'Member added',
   member_updated: 'Member updated',
   member_deleted: 'Member removed',

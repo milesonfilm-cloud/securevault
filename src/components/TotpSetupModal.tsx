@@ -26,7 +26,7 @@ export default function TotpSetupModal({ isOpen, onClose }: TotpSetupModalProps)
     setToken('');
     setError('');
     void (async () => {
-      const uri = getTotpUri(s, 'SecureVault');
+      const uri = getTotpUri(s, 'Strong Vault');
       const url = await QRCode.toDataURL(uri, { width: 200, margin: 1 });
       setQrDataUrl(url);
     })();
@@ -72,7 +72,7 @@ export default function TotpSetupModal({ isOpen, onClose }: TotpSetupModalProps)
         )}
         <p className="text-xs text-vault-muted leading-relaxed">
           Use Google Authenticator, Authy, or any TOTP app. If you cannot scan, add manually: issuer{' '}
-          <strong>SecureVault</strong>, algorithm SHA1, 6 digits, 30s period.
+          <strong>Strong Vault</strong>, algorithm SHA1, 6 digits, 30s period.
         </p>
         <div>
           <label className="mb-1 block text-xs font-700 uppercase tracking-wider text-vault-muted">

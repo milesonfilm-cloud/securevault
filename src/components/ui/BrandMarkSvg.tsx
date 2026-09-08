@@ -1,14 +1,12 @@
 'use client';
 
 import React, { memo, useMemo } from 'react';
-import Image from 'next/image';
 
-import { BRAND_MARK_HEIGHT, BRAND_MARK_SRC, BRAND_MARK_WIDTH } from '@/lib/brandLogo';
+import { BRAND_MARK_SRC } from '@/lib/brandLogo';
 import { cn } from '@/lib/utils';
 
-/** Kept for imports that expected SVG sizing; image is square — aspect 1. */
-export const BRAND_MARK_VIEWBOX_W = BRAND_MARK_WIDTH;
-export const BRAND_MARK_VIEWBOX_H = BRAND_MARK_HEIGHT;
+export const BRAND_MARK_VIEWBOX_W = 512;
+export const BRAND_MARK_VIEWBOX_H = 512;
 
 export interface BrandMarkSvgProps {
   size?: number;
@@ -18,27 +16,39 @@ export interface BrandMarkSvgProps {
 }
 
 /**
- * Brand mark from bundled artwork (`/public/brand/securevault-icon.png`).
- * Component name unchanged for minimal churn.
+ * Brand mark — plain <img> with equal width/height so Android WebView never stretches it.
  */
 const BrandMarkSvg = memo(function BrandMarkSvg({
   size = 88,
   className,
-  title = 'SecureVault',
+  title = 'Strong Vault',
   'aria-hidden': ariaHidden,
 }: BrandMarkSvgProps) {
   const alt = useMemo(() => (ariaHidden ? '' : title), [ariaHidden, title]);
+  const px = Math.max(24, Math.round(size));
 
   return (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element -- Capacitor WebView: next/image stretch bugs
+    <img
       src={BRAND_MARK_SRC}
       alt={alt}
-      width={BRAND_MARK_WIDTH}
-      height={BRAND_MARK_HEIGHT}
-      sizes={`${Math.ceil(size * 1.5)}px`}
-      className={cn('h-auto w-auto max-w-[min(420px,92vw)] object-contain', className)}
-      style={{ height: size, width: 'auto' }}
-      priority={false}
+      width={px}
+      height={px}
+      decoding="async"
+      draggable={false}
+      className={cn('block shrink-0 select-none', className)}
+      style={{
+        width: px,
+        height: px,
+        maxWidth: px,
+        maxHeight: px,
+        minWidth: px,
+        minHeight: px,
+        objectFit: 'contain',
+        objectPosition: 'center',
+        aspectRatio: '1 / 1',
+        backgroundColor: 'transparent',
+      }}
       aria-hidden={ariaHidden || undefined}
     />
   );

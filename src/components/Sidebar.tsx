@@ -5,7 +5,6 @@ import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
   Crown,
-  FolderLock,
   Users,
   Settings,
   Info,
@@ -18,6 +17,7 @@ import {
 } from 'lucide-react';
 import { lockVaultAndReload } from '@/lib/vaultKeyPersist';
 import { useVaultData } from '@/context/VaultDataContext';
+import { isPro } from '@/lib/subscription';
 import { countRenewalBadgeDocuments } from '@/lib/notifications/reminderScheduler';
 import { DEFAULT_EXPIRY_WARN_DAYS } from '@/lib/documentExpiry';
 import BrandMarkSvg from '@/components/ui/BrandMarkSvg';
@@ -40,11 +40,6 @@ function buildNavItems(
       href: '/family-management',
       label: t('familyMembers'),
       icon: <Users size={18} />,
-    },
-    {
-      href: '/document-vault',
-      label: t('documentVault'),
-      icon: <FolderLock size={18} />,
     },
     {
       href: '/renewals',
@@ -84,13 +79,13 @@ interface SidebarProps {
 function navItemClasses(isActive: boolean, collapsed: boolean): string {
   const base = `sidebar-item ${collapsed ? 'justify-center px-0' : ''}`;
   if (isActive) {
-    return `${base} font-semibold text-[#212121] pastel-sidebar-active`;
+    return `${base} font-semibold text-white pastel-sidebar-active`;
   }
-  return `${base} bg-transparent text-[#212121]/55 hover:bg-[#212121]/06`;
+  return `${base} bg-transparent text-white/50 hover:bg-white/[0.06]`;
 }
 
 function navIconClass(isActive: boolean): string {
-  return isActive ? 'text-[color:var(--pastel-member-ink,#212121)]' : 'text-[#212121]/45';
+  return isActive ? 'text-[color:var(--pastel-member-ink,#cfdeca)]' : 'text-white/40';
 }
 
 export default function Sidebar({ collapsed, onToggleCollapse, activePath }: SidebarProps) {
@@ -99,12 +94,12 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
   const renewalBadge = loading
     ? 0
     : countRenewalBadgeDocuments(vaultData.documents, DEFAULT_EXPIRY_WARN_DAYS);
-  const plan = (vaultData.settings.plan ?? 'free') as 'free' | 'pro';
+  const plan = isPro(vaultData.settings) ? 'pro' : 'free';
   const NAV_ITEMS = buildNavItems(renewalBadge, t, plan);
 
   return (
     <div
-      className="flex h-full flex-col border-r border-[color:var(--color-border)] bg-vault-panel shadow-vault transition-all duration-300 ease-in-out"
+      className="flex h-full flex-col border-r border-white/10 bg-[#0c0c0e]/90 shadow-vault backdrop-blur-xl transition-all duration-300 ease-in-out"
       style={{
         width: collapsed ? 64 : 240,
       }}
@@ -123,15 +118,11 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
           )}
           title={t('familyMembers')}
         >
-          <BrandMarkSvg
-            size={collapsed ? 52 : 62}
-            className="flex-shrink-0 drop-shadow-sm"
-            aria-hidden
-          />
+          <BrandMarkSvg size={collapsed ? 52 : 62} aria-hidden />
           {!collapsed && (
             <div className="min-w-0 text-left">
               <span className="block truncate text-[15px] font-bold leading-tight tracking-tight text-vault-text">
-                SecureVault
+                Strong Vault
               </span>
               <span className="mt-1 inline-block rounded-full bg-vault-elevated px-2 py-0.5 text-[9px] font-medium uppercase tracking-[2px] text-vault-muted">
                 {t('private')}
@@ -141,7 +132,10 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-4">
+      <nav
+        className="flex-1 space-y-0.5 overflow-y-auto px-2 py-4"
+        data-walkthrough="app-menu"
+      >
         {!collapsed && (
           <p className="mb-3 px-3 text-[9px] font-bold uppercase tracking-[3px] text-vault-faint">
             {t('navigation')}
@@ -166,16 +160,16 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
               style={
                 isUpgrade
                   ? isActive
-                    ? { background: 'linear-gradient(135deg, #5b21b6 0%, #7c3aed 100%)' }
+                    ? { background: 'linear-gradient(135deg, #7A3419 0%, #C2410C 100%)' }
                     : plan === 'pro'
                       ? {
                           background:
-                            'linear-gradient(135deg, rgba(67,56,201,0.18) 0%, rgba(124,58,237,0.18) 100%)',
-                          color: '#4338C9',
+                            'linear-gradient(135deg, rgba(154,52,18,0.16) 0%, rgba(194,65,12,0.16) 100%)',
+                          color: '#9A3412',
                         }
                       : {
                           background:
-                            'linear-gradient(135deg, #4338C9 0%, #6d28d9 50%, #7c3aed 100%)',
+                            'linear-gradient(135deg, #9A3412 0%, #C2410C 50%, #B45309 100%)',
                         }
                   : undefined
               }
@@ -189,8 +183,8 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                 style={
                   isUpgrade
                     ? plan === 'pro' && !isActive
-                      ? { color: '#4338C9' }
-                      : { color: '#fde047' }
+                      ? { color: '#9A3412' }
+                      : { color: '#FDE68A' }
                     : undefined
                 }
               >
@@ -200,7 +194,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                 <span
                   className={isUpgrade ? 'truncate font-bold' : 'truncate'}
                   style={
-                    isUpgrade && plan === 'pro' && !isActive ? { color: '#4338C9' } : undefined
+                    isUpgrade && plan === 'pro' && !isActive ? { color: '#9A3412' } : undefined
                   }
                 >
                   {item.label}
@@ -211,7 +205,12 @@ export default function Sidebar({ collapsed, onToggleCollapse, activePath }: Sid
                   {item.badge}
                 </span>
               ) : null}
-              {/* FREE badge removed — Pro is a paid upgrade */}
+              {/* FREE badge for free users */}
+              {isUpgrade && !collapsed && plan === 'free' && (
+                <span className="ml-auto rounded-full bg-[#FDE68A] px-1.5 py-0.5 text-[9px] font-extrabold text-[#9A3412]">
+                  FREE
+                </span>
+              )}
             </Link>
           );
         })}

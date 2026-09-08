@@ -1,5 +1,5 @@
 /* global self */
-/* SecureVault — reminders + Web Share Target intake. */
+/* Strong Vault — lightweight service worker for scheduled expiry reminders (best-effort). */
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -32,10 +32,7 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url =
-    event.notification.data && event.notification.data.url
-      ? event.notification.data.url
-      : '/renewals';
+  const url = event.notification.data && event.notification.data.url ? event.notification.data.url : '/renewals';
   event.waitUntil(
     self.clients.matchAll({ type: 'window' }).then((clientList) => {
       for (const client of clientList) {
@@ -43,47 +40,5 @@ self.addEventListener('notificationclick', (event) => {
       }
       if (self.clients.openWindow) return self.clients.openWindow(url);
     })
-  );
-});
-
-/** Web Share Target — receive files shared to the installed PWA. */
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
-  if (event.request.method !== 'POST' || !url.pathname.endsWith('/share-target')) {
-    return;
-  }
-
-  event.respondWith(
-    (async () => {
-      try {
-        const form = await event.request.formData();
-        const title = form.get('title');
-        const text = form.get('text');
-        const files = form.getAll('files').filter((f) => f instanceof File && f.size > 0);
-        const payloads = [];
-        for (const file of files) {
-          payloads.push({
-            name: file.name || 'shared-file',
-            type: file.type || 'application/octet-stream',
-            buffer: await file.arrayBuffer(),
-          });
-        }
-
-        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-        const message = {
-          type: 'SHARE_TARGET_FILES',
-          title: typeof title === 'string' ? title : undefined,
-          text: typeof text === 'string' ? text : undefined,
-          files: payloads,
-        };
-        for (const client of clients) {
-          client.postMessage(message);
-        }
-
-        return Response.redirect('/en/document-vault?shared=1', 303);
-      } catch {
-        return Response.redirect('/en/document-vault', 303);
-      }
-    })()
   );
 });

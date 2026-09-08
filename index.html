@@ -9,25 +9,52 @@
   h1 { color: #e63946; }
   h2 { margin-top: 32px; }
   .updated { color: #666; font-size: 0.9em; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95em; margin-top: 12px; }
+  th, td { text-align: left; padding: 8px 0; border-bottom: 1px solid #e5e5e5; }
+  th { font-weight: 600; }
+  td { color: #555; }
 </style>
 </head>
 <body>
 <h1>Privacy Policy for Strong Vault</h1>
-<p class="updated">Last updated: August 2026</p>
+<p class="updated">Last updated: 9 September 2026</p>
 
 <p>Strong Vault ("the App") is committed to protecting your privacy. This Privacy Policy explains how we handle your information.</p>
 
-<h2>Data Collection and Storage</h2>
-<p>Strong Vault stores all your data — including passwords, notes, documents, and any other content you save — <strong>locally on your device only</strong>. We do not collect, transmit, or store any of your vault data on external servers.</p>
+<h2>What data we store &mdash; and where</h2>
+<p>Strong Vault is designed to be <strong>zero-knowledge</strong>. Your vault data &mdash; documents, photos, passwords, notes, and metadata &mdash; is encrypted on your device using AES-256-GCM before being stored locally in the app's IndexedDB storage. The encryption key is derived from your PIN using Argon2id and never leaves your device.</p>
 
 <h2>No Data Sharing</h2>
-<p>Since your data never leaves your device, we do not share, sell, or transmit your personal information to any third parties.</p>
+<p>Since your vault data never leaves your device, we do not collect, sell, share, or transmit your personal information to any third parties.</p>
+
+<h2>DigiLocker</h2>
+<p>When you connect DigiLocker, we use PKCE OAuth 2.0 to obtain a short-lived access token. This token is stored only in the app's session storage and is deleted when you close the app or tab. We do not store DigiLocker tokens on our servers.</p>
 
 <h2>Biometric and Authentication Data</h2>
 <p>If you use biometric authentication (fingerprint, face recognition) or a PIN to secure the app, this authentication is handled entirely by your device's operating system. Strong Vault does not have access to, collect, or store your biometric data.</p>
 
 <h2>Permissions</h2>
-<p>The App may request certain device permissions (such as storage access) solely to enable core functionality like saving and retrieving your vault contents. These permissions are used only on-device and not for data collection.</p>
+<p>The App may request certain device permissions (such as storage or camera access) solely to enable core functionality like saving, scanning, and retrieving your vault contents. These permissions are used only on-device and not for data collection.</p>
+
+<h2>Your rights (GDPR / DPDP 2023)</h2>
+<ul>
+  <li>Right to access: See Settings &rarr; Export for a full export of your vault data.</li>
+  <li>Right to erasure: Use Settings &rarr; Danger Zone to wipe vault data on this device, or clear storage for the app.</li>
+  <li>Right to portability: Export as JSON at any time from Settings &rarr; Export.</li>
+  <li>Right to withdraw consent: Change analytics preferences when prompted in the app.</li>
+</ul>
+
+<h2>Third-party sub-processors</h2>
+<table>
+  <thead>
+    <tr><th>Processor</th><th>Purpose</th><th>Location</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Google</td><td>Optional DigiLocker OAuth only</td><td>USA</td></tr>
+    <tr><td>Firebase / Google</td><td>Web hosting</td><td>USA</td></tr>
+    <tr><td>Google Play Billing</td><td>In-app purchases and subscriptions</td><td>USA</td></tr>
+  </tbody>
+</table>
 
 <h2>Children's Privacy</h2>
 <p>Strong Vault does not knowingly collect information from children under 13.</p>
@@ -36,7 +63,8 @@
 <p>We may update this Privacy Policy from time to time. Changes will be reflected on this page with an updated revision date.</p>
 
 <h2>Contact Us</h2>
-<p>If you have any questions about this Privacy Policy, please contact us at: <strong>sumanthlearning1984@gmail.com</strong></p>
+<p>Data protection enquiries: <strong>privacy@strongvault.app</strong><br>
+General support: <strong>sumanthlearning1984@gmail.com</strong></p>
 
 </body>
 </html>

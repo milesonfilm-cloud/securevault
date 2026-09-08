@@ -50,7 +50,7 @@ export async function registerBiometric(): Promise<boolean> {
     const credential = (await navigator.credentials.create({
       publicKey: {
         challenge,
-        rp: { name: 'SecureVault', id: window.location.hostname },
+        rp: { name: 'Strong Vault', id: window.location.hostname },
         user: {
           id: userId,
           name: 'vault-user',

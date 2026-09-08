@@ -4,7 +4,7 @@ async function resetVaultSession(page: import('@playwright/test').Page) {
   await page.goto('/family-management');
   await page.evaluate(() => {
     localStorage.clear();
-    indexedDB.deleteDatabase('securevault');
+    indexedDB.deleteDatabase('strongvault');
     localStorage.setItem(
       'sv_consent_v1',
       JSON.stringify({

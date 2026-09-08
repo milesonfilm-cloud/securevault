@@ -8,17 +8,26 @@ export interface VaultDashboardStatsProps {
   vaultData: VaultData;
 }
 
+/** Pastel vault tiles follow the selected family member accent (CSS vars from PastelAccentCssSync). */
+const VAULT_TILES = [
+  { bg: 'rgba(255,255,255,0.72)' },
+  { bg: 'rgba(255,255,255,0.78)' },
+  { bg: 'rgba(255,255,255,0.68)' },
+  { bg: 'rgba(255,255,255,0.74)' },
+] as const;
+
 /**
- * Vault-wide summary tiles — neutral cards (not member-colored).
+ * Overview tiles: total members, documents, member with most docs, category breadth.
+ * Lives on the Document Vault page (moved from Family Members).
  */
 export default function VaultDashboardStats({ vaultData }: VaultDashboardStatsProps) {
   const docSource = vaultData.documents;
 
   const stats = [
-    { label: 'Total members', value: vaultData.members.length },
-    { label: 'Total documents', value: docSource.length },
+    { label: 'Total Members', value: vaultData.members.length },
+    { label: 'Total Documents', value: docSource.length },
     {
-      label: 'Most documents',
+      label: 'Most Documents',
       value: vaultData.members.reduce(
         (best, m) => {
           const count = docSource.filter((d) => d.memberId === m.id).length;
@@ -28,25 +37,33 @@ export default function VaultDashboardStats({ vaultData }: VaultDashboardStatsPr
       ).name,
     },
     {
-      label: 'Categories used',
+      label: 'Categories Used',
       value: new Set(docSource.map((d) => d.categoryId)).size,
     },
   ];
 
   return (
     <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {stats.map((stat, i) => (
-        <div
-          key={`vault-dash-stat-${i}`}
-          className={cn(
-            'rounded-2xl border border-[color:var(--color-border)] bg-vault-panel p-4 shadow-vault',
-            i === 0 && 'border-l-[3px] border-l-vault-warm'
-          )}
-        >
-          <p className="mb-1 text-xs font-medium text-vault-muted">{stat.label}</p>
-          <p className="text-xl font-800 tabular-nums leading-tight text-vault-warm">{stat.value}</p>
-        </div>
-      ))}
+      {stats.map((stat, i) => {
+        const tile = VAULT_TILES[i % VAULT_TILES.length];
+        return (
+          <div
+            key={`vault-dash-stat-${i}`}
+            className={cn(
+              'sv-icon-card rounded-2xl border p-4',
+              'border-white/80'
+            )}
+            style={{ background: tile.bg }}
+          >
+            <p className="mb-1 text-[11px] font-800 uppercase tracking-widest text-vault-muted">
+              {stat.label}
+            </p>
+            <p className="text-xl font-800 tabular-nums leading-tight text-vault-text">
+              {stat.value}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import {
   Bell,
@@ -10,19 +10,23 @@ import {
   CloudUpload,
   Crown,
   Download,
-  ExternalLink,
   HeadphonesIcon,
   Infinity as InfinityIcon,
   Scan,
   Share2,
-  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { useVaultData } from '@/context/VaultDataContext';
 import { isPro, PRO_FEATURES, PLAY_STORE_URL } from '@/lib/subscription';
+import {
+  fetchProProductPrice,
+  purchasePro,
+  restoreProPurchases,
+} from '@/lib/proBilling';
 import { isNativeApp } from '@/lib/platform';
 import { cn } from '@/lib/utils';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   Infinity: <InfinityIcon size={20} />,
@@ -36,14 +40,14 @@ const ICON_MAP: Record<string, React.ReactNode> = {
 };
 
 const PASTEL_CARD_COLORS = [
-  '#e8d5f7',
-  '#d5eaf7',
-  '#d5f7e8',
-  '#f7f0d5',
-  '#f7d5e8',
-  '#d5d5f7',
-  '#f7e8d5',
-  '#d5f7f7',
+  '#F6F5FA',
+  '#EEF1F6',
+  '#F3F6F0',
+  '#F4F3F8',
+  '#EEF3F6',
+  '#F5F4F0',
+  '#F0F2F7',
+  '#F6F5FA',
 ];
 
 const COMPARE_ORDER = [
@@ -59,139 +63,168 @@ export default function UpgradeContent() {
   const t = useTranslations('upgrade');
   const { vaultData, persistVaultData } = useVaultData();
   const pro = isPro(vaultData.settings);
-  const [activating, setActivating] = useState(false);
-  const nativeApp = isNativeApp();
+  const [busy, setBusy] = useState(false);
+  const [storePrice, setStorePrice] = useState<string | null>(null);
+  const native = isNativeApp();
 
-  const handleActivatePro = async () => {
-    setActivating(true);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchProProductPrice().then((price) => {
+      if (!cancelled && price) setStorePrice(price);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handlePurchasePro = async () => {
+    if (busy) return;
+    setBusy(true);
     try {
-      await persistVaultData({
-        ...vaultData,
-        settings: { ...vaultData.settings, plan: 'pro' },
-      });
-      toast.success(t('toastActivated'));
+      const result = await purchasePro();
+      if (result.ok) {
+        await persistVaultData({
+          ...vaultData,
+          settings: {
+            ...vaultData.settings,
+            plan: 'pro',
+            proEntitlement: result.entitlement,
+          },
+        });
+        toast.success(t('toastActivated'));
+        return;
+      }
+
+      switch (result.reason) {
+        case 'web_only':
+          toast.message(t('purchasePlayOnly'), {
+            description: t('purchasePlayOnlyHint'),
+            action: {
+              label: t('openPlayStore'),
+              onClick: () => window.open(PLAY_STORE_URL, '_blank', 'noopener,noreferrer'),
+            },
+          });
+          break;
+        case 'billing_unsupported':
+          toast.error(t('billingUnsupported'));
+          break;
+        case 'cancelled':
+          toast.message(t('purchaseCancelled'));
+          break;
+        case 'invalid_transaction':
+          toast.error(t('purchaseInvalid'));
+          break;
+        default:
+          toast.error(t('purchaseFailed'), {
+            description: result.message || t('purchaseFailedHint'),
+          });
+      }
     } finally {
-      setActivating(false);
+      setBusy(false);
     }
   };
 
-  const handleDowngradeFree = async () => {
-    await persistVaultData({
-      ...vaultData,
-      settings: { ...vaultData.settings, plan: 'free' },
-    });
-    toast(t('toastSwitchedFree'));
+  const handleRestore = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      if (!native) {
+        toast.message(t('purchasePlayOnly'), { description: t('purchasePlayOnlyHint') });
+        return;
+      }
+      const restored = await restoreProPurchases();
+      if (!restored.ok) {
+        toast.error(t('restoreFailed'), { description: restored.message });
+        return;
+      }
+      // After Play restores ownership, re-run purchase flow — Play will not
+      // charge again for an already-owned subscription / product.
+      const result = await purchasePro();
+      if (result.ok) {
+        await persistVaultData({
+          ...vaultData,
+          settings: {
+            ...vaultData.settings,
+            plan: 'pro',
+            proEntitlement: result.entitlement,
+          },
+        });
+        toast.success(t('toastRestored'));
+        return;
+      }
+      if (result.reason === 'cancelled') {
+        toast.message(t('restoreNoPurchase'));
+        return;
+      }
+      toast.message(t('restoreNoPurchase'));
+    } finally {
+      setBusy(false);
+    }
   };
 
+  const priceLabel = storePrice ?? '₹199';
+
   return (
-    <div className="font-urbanist min-h-full bg-[#F6F5FA] pb-12">
-      {/* ── Hero — dark purple ── */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#4338C9] via-[#6d28d9] to-[#7c3aed] px-6 pb-10 pt-12 text-white">
-        {/* Soft blobs */}
-        <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-10 -left-10 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
-
-        <div className="relative mx-auto max-w-lg text-center">
-          <motion.div
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-            className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[20px] bg-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-sm"
-          >
-            <Crown className="h-8 w-8 text-yellow-300" strokeWidth={2} />
-          </motion.div>
-
-          {pro ? (
+    <div className="vault-page font-urbanist">
+      <VaultPageHeading
+        icon={<Crown className="h-8 w-8 text-[#D4A017]" strokeWidth={1.75} fill="currentColor" />}
+        title={
+          pro ? (
             <>
-              <motion.div
-                initial={{ y: 12, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-yellow-400/25 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-yellow-200 ring-1 ring-yellow-400/40"
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {t('activeSubscriptionBadge')}
-              </motion.div>
-              <h1 className="mt-3 text-[26px] font-extrabold leading-tight">
-                {t('heroOnProLead')}{' '}
-                <span className="text-yellow-300">{t('planName')}</span>
-              </h1>
-              <p className="mt-2 text-[14px] text-white/75">{t('heroOnProSub')}</p>
+              {t('heroOnProLead')} <span className="text-[#C9A227]">{t('planName')}</span>
             </>
           ) : (
             <>
-              <motion.div
-                initial={{ y: 12, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white/80 ring-1 ring-white/30"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-yellow-300" />
-                {t('upgradeBadge')}
-              </motion.div>
-              <h1 className="mt-3 text-[26px] font-extrabold leading-tight">
-                {t('heroUnlockLead')}
-              </h1>
-              <p className="mt-2 text-[14px] text-white/75">{t('heroUnlockSub')}</p>
+              {t('heroUnlockLead')} <span className="text-[#C9A227]">{t('brandShort')}</span>
             </>
-          )}
-        </div>
-      </div>
+          )
+        }
+        description={pro ? t('heroOnProSub') : t('heroUnlockSub')}
+      />
 
-      {/* ── CTA card (sits cleanly below hero — no overlap) ── */}
       {!pro && (
-        <div className="mx-auto mt-6 max-w-lg px-4">
+        <div className="mt-6">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 22 }}
-            className="rounded-[24px] bg-white p-6 shadow-[0_16px_48px_rgba(67,56,201,0.18)]"
+            className="rounded-[24px] bg-white p-6 shadow-[0_8px_28px_rgba(33,33,33,0.06)]"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-[12px] font-bold uppercase tracking-[1.5px] text-[#4338C9]">
+                <p className="text-[12px] font-bold uppercase tracking-[1.5px] text-vault-muted">
                   {t('planName')}
                 </p>
                 <p className="mt-0.5 text-[22px] font-extrabold text-[#212121]">
-                  ₹199
-                  <span className="text-[14px] font-semibold text-[#212121]/50">{t('pricePerYear')}</span>
+                  {priceLabel}
+                  {!storePrice ? (
+                    <span className="text-[14px] font-semibold text-[#212121]/50">
+                      {t('pricePerYear')}
+                    </span>
+                  ) : null}
                 </p>
                 <p className="text-[11px] text-[#212121]/45">{t('subscriptionNote')}</p>
               </div>
-              <a
-                href={nativeApp ? PLAY_STORE_URL : undefined}
-                onClick={nativeApp ? undefined : (e) => e.preventDefault()}
-                target={nativeApp ? '_blank' : undefined}
-                rel={nativeApp ? 'noopener noreferrer' : undefined}
-                className="flex shrink-0 items-center gap-2 rounded-full bg-[#4338C9] px-5 py-3 text-[13px] font-bold text-white shadow-[0_8px_24px_rgba(67,56,201,0.35)] transition-all active:scale-95"
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void handlePurchasePro()}
+                className="flex shrink-0 items-center gap-2 rounded-full bg-vault-text px-5 py-3 text-[13px] font-bold text-white shadow-[0_8px_24px_rgba(33,33,33,0.12)] transition-all active:scale-95 disabled:opacity-60"
               >
-                {nativeApp ? (
-                  <>
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-white" aria-hidden>
-                      <path d="M3.18 23.73c.3.17.64.22.98.14l11.65-11.65L12.48 9l-9.3 14.73zM20.5 10.02l-2.83-1.63-3.4 3.39 3.4 3.39 2.86-1.64A1.99 1.99 0 0020.5 10.02zM1.05 1.44a2 2 0 000 1.84l9.14 9.14 3.27-3.27L2.01.78a1.5 1.5 0 00-.96.66zM12.48 13.78l-9.3 9.31c.34.08.68.03.98-.15l11.65-11.65-3.33-3.51z" />
-                    </svg>
-                    {t('getProCta')}
-                    <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                  </>
-                ) : (
-                  t('upgradeCtaWeb', { defaultValue: 'Upgrade to Pro' })
-                )}
-              </a>
+                {busy ? t('activating') : t('getProCta')}
+              </button>
             </div>
-            <p className="mt-4 text-center text-[11px] text-[#212121]/40">
-              {nativeApp ? t('purchaseNote') : t('webPurchaseNote')}
-            </p>
+            <p className="mt-4 text-center text-[11px] text-[#212121]/40">{t('purchaseNote')}</p>
           </motion.div>
         </div>
       )}
 
-      {/* ── Pro activated state ── */}
       {pro && (
-        <div className="mx-auto mt-6 max-w-lg px-4">
-          <div className="rounded-[24px] bg-white p-6 shadow-[0_16px_48px_rgba(67,56,201,0.14)]">
+        <div className="mt-6">
+          <div className="rounded-[24px] bg-white p-6 shadow-[0_8px_28px_rgba(33,33,33,0.06)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#4338C9]/10">
-                <Crown className="h-6 w-6 text-[#4338C9]" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-[14px] bg-black/[0.04]">
+                <Crown className="h-6 w-6 text-[#D4A017]" fill="currentColor" strokeWidth={1.75} />
               </div>
               <div>
                 <p className="font-bold text-[#212121]">{t('proIsActive')}</p>
@@ -203,20 +236,20 @@ export default function UpgradeContent() {
         </div>
       )}
 
-      {/* ── Pro features grid ── */}
-      <div className="mx-auto mt-8 max-w-lg px-4">
+      <div className="mt-8">
         <h2 className="mb-4 text-[17px] font-bold text-[#212121]">{t('whatsIncluded')}</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-2 gap-3">
           {PRO_FEATURES.map((feat, i) => (
             <motion.div
               key={feat.icon}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 * i, type: 'spring', stiffness: 300, damping: 24 }}
-              className="flex min-h-[148px] flex-col rounded-[18px] border border-[#212121]/08 bg-white p-4 shadow-[0_4px_16px_rgba(33,33,33,0.06)]"
+              className="rounded-[18px] p-4 shadow-[0_4px_16px_rgba(33,33,33,0.06)]"
+              style={{ background: PASTEL_CARD_COLORS[i % PASTEL_CARD_COLORS.length] }}
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/70">
-                <span className="text-[#4338C9]">{ICON_MAP[feat.icon]}</span>
+                <span className="text-vault-muted">{ICON_MAP[feat.icon]}</span>
               </div>
               <p className="mt-2.5 text-[13px] font-bold text-[#212121]">
                 {t(`features.${feat.icon}.title` as Parameters<typeof t>[0])}
@@ -229,11 +262,9 @@ export default function UpgradeContent() {
         </div>
       </div>
 
-      {/* ── Free vs Pro comparison ── */}
-      <div className="mx-auto mt-8 max-w-lg px-4">
+      <div className="mt-8">
         <h2 className="mb-4 text-[17px] font-bold text-[#212121]">{t('freeVsPro')}</h2>
         <div className="overflow-hidden rounded-[20px] bg-white shadow-[0_4px_20px_rgba(33,33,33,0.08)]">
-          {/* Header row */}
           <div className="grid grid-cols-3 border-b border-[#212121]/06 px-4 py-3">
             <p className="text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">
               {t('tableFeature')}
@@ -241,88 +272,77 @@ export default function UpgradeContent() {
             <p className="text-center text-[11px] font-bold uppercase tracking-[1.5px] text-[#212121]/45">
               {t('tableFree')}
             </p>
-            <p className="text-center text-[11px] font-extrabold uppercase tracking-[1.5px] text-[#4338C9]">
+            <p className="text-center text-[11px] font-extrabold uppercase tracking-[1.5px] text-vault-text">
               {t('tablePro')}
             </p>
           </div>
           {COMPARE_ORDER.map((rowKey, i) => {
             const free = t(`compare.${rowKey}.free` as Parameters<typeof t>[0]);
-            const pro = t(`compare.${rowKey}.pro` as Parameters<typeof t>[0]);
+            const proCell = t(`compare.${rowKey}.pro` as Parameters<typeof t>[0]);
             return (
-            <div
-              key={rowKey}
-              className={cn(
-                'grid grid-cols-3 items-center px-4 py-3',
-                i % 2 === 1 ? 'bg-[#F6F5FA]' : ''
-              )}
-            >
-              <p className="text-[12px] font-semibold text-[#212121]">
-                {t(`compare.${rowKey}.feature` as Parameters<typeof t>[0])}
-              </p>
-              <p className="text-center text-[12px] text-[#212121]/50">{free}</p>
-              <p
+              <div
+                key={rowKey}
                 className={cn(
-                  'text-center text-[12px] font-bold',
-                  pro === '—' ? 'text-[#212121]/30' : 'text-[#4338C9]'
+                  'grid grid-cols-3 items-center px-4 py-3',
+                  i % 2 === 1 ? 'bg-black/[0.025]' : ''
                 )}
               >
-                {pro === '✓' ? <Check className="mx-auto h-4 w-4 text-emerald-500" /> : pro}
-              </p>
-            </div>
+                <p className="text-[12px] font-semibold text-[#212121]">
+                  {t(`compare.${rowKey}.feature` as Parameters<typeof t>[0])}
+                </p>
+                <p className="text-center text-[12px] text-[#212121]/50">{free}</p>
+                <p
+                  className={cn(
+                    'text-center text-[12px] font-bold',
+                    proCell === '—' ? 'text-[#212121]/30' : 'text-vault-text'
+                  )}
+                >
+                  {proCell === '✓' ? (
+                    <Check className="mx-auto h-4 w-4 text-emerald-500" />
+                  ) : (
+                    proCell
+                  )}
+                </p>
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* ── Bottom CTA ── */}
       {!pro && (
-        <div className="mx-auto mt-8 max-w-lg px-4">
-          <a
-            href={nativeApp ? PLAY_STORE_URL : undefined}
-            onClick={nativeApp ? undefined : (e) => e.preventDefault()}
-            target={nativeApp ? '_blank' : undefined}
-            rel={nativeApp ? 'noopener noreferrer' : undefined}
-            className="flex w-full items-center justify-center gap-3 rounded-[18px] bg-[#4338C9] py-4 text-[15px] font-extrabold text-white shadow-[0_12px_32px_rgba(67,56,201,0.35)] transition-all active:scale-[0.98]"
+        <div className="mt-8">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => void handlePurchasePro()}
+            className="flex w-full items-center justify-center gap-3 rounded-[18px] bg-vault-text py-4 text-[15px] font-extrabold text-white shadow-[0_10px_28px_rgba(33,33,33,0.12)] transition-all active:scale-[0.98] disabled:opacity-60"
           >
-            {nativeApp ? (
-              <>
-                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white" aria-hidden>
-                  <path d="M3.18 23.73c.3.17.64.22.98.14l11.65-11.65L12.48 9l-9.3 14.73zM20.5 10.02l-2.83-1.63-3.4 3.39 3.4 3.39 2.86-1.64A1.99 1.99 0 0020.5 10.02zM1.05 1.44a2 2 0 000 1.84l9.14 9.14 3.27-3.27L2.01.78a1.5 1.5 0 00-.96.66zM12.48 13.78l-9.3 9.31c.34.08.68.03.98-.15l11.65-11.65-3.33-3.51z" />
-                </svg>
-                {t('getProPlayCta')}
-                <ExternalLink className="h-4 w-4 opacity-70" />
-              </>
-            ) : (
-              t('upgradeCtaWeb')
-            )}
-          </a>
-          {!nativeApp ? (
-            <p className="mt-2 text-center text-[11px] text-[#212121]/40">{t('webPurchaseNote')}</p>
-          ) : null}
+            {busy ? t('activating') : t('getProPlayCta')}
+          </button>
           <p className="mt-3 text-center text-[11px] text-[#212121]/40">
             {t('alreadyPurchased')}{' '}
             <button
               type="button"
-              disabled={activating}
-              onClick={handleActivatePro}
-              className="font-bold text-[#4338C9] underline decoration-[#4338C9]/30 underline-offset-2"
+              disabled={busy}
+              onClick={() => void handleRestore()}
+              className="font-bold text-vault-text underline decoration-black/25 underline-offset-2 disabled:opacity-60"
             >
-              {activating ? t('activating') : t('tapActivate')}
+              {busy ? t('activating') : t('restorePurchases')}
             </button>
           </p>
         </div>
       )}
 
-      {/* Downgrade link (for testing) */}
       {pro && (
-        <div className="mx-auto mt-6 max-w-lg px-4 text-center">
-          <button
-            type="button"
-            onClick={handleDowngradeFree}
+        <div className="mt-6 text-center">
+          <a
+            href="https://play.google.com/store/account/subscriptions"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-[11px] text-[#212121]/35 underline decoration-[#212121]/20 underline-offset-2"
           >
-            {t('cancelSubscription')}
-          </button>
+            {t('manageSubscription')}
+          </a>
         </div>
       )}
     </div>

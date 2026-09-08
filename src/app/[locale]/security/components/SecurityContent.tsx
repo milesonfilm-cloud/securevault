@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
+import VaultPageHeading from '@/components/ui/VaultPageHeading';
 import ComplianceBadgeStrip from '@/components/trust/ComplianceBadgeStrip';
 
 export default function SecurityContent() {
@@ -51,15 +52,13 @@ export default function SecurityContent() {
   ] as const;
 
   return (
-    <div className="mx-auto min-h-full max-w-screen-lg bg-vault-bg p-4 lg:p-6">
-      <div className="mb-8 text-center">
-        <p className="text-xs font-medium text-vault-faint">{t('eyebrow')}</p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-vault-text sm:text-3xl">
-          {t('title')}
-        </h1>
-        <p className="mx-auto mt-3 max-w-xl text-sm text-vault-muted">{t('intro')}</p>
-        <ComplianceBadgeStrip className="mt-5" />
-      </div>
+    <div className="vault-page">
+      <VaultPageHeading
+        className="mb-8"
+        title={t('title')}
+        description={t('intro')}
+        meta={<ComplianceBadgeStrip className="mt-3" />}
+      />
 
       <section className="neo-card mb-5 rounded-2xl border border-[#4338C9]/20 bg-[#4338C9]/05 p-5 sm:p-6">
         <h2 className="text-lg font-bold text-vault-text">{t('diffHeading')}</h2>

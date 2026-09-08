@@ -21,11 +21,11 @@ plugins {
 }
 
 def twaManifest = [
-    applicationId: 'app.hosted.asia_southeast1.securevault__vault_84ff7.twa',
-    hostName: 'securevault--vault-84ff7.asia-southeast1.hosted.app', // The domain being opened in the TWA.
+    applicationId: 'app.hosted.asia_southeast1.strongvault__vault_84ff7.twa',
+    hostName: 'strongvault--vault-84ff7.asia-southeast1.hosted.app', // The domain being opened in the TWA.
     launchUrl: '/document-vault', // The start path for the TWA. Must be relative to the domain.
-    name: 'SecureVault', // The application name.
-    launcherName: 'SecureVault', // The name shown on the Android Launcher.
+    name: 'Strong Vault', // The application name.
+    launcherName: 'Strong Vault', // The name shown on the Android Launcher.
     themeColor: '#1A0533', // The color used for the status bar.
     themeColorDark: '#000000', // The color used for the dark status bar.
     navigationColor: '#000000', // The color used for the navigation bar.
@@ -52,9 +52,9 @@ def twaManifest = [
 
 android {
     compileSdkVersion 36
-    namespace "app.hosted.asia_southeast1.securevault__vault_84ff7.twa"
+    namespace "app.hosted.asia_southeast1.strongvault__vault_84ff7.twa"
     defaultConfig {
-        applicationId "app.hosted.asia_southeast1.securevault__vault_84ff7.twa"
+        applicationId "app.hosted.asia_southeast1.strongvault__vault_84ff7.twa"
         minSdkVersion 21
         targetSdkVersion 35
         versionCode 1
@@ -76,12 +76,12 @@ android {
             // The URL the Web Manifest for the Progressive Web App that the TWA points to. This
             // is used by Chrome OS and Meta Quest to open the Web version of the PWA instead of
             // the TWA, as it will probably give a better user experience for non-mobile devices.
-            resValue "string", "webManifestUrl", 'https://securevault--vault-84ff7.asia-southeast1.hosted.app/manifest.json'
+            resValue "string", "webManifestUrl", 'https://strongvault--vault-84ff7.asia-southeast1.hosted.app/manifest.json'
         
 
         
             // This is used by Meta Quest.
-            resValue "string", "fullScopeUrl", 'https://securevault--vault-84ff7.asia-southeast1.hosted.app/'
+            resValue "string", "fullScopeUrl", 'https://strongvault--vault-84ff7.asia-southeast1.hosted.app/'
         
 
         

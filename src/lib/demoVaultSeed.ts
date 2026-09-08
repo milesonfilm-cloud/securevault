@@ -33,7 +33,7 @@ export function createDemoVaultData(): VaultData {
       name: 'Priya Sharma',
       relationship: 'Mother',
       dob: '1988-09-03',
-      avatarColor: MEMBER_COLORS[1].border,
+      avatarColor: MEMBER_COLORS[8].border,
       createdAt: created,
       updatedAt: created,
     },
@@ -42,7 +42,7 @@ export function createDemoVaultData(): VaultData {
       name: 'Aarav Sharma',
       relationship: 'Son',
       dob: '2016-01-22',
-      avatarColor: MEMBER_COLORS[2].border,
+      avatarColor: MEMBER_COLORS[10].border,
       createdAt: created,
       updatedAt: created,
     },
@@ -160,7 +160,7 @@ export function createDemoVaultData(): VaultData {
     emergencyContact: null,
     settings: {
       ...defaultVaultSettings(),
-      plan: 'pro', // unlock UI features during demo preview
+      plan: 'free',
     },
     streakData: {
       ...defaultStreakData(),

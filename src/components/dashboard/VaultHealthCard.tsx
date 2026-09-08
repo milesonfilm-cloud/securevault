@@ -22,7 +22,7 @@ export default function VaultHealthCard({ vaultData, loading }: VaultHealthCardP
   const offset = c * (1 - score.score / 100);
 
   return (
-    <div className="rounded-2xl border border-border bg-vault-panel shadow-vault overflow-hidden">
+    <div className="neo-card overflow-hidden rounded-2xl">
       <div className="p-5 flex flex-col sm:flex-row gap-5 sm:items-center">
         <div className="relative w-[120px] h-[120px] shrink-0 mx-auto sm:mx-0">
           <svg width="120" height="120" className="-rotate-90">
@@ -31,11 +31,11 @@ export default function VaultHealthCard({ vaultData, loading }: VaultHealthCardP
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className="text-2xl font-800 text-vault-text tabular-nums">{score.score}</span>
-            <span className="text-[10px] font-medium text-vault-faint">Health</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-vault-faint">Health</span>
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-vault-muted">Vault health</p>
+          <p className="text-[11px] font-800 uppercase tracking-[0.18em] text-vault-faint">Vault health</p>
           <p className="text-sm text-vault-muted mt-1">Calculated on this device — nothing is sent to a server.</p>
           {missing.length > 0 && (
             <p className="text-xs text-amber-200/90 mt-3">
@@ -60,7 +60,7 @@ export default function VaultHealthCard({ vaultData, loading }: VaultHealthCardP
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-vault-text leading-snug">{s}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      <Link href="/document-vault" className="inline-flex items-center gap-1.5 text-[11px] font-700 text-vault-warm hover:text-vault-text">
+                      <Link href="/family-management" className="inline-flex items-center gap-1.5 text-[11px] font-800 uppercase tracking-wide text-vault-warm hover:text-vault-text">
                         <FilePlus2 size={14} /> Add document
                       </Link>
                     </div>

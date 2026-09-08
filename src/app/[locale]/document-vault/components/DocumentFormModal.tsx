@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FileUp, Loader2, PenLine } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -9,17 +9,24 @@ import Modal from '@/components/ui/Modal';
 import CopyValueButton from '@/components/ui/CopyValueButton';
 import { CATEGORIES, getCategoryById, type FieldFormat } from '@/lib/categories';
 import { categoryFieldMsgKey } from '@/lib/categoryI18n';
-import {
-  collectFieldFormatErrors,
-  validateFormattedValue,
-  validateGovernmentIdNumber,
-} from '@/lib/fieldValidation';
 import { Document, FamilyMember } from '@/lib/storage';
 import { CategoryId } from '@/lib/storage';
 import type { DocumentPrefill } from '@/lib/ocr/documentPrefill';
 import { extractTextFromImportFile, IMPORT_FILE_ACCEPT } from '@/lib/import/fileImportExtract';
 import { buildDocumentPrefillFromOcr } from '@/lib/ocr/ocrExtract';
-import { isCompleteIfsc, lookupIfsc } from '@/lib/ifscLookup';
+import {
+  collectCategoryFieldErrors,
+  validateCategoryFieldValue,
+} from '@/lib/fieldValidation';
+import { cn } from '@/lib/utils';
+
+function RequiredAsterisk() {
+  return (
+    <span className="ml-0.5 font-700 text-red-600" aria-hidden>
+      *
+    </span>
+  );
+}
 
 // ─── Input formatters ────────────────────────────────────────────────────────
 
@@ -46,6 +53,8 @@ function applyFormat(raw: string, format: FieldFormat): string {
       if (e.length <= 2) return e;
       return `${e.slice(0, 2)}/${e.slice(2)}`;
     }
+    case 'cvv':
+      return digits.slice(0, 4);
     case 'account-number': {
       // group in 4s with spaces
       const a = digits.slice(0, 20);
@@ -65,16 +74,11 @@ function applyFormat(raw: string, format: FieldFormat): string {
       return ph.slice(0, 18);
     }
     case 'ifsc':
-      return raw.toUpperCase().slice(0, 11);
+      return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11);
     case 'pan':
       return raw.toUpperCase().slice(0, 10);
     case 'alpha-upper':
-      return raw.toUpperCase();
-    case 'email':
-    case 'login-id':
-      return raw.trimStart().slice(0, 120);
-    case 'url':
-      return raw.trimStart().slice(0, 500);
+      return raw.toUpperCase().slice(0, 16);
     default:
       return raw;
   }
@@ -84,9 +88,13 @@ function getInputMode(
   format: FieldFormat | undefined
 ): React.HTMLAttributes<HTMLInputElement>['inputMode'] {
   if (!format) return undefined;
-  if (['date-dmy', 'card-number', 'expiry-mmyyyy', 'account-number', 'aadhaar'].includes(format))
+  if (
+    ['date-dmy', 'card-number', 'expiry-mmyyyy', 'cvv', 'account-number', 'aadhaar'].includes(format)
+  )
     return 'numeric';
   if (format === 'phone') return 'tel';
+  if (format === 'email' || format === 'login-id') return 'email';
+  if (format === 'url') return 'url';
   return undefined;
 }
 
@@ -119,7 +127,7 @@ export default function DocumentFormModal({
   const td = useTranslations('documents');
   const tc = useTranslations('categories');
   const tcom = useTranslations('common');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [addFlowStep, setAddFlowStep] = useState<'choose' | 'form'>('choose');
   const [importBusy, setImportBusy] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -129,14 +137,10 @@ export default function DocumentFormModal({
     watch,
     reset,
     getValues,
-    setValue,
     setError,
-    clearErrors,
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<DocumentFormData>({
-    mode: 'onBlur',
-    reValidateMode: 'onChange',
     defaultValues: {
       memberId: members[0]?.id || '',
       categoryId: 'government-ids',
@@ -148,71 +152,11 @@ export default function DocumentFormModal({
 
   const selectedCategoryId = watch('categoryId') as CategoryId;
   const watchedDocumentType = watch('Document Type');
-  const watchedIfsc = watch('IFSC Code');
-  const [ifscHint, setIfscHint] = useState<string | null>(null);
-  const [ifscStatus, setIfscStatus] = useState<'idle' | 'loading' | 'found' | 'not_found'>('idle');
-
-  useEffect(() => {
-    if (selectedCategoryId === 'government-ids' && getValues('ID / Document Number')) {
-      void trigger('ID / Document Number');
-    }
-  }, [watchedDocumentType, selectedCategoryId, getValues, trigger]);
-
-  useEffect(() => {
-    if (selectedCategoryId !== 'bank-accounts') {
-      setIfscHint(null);
-      setIfscStatus('idle');
-      return;
-    }
-    const code = (watchedIfsc ?? '').trim().toUpperCase();
-    if (!isCompleteIfsc(code)) {
-      setIfscHint(null);
-      setIfscStatus('idle');
-      return;
-    }
-
-    let cancelled = false;
-    setIfscStatus('loading');
-    const timer = window.setTimeout(() => {
-      void lookupIfsc(code).then((details) => {
-        if (cancelled) return;
-        if (!details) {
-          setIfscHint(null);
-          setIfscStatus('not_found');
-          return;
-        }
-        setIfscHint(`${details.BANK} · ${details.BRANCH}`);
-        setIfscStatus('found');
-        const bank = getValues('Bank Name');
-        const branch = getValues('Branch');
-        if (!bank?.trim()) setValue('Bank Name', details.BANK, { shouldDirty: true });
-        if (!branch?.trim()) setValue('Branch', details.BRANCH, { shouldDirty: true });
-      });
-    }, 350);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-    };
-  }, [watchedIfsc, selectedCategoryId, getValues, setValue]);
-
   const categoryConfig = getCategoryById(selectedCategoryId);
-  const watchedMemberId = watch('memberId');
-  const memberSummaryForCopy = useMemo(() => {
-    const m = members.find((x) => x.id === watchedMemberId);
-    return m ? `${m.name} (${m.relationship})` : '';
-  }, [members, watchedMemberId]);
-
-  const isPasswordCategory = selectedCategoryId === 'password-vault';
 
   const categoryTitle = categoryConfig
     ? tc(`${categoryConfig.id}.label` as Parameters<typeof tc>[0])
     : '';
-
-  const passwordFieldKey = useMemo(() => {
-    if (!categoryConfig) return null;
-    return categoryConfig.fields.find((f) => f.key === 'Password')?.key || null;
-  }, [categoryConfig]);
 
   const fromOcrOnly = !!(prefill?.fromOcr);
 
@@ -220,17 +164,10 @@ export default function DocumentFormModal({
     if (!isOpen) {
       setAddFlowStep('choose');
       setImportBusy(false);
+      setShowSecrets({});
       return;
     }
-    const hasFilledPrefill = Boolean(
-      editDoc ||
-        prefill?.fromOcr ||
-        prefill?.fromAiScan ||
-        prefill?.categoryId ||
-        (prefill?.title && prefill.title.trim()) ||
-        (prefill?.fields && Object.keys(prefill.fields).length > 0)
-    );
-    if (hasFilledPrefill) {
+    if (editDoc || prefill) {
       setAddFlowStep('form');
     } else {
       setAddFlowStep('choose');
@@ -245,8 +182,8 @@ export default function DocumentFormModal({
         ...editDoc.fields,
       });
     } else {
-      const preferredMemberId = prefill?.memberId ?? members[0]?.id ?? '';
-      if (prefill && hasFilledPrefill) {
+      const preferredMemberId = members[0]?.id || '';
+      if (prefill) {
         reset({
           memberId: preferredMemberId,
           categoryId: prefill.categoryId ?? 'government-ids',
@@ -267,34 +204,45 @@ export default function DocumentFormModal({
     }
   }, [editDoc, isOpen, members, prefill, reset]);
 
+  useEffect(() => {
+    if (!categoryConfig?.fields.some((f) => f.key === 'ID / Document Number')) return;
+    void trigger('ID / Document Number');
+  }, [watchedDocumentType, categoryConfig, trigger]);
+
   const onSubmit = (data: DocumentFormData) => {
+    if (categoryConfig) {
+      const fieldErrors = collectCategoryFieldErrors(
+        categoryConfig.fields,
+        data,
+        (field) =>
+          tcom('fieldRequired', {
+            field: tc(
+              `${selectedCategoryId}.fields.${categoryFieldMsgKey(field.key)}` as Parameters<
+                typeof tc
+              >[0]
+            ),
+          })
+      );
+      if (Object.keys(fieldErrors).length > 0) {
+        for (const [key, message] of Object.entries(fieldErrors)) {
+          setError(key, { type: 'validate', message });
+        }
+        return;
+      }
+    }
     const { memberId, categoryId, title, notes, tags, ...rest } = data;
     const fields: Record<string, string> = {};
     if (categoryConfig) {
       categoryConfig.fields.forEach((f) => {
         if (rest[f.key] !== undefined && rest[f.key] !== '') {
-          fields[f.key] = String(rest[f.key]).trim();
+          fields[f.key] = rest[f.key];
         }
       });
-
-      const formatErrors = collectFieldFormatErrors(categoryConfig.fields, {
-        ...fields,
-        'Document Type': String(rest['Document Type'] ?? ''),
-      });
-      const keys = Object.keys(formatErrors);
-      if (keys.length > 0) {
-        clearErrors();
-        for (const key of keys) {
-          setError(key, { type: 'validate', message: formatErrors[key] });
-        }
-        toast.error(td('fixFormatErrors'));
-        return;
-      }
     }
     onSave({
       memberId,
       categoryId,
-      title: title.trim(),
+      title,
       fields,
       notes,
       tags: tags
@@ -438,13 +386,13 @@ export default function DocumentFormModal({
             {/* Basic info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <div className="flex items-start justify-between gap-2">
-                  <label className="label-text !mb-0 flex-1">{td('familyMemberLabel')}</label>
-                  <CopyValueButton value={memberSummaryForCopy} compact />
-                </div>
+                <label className="label-text">
+                  {td('familyMemberLabel')}
+                  <RequiredAsterisk />
+                </label>
                 <select
                   {...register('memberId', { required: td('selectFamilyMember') })}
-                  className="input-field mt-1"
+                  className={cn('input-field mt-1', errors.memberId && 'border-red-500 ring-1 ring-red-400/40')}
                 >
                   {members.map((m) => (
                     <option key={`form-member-${m.id}`} value={m.id}>
@@ -453,18 +401,20 @@ export default function DocumentFormModal({
                   ))}
                 </select>
                 {errors.memberId && (
-                  <p className="text-xs text-red-500 mt-1">{errors.memberId.message}</p>
+                  <p className="mt-1 text-xs font-600 text-red-600" role="alert">
+                    {errors.memberId.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <div className="flex items-start justify-between gap-2">
-                  <label className="label-text !mb-0 flex-1">{td('categoryLabel')}</label>
-                  <CopyValueButton value={categoryTitle} compact />
-                </div>
+                <label className="label-text">
+                  {td('categoryLabel')}
+                  <RequiredAsterisk />
+                </label>
                 <select
                   {...register('categoryId', { required: td('selectCategory') })}
-                  className="input-field mt-1"
+                  className={cn('input-field mt-1', errors.categoryId && 'border-red-500 ring-1 ring-red-400/40')}
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={`form-cat-${cat.id}`} value={cat.id}>
@@ -478,17 +428,27 @@ export default function DocumentFormModal({
             <div>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
-                  <label className="label-text">{td('titleLabel')}</label>
+                  <label className="label-text">
+                    {td('titleLabel')}
+                    <RequiredAsterisk />
+                  </label>
                   <p className="text-xs text-vault-faint mb-1.5">{td('titleHint')}</p>
                 </div>
                 <CopyValueButton value={watch('title') ?? ''} compact className="mt-0.5" />
               </div>
               <input
-                {...register('title', { required: td('titleRequired') })}
+                {...register('title', {
+                  required: td('titleRequired'),
+                  minLength: { value: 2, message: td('titleTooShort') },
+                })}
                 placeholder={td('titlePlaceholder')}
-                className="input-field"
+                className={cn('input-field', errors.title && 'border-red-500 ring-1 ring-red-400/40')}
               />
-              {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
+              {errors.title && (
+                <p className="mt-1 text-xs font-600 text-red-600" role="alert">
+                  {errors.title.message}
+                </p>
+              )}
             </div>
 
             {/* Dynamic category fields */}
@@ -517,13 +477,17 @@ export default function DocumentFormModal({
                         typeof tc
                       >[0]
                     );
+                    const isSecretTypedField = field.key === 'Password' || field.key === 'CVV';
+                    const secretRevealed = !!showSecrets[field.key];
+                    const requiredMessage = tcom('fieldRequired', { field: fieldLabel });
+                    const fieldHasError = Boolean(errors[field.key]);
                     return (
                       <div key={`form-field-${field.key}`}>
                         <div className="flex items-start justify-between gap-2">
                           <label className="label-text !mb-0 inline-flex flex-1 flex-wrap items-center gap-x-1.5 gap-y-1">
                             <span>
                               {fieldLabel}
-                              {field.required && <span className="text-red-400 ml-0.5">*</span>}
+                              {field.required && <RequiredAsterisk />}
                               {field.sensitive && (
                                 <span className="ml-1.5 text-xs text-vault-coral font-400">
                                   {td('sensitiveTag')}
@@ -531,20 +495,30 @@ export default function DocumentFormModal({
                               )}
                             </span>
                           </label>
-                          <CopyValueButton
-                            value={watch(field.key) ?? ''}
-                            compact
-                            className="mt-0.5"
-                          />
+                          {field.type !== 'select' && (
+                            <CopyValueButton
+                              value={watch(field.key) ?? ''}
+                              compact
+                              className="mt-0.5"
+                            />
+                          )}
                         </div>
                         {field.type === 'select' && field.options ? (
                           <select
                             {...register(field.key, {
-                              required: field.required
-                                ? tcom('fieldRequired', { field: fieldLabel })
-                                : false,
+                              required: field.required ? requiredMessage : false,
+                              validate: (value) =>
+                                validateCategoryFieldValue(
+                                  field,
+                                  value ?? '',
+                                  getValues(),
+                                  requiredMessage
+                                ),
                             })}
-                            className="input-field mt-1"
+                            className={cn(
+                              'input-field mt-1',
+                              fieldHasError && 'border-red-500 ring-1 ring-red-400/40'
+                            )}
                           >
                             <option value="">{td('selectPlaceholder')}</option>
                             {field.options.map((opt) => (
@@ -557,22 +531,14 @@ export default function DocumentFormModal({
                           <div className="relative mt-1">
                             <input
                               {...register(field.key, {
-                                required: field.required
-                                  ? tcom('fieldRequired', { field: fieldLabel })
-                                  : false,
-                                validate: (value) => {
-                                  const raw = typeof value === 'string' ? value : '';
-                                  if (!raw.trim()) return true;
-                                  if (field.key === 'ID / Document Number') {
-                                    const err = validateGovernmentIdNumber(
-                                      raw,
-                                      getValues('Document Type')
-                                    );
-                                    return err || true;
-                                  }
-                                  const err = validateFormattedValue(raw, field.format);
-                                  return err || true;
-                                },
+                                required: field.required ? requiredMessage : false,
+                                validate: (value) =>
+                                  validateCategoryFieldValue(
+                                    field,
+                                    value ?? '',
+                                    getValues(),
+                                    requiredMessage
+                                  ),
                                 onChange: field.format
                                   ? (e: React.ChangeEvent<HTMLInputElement>) => {
                                       e.target.value = applyFormat(e.target.value, field.format!);
@@ -580,8 +546,8 @@ export default function DocumentFormModal({
                                   : undefined,
                               })}
                               type={
-                                isPasswordCategory && field.key === passwordFieldKey
-                                  ? showPassword
+                                isSecretTypedField
+                                  ? secretRevealed
                                     ? 'text'
                                     : 'password'
                                   : 'text'
@@ -590,21 +556,25 @@ export default function DocumentFormModal({
                               placeholder={
                                 field.placeholder || td('fieldPlaceholder', { field: fieldLabel })
                               }
-                              aria-invalid={Boolean(errors[field.key])}
-                              className={
-                                isPasswordCategory && field.key === passwordFieldKey
-                                  ? `input-field pr-11${errors[field.key] ? ' border-red-400 focus:ring-red-400/40' : ''}`
-                                  : `input-field${errors[field.key] ? ' border-red-400 focus:ring-red-400/40' : ''}`
-                              }
+                              autoComplete={isSecretTypedField ? 'off' : undefined}
+                              className={cn(
+                                isSecretTypedField ? 'input-field pr-11' : 'input-field',
+                                fieldHasError && 'border-red-500 ring-1 ring-red-400/40'
+                              )}
                             />
-                            {isPasswordCategory && field.key === passwordFieldKey && (
+                            {isSecretTypedField && (
                               <button
                                 type="button"
-                                onClick={() => setShowPassword((v) => !v)}
+                                onClick={() =>
+                                  setShowSecrets((s) => ({
+                                    ...s,
+                                    [field.key]: !s[field.key],
+                                  }))
+                                }
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-vault-faint hover:text-vault-warm transition-colors"
-                                title={showPassword ? td('hidePassword') : td('showPassword')}
+                                title={secretRevealed ? td('hidePassword') : td('showPassword')}
                               >
-                                {showPassword ? (
+                                {secretRevealed ? (
                                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                     <path
                                       d="M3 3l18 18"
@@ -651,25 +621,11 @@ export default function DocumentFormModal({
                             )}
                           </div>
                         )}
-                        {errors[field.key] ? (
-                          <p className="mt-1 text-xs text-red-500" role="alert">
+                        {errors[field.key] && (
+                          <p className="mt-1 text-xs font-600 text-red-600" role="alert">
                             {errors[field.key]?.message as string}
                           </p>
-                        ) : null}
-                        {field.key === 'IFSC Code' && !errors[field.key] && ifscStatus !== 'idle' ? (
-                          <p
-                            className={`mt-1 text-xs ${
-                              ifscStatus === 'found' ? 'text-vault-muted' : 'text-vault-faint'
-                            }`}
-                            role="status"
-                          >
-                            {ifscStatus === 'loading'
-                              ? td('ifscLookingUp')
-                              : ifscStatus === 'not_found'
-                                ? td('ifscNotFound')
-                                : ifscHint}
-                          </p>
-                        ) : null}
+                        )}
                       </div>
                     );
                   })}
@@ -696,12 +652,9 @@ export default function DocumentFormModal({
 
             {/* Tags */}
             <div>
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <label className="label-text">{td('tagsLabel')}</label>
-                  <p className="text-xs text-vault-faint mb-1.5">{td('tagsHint')}</p>
-                </div>
-                <CopyValueButton value={watch('tags') ?? ''} compact className="mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <label className="label-text">{td('tagsLabel')}</label>
+                <p className="text-xs text-vault-faint mb-1.5">{td('tagsHint')}</p>
               </div>
               <input
                 {...register('tags')}

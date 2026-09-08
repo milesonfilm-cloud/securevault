@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { Settings, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 import StorageMeter from './StorageMeter';
 import ExportPanel from './ExportPanel';
 import ImportPanel from './ImportPanel';
@@ -23,17 +23,8 @@ export default function SettingsExportContent() {
   const [totpOpen, setTotpOpen] = useState(false);
 
   return (
-    <div className="mx-auto min-h-full max-w-screen-2xl bg-vault-bg p-4 lg:p-6">
-      <VaultPageHeading
-        icon={
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-vault-elevated text-vault-warm">
-            <Settings size={18} aria-hidden />
-          </div>
-        }
-        eyebrow={ts('title')}
-        title={ts('backupAppTitle')}
-        description={ts('backupAppSubtitle')}
-      />
+    <div className="mx-auto min-h-full max-w-screen-2xl p-4 lg:p-6">
+      <VaultPageHeading title={ts('title')} description={ts('backupAppSubtitle')} />
 
       <Link
         href="/settings/emergency"
